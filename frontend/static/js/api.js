@@ -19,6 +19,17 @@ const api = {
     return await res.json();
   },
 
+  async calculateIndividual(inputData) {
+    const res = await fetch(`${API_BASE}/api/individual/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inputData)
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Failed to calculate individual analytics.");
+    return result.data;
+  },
+
   async addTransaction(txData) {
     const res = await fetch(`${API_BASE}/api/individual/transaction`, {
       method: "POST",
@@ -55,6 +66,17 @@ const api = {
     const res = await fetch(`${API_BASE}/api/organization?department=${encodeURIComponent(department)}&year=${encodeURIComponent(year)}`);
     if (!res.ok) throw new Error("Failed to load organization analytics.");
     return await res.json();
+  },
+
+  async calculateOrganization(inputData) {
+    const res = await fetch(`${API_BASE}/api/organization/calculate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inputData)
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Failed to calculate organization analytics.");
+    return result.data;
   },
 
   async addOrder(orderData) {

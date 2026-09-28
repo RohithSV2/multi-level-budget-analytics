@@ -18,6 +18,8 @@ const App = {
     this.bindFilters();
     this.bindWhatIfSliders();
     this.bindPowerBIHub();
+    this.initIndStudio();
+    this.initOrgStudio();
 
     // Initial load
     await this.loadOverview();
@@ -338,6 +340,264 @@ const App = {
       navigator.clipboard.writeText(code);
       this.showToast("Power Query M-Code copied to clipboard!", "success");
     });
+  },
+
+  // ----------------------------------------------------------------------------
+  // INTERACTIVE INPUT STUDIO: INDIVIDUAL MODE
+  // ----------------------------------------------------------------------------
+  indCategories: [
+    { name: "Housing & Rent", actual: 25000, budget: 25000, icon: "🏠" },
+    { name: "Food & Dining", actual: 16000, budget: 16000, icon: "🍔" },
+    { name: "Groceries", actual: 18000, budget: 18000, icon: "🛒" },
+    { name: "Utilities", actual: 6500, budget: 6500, icon: "💡" },
+    { name: "Transportation", actual: 8500, budget: 9000, icon: "🚗" },
+    { name: "Entertainment", actual: 6500, budget: 7000, icon: "🎬" },
+    { name: "Healthcare", actual: 4500, budget: 6000, icon: "💊" },
+    { name: "Education", actual: 3500, budget: 5000, icon: "📚" },
+    { name: "Shopping", actual: 11000, budget: 11000, icon: "🛍️" },
+    { name: "Personal Care", actual: 4000, budget: 4500, icon: "✨" }
+  ],
+
+  initIndStudio() {
+    const container = document.getElementById("ind-studio-categories");
+    if (!container) return;
+    container.innerHTML = this.indCategories.map((c, i) => `
+      <div class="studio-category-box">
+        <div class="studio-category-header">
+          <span>${c.icon} ${c.name}</span>
+        </div>
+        <div class="studio-dual-inputs">
+          <div>
+            <label for="ind-cat-actual-${i}">Actual (₹)</label>
+            <input type="number" id="ind-cat-actual-${i}" value="${c.actual}" step="100">
+          </div>
+          <div>
+            <label for="ind-cat-budget-${i}">Budget (₹)</label>
+            <input type="number" id="ind-cat-budget-${i}" value="${c.budget}" step="100">
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+    document.getElementById("btn-compute-ind")?.addEventListener("click", () => this.computeIndStudio());
+    document.getElementById("btn-reset-ind")?.addEventListener("click", () => this.applyIndPreset("tech"));
+  },
+
+  applyIndPreset(preset) {
+    const salInput = document.getElementById("input-ind-salary");
+    const otherInput = document.getElementById("input-ind-other-income");
+
+    let sal = 135000, other = 25000;
+    let actualMulti = 1.0, budgetMulti = 1.0;
+
+    if (preset === "tech") {
+      sal = 160000; other = 30000;
+      actualMulti = 1.1; budgetMulti = 1.15;
+    } else if (preset === "family") {
+      sal = 220000; other = 45000;
+      actualMulti = 1.45; budgetMulti = 1.5;
+    } else if (preset === "fresher") {
+      sal = 45000; other = 5000;
+      actualMulti = 0.38; budgetMulti = 0.4;
+    } else if (preset === "custom") {
+      sal = 0; other = 0;
+      actualMulti = 0; budgetMulti = 0;
+    }
+
+    if (salInput) salInput.value = sal;
+    if (otherInput) otherInput.value = other;
+
+    this.indCategories.forEach((c, i) => {
+      const actEl = document.getElementById(`ind-cat-actual-${i}`);
+      const budEl = document.getElementById(`ind-cat-budget-${i}`);
+      if (actEl) actEl.value = Math.round(c.actual * actualMulti);
+      if (budEl) budEl.value = Math.round(c.budget * budgetMulti);
+    });
+
+    this.computeIndStudio();
+  },
+
+  async computeIndStudio() {
+    const sal = parseFloat(document.getElementById("input-ind-salary")?.value || 0);
+    const other = parseFloat(document.getElementById("input-ind-other-income")?.value || 0);
+
+    const categoriesPayload = {};
+    this.indCategories.forEach((c, i) => {
+      const actual = parseFloat(document.getElementById(`ind-cat-actual-${i}`)?.value || 0);
+      const budget = parseFloat(document.getElementById(`ind-cat-budget-${i}`)?.value || 0);
+      categoriesPayload[c.name] = { actual, budget };
+    });
+
+    try {
+      const data = await api.calculateIndividual({
+        monthly_income: sal,
+        other_income: other,
+        categories: categoriesPayload
+      });
+
+      // Update KPIs
+      document.getElementById("ind-kpi-income").textContent = `₹${data.kpis.total_income.toLocaleString('en-IN')}`;
+      document.getElementById("ind-kpi-expense").textContent = `₹${data.kpis.total_expense.toLocaleString('en-IN')}`;
+      
+      const netSavingsEl = document.getElementById("ind-kpi-savings");
+      netSavingsEl.textContent = `₹${data.kpis.net_savings.toLocaleString('en-IN')}`;
+      netSavingsEl.closest(".kpi-card").className = `kpi-card ${data.kpis.net_savings >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+
+      document.getElementById("ind-kpi-savings-rate").textContent = `${data.kpis.savings_rate_pct}% Savings Rate`;
+      document.getElementById("ind-kpi-budget").textContent = `₹${data.kpis.total_planned_budget.toLocaleString('en-IN')}`;
+      document.getElementById("ind-kpi-utilization").textContent = `${data.kpis.budget_utilization_pct}%`;
+
+      const flagBadge = document.getElementById("ind-overspend-flag");
+      if (flagBadge) {
+        flagBadge.textContent = data.kpis.overspend_flag;
+        flagBadge.className = `tag-badge ${data.kpis.overspend_flag === 'Within Budget' ? 'tag-income' : 'tag-expense'}`;
+      }
+
+      // Update Health Score Badge
+      const healthBadge = document.getElementById("ind-health-score-badge");
+      if (healthBadge) {
+        healthBadge.textContent = `${data.kpis.health_score} / 100 • ${data.kpis.health_rating}`;
+        healthBadge.style.background = data.kpis.health_score >= 70 ? 'var(--success-light)' : (data.kpis.health_score >= 50 ? '#FEF3C7' : 'var(--danger-light)');
+        healthBadge.style.color = data.kpis.health_score >= 70 ? 'var(--success-green)' : (data.kpis.health_score >= 50 ? 'var(--accent-amber)' : 'var(--danger-crimson)');
+      }
+
+      // Render Visuals from User Input
+      ChartEngine.renderIndividualDonut("chart-ind-donut", data.donut_chart);
+      ChartEngine.renderIndividualLine("chart-ind-line", data.trend_line);
+      ChartEngine.renderIndividualVarianceBar("chart-ind-variance", data.bar_chart);
+
+      this.showToast("Individual graphs generated from your inputs!", "success");
+    } catch (err) {
+      console.error(err);
+      this.showToast("Failed to compute individual analytics.", "error");
+    }
+  },
+
+  // ----------------------------------------------------------------------------
+  // INTERACTIVE INPUT STUDIO: ORGANIZATION MODE
+  // ----------------------------------------------------------------------------
+  initOrgStudio() {
+    document.getElementById("btn-compute-org")?.addEventListener("click", () => this.computeOrgStudio());
+    document.getElementById("btn-reset-org")?.addEventListener("click", () => this.applyOrgPreset("superstore"));
+  },
+
+  applyOrgPreset(preset) {
+    const corpRev = document.getElementById("input-dept-corp-rev");
+    const corpCost = document.getElementById("input-dept-corp-cost");
+    const consRev = document.getElementById("input-dept-cons-rev");
+    const consCost = document.getElementById("input-dept-cons-cost");
+    const homeRev = document.getElementById("input-dept-home-rev");
+    const homeCost = document.getElementById("input-dept-home-cost");
+    const nameInput = document.getElementById("input-org-name");
+
+    if (preset === "superstore") {
+      if (nameInput) nameInput.value = "Superstore Retail Division";
+      if (corpRev) corpRev.value = 145000000; if (corpCost) corpCost.value = 108000000;
+      if (consRev) consRev.value = 82000000; if (consCost) consCost.value = 61000000;
+      if (homeRev) homeRev.value = 46000000; if (homeCost) homeCost.value = 36000000;
+    } else if (preset === "saas") {
+      if (nameInput) nameInput.value = "Cloud & SaaS Global Corp";
+      if (corpRev) corpRev.value = 260000000; if (corpCost) corpCost.value = 135000000;
+      if (consRev) consRev.value = 110000000; if (consCost) consCost.value = 68000000;
+      if (homeRev) homeRev.value = 60000000; if (homeCost) homeCost.value = 42000000;
+    } else if (preset === "manufacturing") {
+      if (nameInput) nameInput.value = "Precision Manufacturing Ltd";
+      if (corpRev) corpRev.value = 180000000; if (corpCost) corpCost.value = 152000000;
+      if (consRev) consRev.value = 95000000; if (consCost) consCost.value = 81000000;
+      if (homeRev) homeRev.value = 45000000; if (homeCost) homeCost.value = 39000000;
+    } else if (preset === "custom") {
+      if (nameInput) nameInput.value = "Custom Enterprise";
+      if (corpRev) corpRev.value = 0; if (corpCost) corpCost.value = 0;
+      if (consRev) consRev.value = 0; if (consCost) consCost.value = 0;
+      if (homeRev) homeRev.value = 0; if (homeCost) homeCost.value = 0;
+    }
+
+    this.computeOrgStudio();
+  },
+
+  async computeOrgStudio() {
+    const name = document.getElementById("input-org-name")?.value || "Enterprise Corp";
+    const year = parseInt(document.getElementById("input-org-year")?.value || 2024);
+
+    const corpRev = parseFloat(document.getElementById("input-dept-corp-rev")?.value || 0);
+    const corpCost = parseFloat(document.getElementById("input-dept-corp-cost")?.value || 0);
+    const consRev = parseFloat(document.getElementById("input-dept-cons-rev")?.value || 0);
+    const consCost = parseFloat(document.getElementById("input-dept-cons-cost")?.value || 0);
+    const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0);
+    const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0);
+
+    const payload = {
+      company_name: name,
+      fiscal_year: year,
+      departments: {
+        "Corporate": { revenue: corpRev, cost: corpCost },
+        "Consumer": { revenue: consRev, cost: consCost },
+        "Home Office": { revenue: homeRev, cost: homeCost }
+      }
+    };
+
+    try {
+      const data = await api.calculateOrganization(payload);
+
+      // Update Org KPIs
+      document.getElementById("org-kpi-revenue").textContent = `₹${data.kpis.total_revenue.toLocaleString('en-IN')}`;
+      document.getElementById("org-kpi-cost").textContent = `₹${data.kpis.total_cost.toLocaleString('en-IN')}`;
+      
+      const profitEl = document.getElementById("org-kpi-profit");
+      profitEl.textContent = `₹${data.kpis.total_profit.toLocaleString('en-IN')}`;
+      profitEl.closest(".kpi-card").className = `kpi-card ${data.kpis.total_profit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+
+      document.getElementById("org-kpi-variance").textContent = `₹${data.kpis.budget_variance.toLocaleString('en-IN')}`;
+      document.getElementById("org-kpi-utilization").textContent = `${data.kpis.budget_utilization_pct}%`;
+      document.getElementById("org-kpi-growth").textContent = `${data.kpis.profit_margin_pct}% Margin`;
+      document.getElementById("org-kpi-top-dept").textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e7).toFixed(1)} Cr)`;
+
+      // Render Visuals
+      ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
+      ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
+
+      // Treemap
+      const treemapContainer = document.getElementById("org-treemap-container");
+      if (treemapContainer) {
+        treemapContainer.innerHTML = data.treemap.map(t => `
+          <div style="background: #F8FAFC; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary-navy); margin-block-end: 0.5rem;">
+              <span>📁 ${t.name}</span>
+              <span style="color: var(--accent-teal);">₹${t.value.toLocaleString('en-IN')} Profit (Sales: ₹${t.sales.toLocaleString('en-IN')})</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              ${t.children.map(c => `
+                <span class="tag-badge" style="background: rgba(31, 56, 100, 0.08); color: var(--primary-navy); font-weight: 600;">
+                  ${c.name}: ₹${c.value.toLocaleString('en-IN')}
+                </span>
+              `).join("")}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      // Matrix Table
+      const matrixHead = document.getElementById("org-matrix-head");
+      const matrixBody = document.getElementById("org-matrix-body");
+      if (matrixHead && matrixBody) {
+        matrixHead.innerHTML = `<tr><th>Region \\ Category</th>${data.matrix.categories.map(c => `<th>${c}</th>`).join("")}</tr>`;
+        matrixBody.innerHTML = data.matrix.regions.map((reg, rIdx) => `
+          <tr>
+            <td><strong>${reg}</strong></td>
+            ${data.matrix.values[rIdx].map(val => `
+              <td class="${val >= 0 ? 'matrix-cell-positive' : 'matrix-cell-negative'}">
+                ₹${val.toLocaleString('en-IN')}
+              </td>
+            `).join("")}
+          </tr>
+        `).join("");
+      }
+
+      this.showToast(`Organization dashboard updated for "${data.company_name}"!`, "success");
+    } catch (err) {
+      console.error(err);
+      this.showToast("Failed to compute organization analytics.", "error");
+    }
   },
 
   // ----------------------------------------------------------------------------

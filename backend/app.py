@@ -12,7 +12,9 @@ from backend.analytics_engine import (
     get_individual_analytics,
     get_organization_analytics,
     get_state_nation_analytics,
-    get_predictive_analytics
+    get_predictive_analytics,
+    calculate_custom_individual,
+    calculate_custom_organization
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,6 +56,15 @@ def individual_api():
     year = request.args.get("year", "All")
     data = get_individual_analytics(category_filter=category, year_filter=year)
     return jsonify(data)
+
+@app.route("/api/individual/calculate", methods=["POST"])
+def calculate_individual_api():
+    try:
+        body = request.get_json(force=True) or {}
+        res = calculate_custom_individual(body)
+        return jsonify({"success": True, "data": res})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/individual/transaction", methods=["POST"])
 def add_individual_transaction():
@@ -158,6 +169,15 @@ def organization_api():
     year = request.args.get("year", "All")
     data = get_organization_analytics(department_filter=department, year_filter=year)
     return jsonify(data)
+
+@app.route("/api/organization/calculate", methods=["POST"])
+def calculate_organization_api():
+    try:
+        body = request.get_json(force=True) or {}
+        res = calculate_custom_organization(body)
+        return jsonify({"success": True, "data": res})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/organization/order", methods=["POST"])
 def add_organization_order():

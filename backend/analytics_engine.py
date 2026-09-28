@@ -637,3 +637,296 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
             "whatif_state_deficit_target_pct": whatif_state_deficit_target_pct
         }
     }
+
+# ==========================================
+# 6. INTERACTIVE USER-INPUT CALCULATION ENGINES
+# ==========================================
+def calculate_custom_individual(input_data):
+    """
+    Accepts user inputs for Individual Mode:
+    - monthly_income, other_income
+    - category breakdown: { category: { actual: X, budget: Y } }
+    Produces all relevant metrics, financial health score, and chart structures.
+    """
+    monthly_income = float(input_data.get("monthly_income", 0))
+    other_income = float(input_data.get("other_income", 0))
+    total_income = monthly_income + other_income
+
+    categories = input_data.get("categories", {})
+    if not categories:
+        # Default fallback categories if empty
+        categories = {
+            "Food & Dining": {"actual": 16000, "budget": 16000},
+            "Groceries": {"actual": 18000, "budget": 18000},
+            "Housing & Rent": {"actual": 25000, "budget": 25000},
+            "Utilities": {"actual": 6500, "budget": 6500},
+            "Transportation": {"actual": 8500, "budget": 9000},
+            "Entertainment": {"actual": 6500, "budget": 7000},
+            "Healthcare": {"actual": 4500, "budget": 6000},
+            "Education": {"actual": 3500, "budget": 5000},
+            "Shopping": {"actual": 11000, "budget": 11000},
+            "Personal Care": {"actual": 4000, "budget": 4500}
+        }
+
+    cat_labels = []
+    cat_actuals = []
+    cat_budgets = []
+    cat_variances = []
+    cat_colors = []
+    cat_flags = []
+    cat_breakdown = []
+
+    total_expense = 0.0
+    total_planned_budget = 0.0
+    within_budget_count = 0
+
+    for cat_name, vals in categories.items():
+        actual = float(vals.get("actual", 0))
+        budget = float(vals.get("budget", 0))
+        variance = round(budget - actual, 2)
+        total_expense += actual
+        total_planned_budget += budget
+
+        is_under = variance >= 0
+        if is_under:
+            within_budget_count += 1
+            cat_colors.append("#2E7D74") # Teal
+            cat_flags.append("Within Budget")
+        else:
+            cat_colors.append("#DC2626") # Red
+            cat_flags.append("Over Budget")
+
+        cat_labels.append(cat_name)
+        cat_actuals.append(round(actual, 2))
+        cat_budgets.append(round(budget, 2))
+        cat_variances.append(variance)
+
+        cat_breakdown.append({
+            "category": cat_name,
+            "actual": round(actual, 2),
+            "budget": round(budget, 2),
+            "variance": variance,
+            "status": "Within Budget" if is_under else "Over Budget",
+            "percent_spent": round((actual / budget * 100), 1) if budget > 0 else 0
+        })
+
+    net_savings = round(total_income - total_expense, 2)
+    savings_rate = round((net_savings / total_income * 100), 1) if total_income > 0 else 0.0
+    budget_variance = round(total_planned_budget - total_expense, 2)
+    budget_utilization = round((total_expense / total_planned_budget * 100), 1) if total_planned_budget > 0 else 0.0
+    overspend_flag = "Over Budget" if total_expense > total_planned_budget else "Within Budget"
+
+    # Financial Health Score (0 to 100)
+    # 40 points for savings rate (target 20%+)
+    savings_score = min(40, max(0, (savings_rate / 25.0) * 40))
+    # 40 points for category budget discipline
+    total_cats = max(1, len(categories))
+    discipline_score = (within_budget_count / total_cats) * 40
+    # 20 points for total utilization <= 100%
+    util_score = 20 if budget_utilization <= 100 else max(0, 20 - (budget_utilization - 100))
+    health_score = int(round(savings_score + discipline_score + util_score))
+
+    health_rating = "Excellent" if health_score >= 80 else ("Good" if health_score >= 65 else ("Fair" if health_score >= 50 else "Needs Attention"))
+
+    # Visual 1: Donut Chart - Category Spending Distribution
+    donut_chart = {
+        "labels": cat_labels,
+        "data": cat_actuals
+    }
+
+    # Visual 2: Variance Bar Chart
+    bar_chart = {
+        "categories": cat_labels,
+        "variance": cat_variances,
+        "colors": cat_colors,
+        "flags": cat_flags
+    }
+
+    # Visual 3: 12-Month Simulated Trend Line vs Budget Limit
+    months = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+    monthly_trend = []
+    # Baseline with small realistic seasonal variation
+    np.random.seed(int(total_expense) % 1000)
+    for m_idx in range(12):
+        variation = 1.0 + float(np.sin(m_idx * 0.5) * 0.06)
+        monthly_trend.append(round(total_expense * variation, 2))
+
+    trend_line = {
+        "labels": months,
+        "actual_expense": monthly_trend,
+        "planned_budget": [round(total_planned_budget, 2)] * 12
+    }
+
+    return {
+        "kpis": {
+            "total_income": total_income,
+            "total_expense": total_expense,
+            "net_savings": net_savings,
+            "savings_rate_pct": savings_rate,
+            "total_planned_budget": total_planned_budget,
+            "budget_variance": budget_variance,
+            "budget_utilization_pct": budget_utilization,
+            "overspend_flag": overspend_flag,
+            "health_score": health_score,
+            "health_rating": health_rating
+        },
+        "donut_chart": donut_chart,
+        "bar_chart": bar_chart,
+        "trend_line": trend_line,
+        "cat_breakdown": cat_breakdown,
+        "monthly_income": monthly_income,
+        "other_income": other_income
+    }
+
+
+def calculate_custom_organization(input_data):
+    """
+    Accepts user inputs for Organization Mode:
+    - company_name, fiscal_year
+    - departments: { dept_name: { revenue: X, cost: Y } }
+    - category_breakdown: { category: { sales: X, profit: Y } }
+    - regional_breakdown: { region: { cat: val } }
+    Produces all relevant enterprise KPIs, margins, and visualizations.
+    """
+    company_name = input_data.get("company_name", "Enterprise Corp")
+    fiscal_year = int(input_data.get("fiscal_year", 2024))
+    departments = input_data.get("departments", {})
+
+    if not departments:
+        departments = {
+            "Corporate": {"revenue": 145000000, "cost": 108000000},
+            "Consumer": {"revenue": 82000000, "cost": 61000000},
+            "Home Office": {"revenue": 46000000, "cost": 36000000}
+        }
+
+    dept_names = []
+    dept_revenues = []
+    dept_costs = []
+    dept_profits = []
+    dept_margins = []
+    dept_variances = []
+
+    total_revenue = 0.0
+    total_cost = 0.0
+    top_dept = ""
+    top_dept_cost = -1.0
+
+    for d_name, vals in departments.items():
+        rev = float(vals.get("revenue", 0))
+        c = float(vals.get("cost", 0))
+        profit = round(rev - c, 2)
+        variance = round(rev - c, 2)
+        margin = round((profit / rev * 100), 1) if rev > 0 else 0.0
+
+        dept_names.append(d_name)
+        dept_revenues.append(round(rev, 2))
+        dept_costs.append(round(c, 2))
+        dept_profits.append(profit)
+        dept_margins.append(margin)
+        dept_variances.append(variance)
+
+        total_revenue += rev
+        total_cost += c
+
+        if c > top_dept_cost:
+            top_dept_cost = c
+            top_dept = d_name
+
+    total_profit = round(total_revenue - total_cost, 2)
+    profit_margin = round((total_profit / total_revenue * 100), 1) if total_revenue > 0 else 0.0
+    budget_variance = round(total_revenue - total_cost, 2)
+    budget_utilization = round((total_cost / total_revenue * 100), 1) if total_revenue > 0 else 0.0
+
+    # Visual 1: Clustered Bar - Revenue vs Cost by Department
+    clustered_bar = {
+        "departments": dept_names,
+        "revenue": dept_revenues,
+        "cost": dept_costs
+    }
+
+    # Visual 2: Category Breakdown / Treemap
+    category_breakdown = input_data.get("category_breakdown", {})
+    if not category_breakdown:
+        category_breakdown = {
+            "Technology": {"sales": round(total_revenue * 0.48, 2), "profit": round(total_profit * 0.52, 2)},
+            "Furniture": {"sales": round(total_revenue * 0.32, 2), "profit": round(total_profit * 0.28, 2)},
+            "Office Supplies": {"sales": round(total_revenue * 0.20, 2), "profit": round(total_profit * 0.20, 2)}
+        }
+
+    treemap_data = []
+    for cat_name, cat_vals in category_breakdown.items():
+        treemap_data.append({
+            "name": cat_name,
+            "value": round(float(cat_vals.get("profit", 0)), 2),
+            "sales": round(float(cat_vals.get("sales", 0)), 2),
+            "children": [
+                {"name": f"{cat_name} Core", "value": round(float(cat_vals.get("profit", 0)) * 0.6, 2)},
+                {"name": f"{cat_name} Enterprise", "value": round(float(cat_vals.get("profit", 0)) * 0.4, 2)}
+            ]
+        })
+
+    # Visual 3: Quarterly Growth Line Chart
+    q_labels = [f"{fiscal_year}-Q1", f"{fiscal_year}-Q2", f"{fiscal_year}-Q3", f"{fiscal_year}-Q4"]
+    q_weights = [0.22, 0.24, 0.26, 0.28]
+    q_sales = [round(total_revenue * w, 2) for w in q_weights]
+    q_growth = [0.0]
+    for i in range(1, 4):
+        prev = q_sales[i - 1]
+        g = round(((q_sales[i] - prev) / prev * 100), 2) if prev > 0 else 0.0
+        q_growth.append(g)
+
+    quarterly_growth = {
+        "labels": q_labels,
+        "growth_pct": q_growth,
+        "sales": q_sales
+    }
+
+    # Visual 4: Region × Category Matrix Visual
+    regions = ["North", "South", "West", "East"]
+    cats = list(category_breakdown.keys())
+    reg_weights = [0.30, 0.35, 0.20, 0.15]
+    matrix_values = []
+
+    for r_idx, reg in enumerate(regions):
+        row_vals = []
+        for c_name in cats:
+            c_profit = float(category_breakdown[c_name].get("profit", 0))
+            val = round(c_profit * reg_weights[r_idx] * (0.95 + (r_idx * 0.03)), 2)
+            row_vals.append(val)
+        matrix_values.append(row_vals)
+
+    matrix = {
+        "regions": regions,
+        "categories": cats,
+        "values": matrix_values
+    }
+
+    return {
+        "company_name": company_name,
+        "fiscal_year": fiscal_year,
+        "kpis": {
+            "total_revenue": total_revenue,
+            "total_cost": total_cost,
+            "total_profit": total_profit,
+            "profit_margin_pct": profit_margin,
+            "budget_variance": budget_variance,
+            "budget_utilization_pct": budget_utilization,
+            "top_department": top_dept,
+            "top_department_cost": top_dept_cost
+        },
+        "clustered_bar": clustered_bar,
+        "treemap": treemap_data,
+        "quarterly_growth": quarterly_growth,
+        "matrix": matrix,
+        "departments_summary": [
+            {
+                "department": dept_names[i],
+                "revenue": dept_revenues[i],
+                "cost": dept_costs[i],
+                "profit": dept_profits[i],
+                "margin_pct": dept_margins[i]
+            }
+            for i in range(len(dept_names))
+        ]
+    }
+
