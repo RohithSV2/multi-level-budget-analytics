@@ -32,13 +32,17 @@
   <!-- ========================================================================= -->
   <!-- 2. NAVIGATION TABS -->
   <!-- ========================================================================= -->
+  <!-- ========================================================================= -->
+  <!-- 2. NAVIGATION TABS -->
+  <!-- ========================================================================= -->
   <nav class="tabs-nav" aria-label="Dashboard Pages">
-    <button class="tab-btn active" data-tab="overview">📊 Executive Overview (Page 1)</button>
-    <button class="tab-btn" data-tab="individual">👤 Individual Analytics (Page 2)</button>
-    <button class="tab-btn" data-tab="organization">🏢 Organization Analytics (Page 3)</button>
-    <button class="tab-btn" data-tab="state-nation">🇮🇳 State & Nation Analytics (Page 4)</button>
-    <button class="tab-btn" data-tab="predictive">📈 Predictive Analytics & What-If (Page 5)</button>
-    <button class="tab-btn" data-tab="powerbi-hub">⚡ Power BI Data Hub & Viva Spec</button>
+    <button class="tab-btn active" data-tab="landing">🏠 Home / Mode Selector</button>
+    <button class="tab-btn" data-tab="individual">👤 Individual Mode</button>
+    <button class="tab-btn" data-tab="organization">🏢 Organization Mode</button>
+    <button class="tab-btn" data-tab="state-nation">🇮🇳 State & Nation Mode</button>
+    <button class="tab-btn" data-tab="overview">📊 Executive Overview</button>
+    <button class="tab-btn" data-tab="predictive">📈 Predictive & What-If</button>
+    <button class="tab-btn" data-tab="powerbi-hub">⚡ Power BI Data Hub</button>
   </nav>
 
   <!-- ========================================================================= -->
@@ -47,9 +51,149 @@
   <main class="main-wrapper">
 
     <!-- ----------------------------------------------------------------------- -->
+    <!-- TAB 0: LANDING PAGE & MODE SELECTOR -->
+    <!-- ----------------------------------------------------------------------- -->
+    <section class="tab-content active" id="tab-landing">
+      <!-- Hero Banner -->
+      <div class="landing-hero">
+        <div class="landing-badge">Data Visualization Lab Project • NIE Mysuru</div>
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>
+          A unified, full-stack financial intelligence platform and Power BI enterprise architecture analyzing economic dynamics across three hierarchical tiers: <strong>Micro (Personal Household Budgets)</strong>, <strong>Meso (Enterprise Departmental Cost Centers)</strong>, and <strong>Macro (State Public Finance & National Union Budgets)</strong>. Designed with live user input studios, real-time recalculations, Holt-Winters predictive forecasting, and verified against authentic Kaggle and RBI data series.
+        </p>
+
+        <div class="hero-highlights-row">
+          <span class="highlight-pill">⚡ Live User Input Studios</span>
+          <span class="highlight-pill">👤 10-Category Spend Analysis</span>
+          <span class="highlight-pill">🏢 Department Cost vs Revenue</span>
+          <span class="highlight-pill">🇮🇳 15+ State Public Deficits</span>
+          <span class="highlight-pill">🔮 95% Confidence Forecasts</span>
+          <span class="highlight-pill">📊 Star Schema Power BI Hub</span>
+        </div>
+      </div>
+
+      <!-- Mode Selector Section Title -->
+      <div class="landing-section-title">
+        <h2>Select an Analysis Mode</h2>
+        <p>Select any tier below to enter its specialized interactive workspace with custom user inputs, automated calculations, and rich visual charts.</p>
+      </div>
+
+      <!-- 3 Primary Mode Cards -->
+      <div class="mode-cards-grid">
+        <!-- 1. Individual Mode -->
+        <div class="mode-card mode-card-ind">
+          <div>
+            <div class="mode-icon-circle icon-amber">👤</div>
+            <div class="mode-tag">Tier 1 • Micro-Budget</div>
+            <h3 class="mode-title">Individual Mode</h3>
+            <p class="mode-desc">
+              Manage personal and household finances. Input your monthly salary, secondary income, and custom spending targets across 10 essential categories. Dynamically compute your savings rate %, detect overspending, and track your financial health score.
+            </p>
+            <ul class="mode-features-list">
+              <li>10-Category spend & target budget studio</li>
+              <li>Real-time Donut Chart & Variance color-coded bar chart</li>
+              <li>12-Month simulated trajectory vs. budget threshold</li>
+              <li>Financial Health Scorecard (0-100 Rating)</li>
+              <li>Searchable personal transactions ledger with CRUD</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-launch-mode btn-launch-ind" onclick="App.switchTab('individual')">
+            🚀 Launch Individual Mode &rarr;
+          </button>
+        </div>
+
+        <!-- 2. Organization Mode -->
+        <div class="mode-card mode-card-org">
+          <div>
+            <div class="mode-icon-circle icon-teal">🏢</div>
+            <div class="mode-tag">Tier 2 • Meso-Budget</div>
+            <h3 class="mode-title">Organization Mode</h3>
+            <p class="mode-desc">
+              Analyze enterprise financial health using Superstore cost center modeling. Enter departmental operational budgets, monitor operating costs (<code>Cost = Sales - Profit</code>), evaluate gross profit margins, and inspect regional performance matrices.
+            </p>
+            <ul class="mode-features-list">
+              <li>Corporate, Consumer & Home Office department modeling</li>
+              <li>Clustered Bar Chart: Revenue vs. Cost comparison</li>
+              <li>Quarterly revenue growth trajectory (% YoY)</li>
+              <li>Profitability treemap drill-down by product category</li>
+              <li>Region &times; Category variance heatmap matrix</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-launch-mode btn-launch-org" onclick="App.switchTab('organization')">
+            🚀 Launch Organization Mode &rarr;
+          </button>
+        </div>
+
+        <!-- 3. State & Nation Mode -->
+        <div class="mode-card mode-card-state">
+          <div>
+            <div class="mode-icon-circle icon-navy">🇮🇳</div>
+            <div class="mode-tag">Tier 3 • Macro-Budget</div>
+            <h3 class="mode-title">State & Nation Mode</h3>
+            <p class="mode-desc">
+              Explore macroeconomic public finance data from RBI and Government of India Union Budgets. Investigate state revenues, expenditures, fiscal deficits, debt-to-revenue ratios, and national central sector allocations across key ministries.
+            </p>
+            <ul class="mode-features-list">
+              <li>15+ Indian State public finance interactive cards</li>
+              <li>Multi-year state revenue vs. expenditure line chart</li>
+              <li>National Union Budget sector allocation ranking</li>
+              <li>Debt servicing ratio & deficit tracking</li>
+              <li>Authentic Kaggle & RBI statistical series</li>
+            </ul>
+          </div>
+          <button type="button" class="btn-launch-mode btn-launch-state" onclick="App.switchTab('state-nation')">
+            🚀 Launch State & Nation Mode &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Secondary Analytical Modules -->
+      <div style="margin-block-start: 1rem; margin-block-end: 1rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-navy); margin-block-end: 1rem; text-align: center;">
+          Cross-Cutting Analytics & Power BI Production Tools
+        </h3>
+        <div class="secondary-modes-grid">
+          <div class="secondary-card">
+            <div>
+              <h3>📊 Executive Overview</h3>
+              <p>Combined cross-level comparative dashboard featuring 6 top-line KPI cards and a normalized cashflow combo chart.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('overview')">Open Overview &rarr;</button>
+          </div>
+          <div class="secondary-card">
+            <div>
+              <h3>📈 Predictive & What-If Engine</h3>
+              <p>Holt-Winters exponential smoothing forecasts with 95% confidence bounds and interactive policy sensitivity sliders.</p>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('predictive')">Open Predictive &rarr;</button>
+          </div>
+          <div class="secondary-card">
+            <div>
+              <h3>⚡ Power BI Data Hub</h3>
+              <p>Download ready-to-load transformed CSVs, copy DAX measures and Power Query M-code, and view the faculty viva cheatsheet.</p>
+            </div>
+            <button type="button" class="btn btn-teal btn-sm" onclick="App.switchTab('powerbi-hub')">Open Power BI Hub &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------------- -->
     <!-- TAB 1: EXECUTIVE OVERVIEW (PAGE 1 SPEC) -->
     <!-- ----------------------------------------------------------------------- -->
-    <section class="tab-content active" id="tab-overview">
+    <section class="tab-content" id="tab-overview">
+      <div class="mode-top-banner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('landing')">&larr; Back to Mode Selector</button>
+          <span class="mode-badge-indicator">📊 Mode: Executive Overview</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Switch:</span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('individual')">👤 Individual</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('organization')">🏢 Organization</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('state-nation')">🇮🇳 State/Nation</button>
+        </div>
+      </div>
       <div class="filter-bar">
         <div class="filter-group">
           <div class="filter-item">
@@ -102,6 +246,17 @@
     <!-- TAB 2: INDIVIDUAL ANALYTICS (PAGE 2 SPEC) -->
     <!-- ----------------------------------------------------------------------- -->
     <section class="tab-content" id="tab-individual">
+      <div class="mode-top-banner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('landing')">&larr; Back to Mode Selector</button>
+          <span class="mode-badge-indicator">👤 Mode: Individual Budget Analytics</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Switch:</span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('organization')">🏢 Organization Mode</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('state-nation')">🇮🇳 State &amp; Nation Mode</button>
+        </div>
+      </div>
       <!-- Interactive User Input Studio for Individual Mode -->
       <div class="input-studio-card">
         <div class="studio-header">
@@ -283,6 +438,17 @@
     <!-- TAB 3: ORGANIZATION ANALYTICS (PAGE 3 SPEC) -->
     <!-- ----------------------------------------------------------------------- -->
     <section class="tab-content" id="tab-organization">
+      <div class="mode-top-banner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('landing')">&larr; Back to Mode Selector</button>
+          <span class="mode-badge-indicator">🏢 Mode: Organization Financial Analytics</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Switch:</span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('individual')">👤 Individual Mode</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('state-nation')">🇮🇳 State &amp; Nation Mode</button>
+        </div>
+      </div>
       <!-- Interactive User Input Studio for Organization Mode -->
       <div class="input-studio-card">
         <div class="studio-header">
@@ -536,6 +702,17 @@
     <!-- TAB 4: STATE & NATION ANALYTICS (PAGE 4 SPEC) -->
     <!-- ----------------------------------------------------------------------- -->
     <section class="tab-content" id="tab-state-nation">
+      <div class="mode-top-banner">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('landing')">&larr; Back to Mode Selector</button>
+          <span class="mode-badge-indicator">🇮🇳 Mode: State &amp; Nation Public Finance</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Switch:</span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('individual')">👤 Individual Mode</button>
+          <button type="button" class="btn btn-outline btn-sm" onclick="App.switchTab('organization')">🏢 Organization Mode</button>
+        </div>
+      </div>
       <div class="filter-bar">
         <div class="filter-group">
           <div class="filter-item">

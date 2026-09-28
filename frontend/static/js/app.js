@@ -3,7 +3,7 @@
 // ==============================================================================
 
 const App = {
-  activeTab: "overview",
+  activeTab: "landing",
   
   // State caches
   overviewState: { year: "All", level: "All" },
@@ -21,36 +21,56 @@ const App = {
     this.initIndStudio();
     this.initOrgStudio();
 
-    // Initial load
-    await this.loadOverview();
+    // Background pre-fetch so mode clicks load instantly
+    this.loadOverview().catch(() => {});
   },
 
   // ----------------------------------------------------------------------------
-  // TAB NAVIGATION
+  // TAB & MODE NAVIGATION
   // ----------------------------------------------------------------------------
   bindTabNavigation() {
     const tabs = document.querySelectorAll(".tab-btn");
     tabs.forEach(tab => {
-      tab.addEventListener("click", async () => {
-        tabs.forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-
+      tab.addEventListener("click", () => {
         const target = tab.dataset.tab;
-        this.activeTab = target;
-
-        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-        const targetContent = document.getElementById(`tab-${target}`);
-        if (targetContent) targetContent.classList.add("active");
-
-        // Lazy load tab data
-        if (target === "overview") await this.loadOverview();
-        else if (target === "individual") await this.loadIndividual();
-        else if (target === "organization") await this.loadOrganization();
-        else if (target === "state-nation") await this.loadStateNation();
-        else if (target === "predictive") await this.loadPredictive();
-        else if (target === "powerbi-hub") await this.loadPowerBIHub();
+        this.switchTab(target);
       });
     });
+  },
+
+  async switchTab(target) {
+    this.activeTab = target;
+
+    // Update Tab Buttons
+    document.querySelectorAll(".tab-btn").forEach(t => {
+      if (t.dataset.tab === target) {
+        t.classList.add("active");
+      } else {
+        t.classList.remove("active");
+      }
+    });
+
+    // Update Content Views
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    const targetContent = document.getElementById(`tab-${target}`);
+    if (targetContent) {
+      targetContent.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Lazy load tab data
+    if (target === "overview") await this.loadOverview();
+    else if (target === "individual") {
+      await this.loadIndividual();
+      this.computeIndStudio();
+    }
+    else if (target === "organization") {
+      await this.loadOrganization();
+      this.computeOrgStudio();
+    }
+    else if (target === "state-nation") await this.loadStateNation();
+    else if (target === "predictive") await this.loadPredictive();
+    else if (target === "powerbi-hub") await this.loadPowerBIHub();
   },
 
   // ----------------------------------------------------------------------------
