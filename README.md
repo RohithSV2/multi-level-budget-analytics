@@ -51,14 +51,34 @@ d:\Multi level budget\
 │   │   │   └── style.css               # Modern Power BI design system CSS
 │   │   └── js/
 │   │       ├── api.js                  # Frontend API client
+│   │       ├── auth.js                 # Authentication & session manager
 │   │       ├── charts.js               # Chart.js visualization engine
 │   │       └── app.js                  # UI controller, forms, what-if sliders, tabs
 │   └── templates/
-│       └── index.html                  # 5-page dashboard single page application
+│       ├── login.html                  # Landing Page & Evaluation Login Gateway
+│       ├── dashboard.html              # Post-login Mode Selection Hub
+│       ├── individual.html             # Dedicated Tier 1 Individual Budget Studio
+│       ├── organization.html           # Dedicated Tier 2 Organization Budget Studio
+│       ├── state_nation.html           # Dedicated Tier 3 State & Nation Public Finance
+│       ├── powerbi.html                # Dedicated Power BI Data Hub & What-If Forecasts
+│       ├── overview.html               # Dedicated Executive Cross-Tier Overview
+│       └── index.html                  # Legacy combined template fallback
 ├── run_project.bat                     # Windows 1-click execution script
 ├── run_project.py                      # Python cross-platform runner
 └── README.md                           # Master documentation
 ```
+
+---
+
+## 🔑 Login & Evaluator Demo Credentials
+The landing page includes an interactive access gateway with 1-click login buttons for instant presentation and evaluation:
+| Profile | Username | Password | Role | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Faculty Evaluator** | `faculty` | `nie2026` | Faculty / Examiner | Examiner review profile with full access |
+| **Student Researcher** | `student` | `student123` | Student Researcher | Rohith S V project analyst view |
+| **Lead Administrator** | `admin` | `admin123` | System Administrator | Full admin controls |
+| **Guest Reviewer** | `demo` | `demo123` | Guest Analyst | Instant 1-click test reviewer access |
+*(Users can also create new custom accounts via the "Create Account" tab).*
 
 ---
 

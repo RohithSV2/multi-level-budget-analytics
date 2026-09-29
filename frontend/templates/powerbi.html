@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Power BI Hub & Predictive Studio — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Power BI Production Pipeline & Predictive Engine</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Dedicated Page Navigation Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <a href="/dashboard">🏠 Main Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">⚡ Power BI Hub & Predictive Studio</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Hub</a>
+        <div class="page-quick-jump">
+          <select onchange="if(this.value) window.location.href=this.value">
+            <option value="">Switch Mode...</option>
+            <option value="/dashboard">🏠 Main Hub</option>
+            <option value="/individual">👤 Individual Mode</option>
+            <option value="/organization">🏢 Organization Mode</option>
+            <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+            <option value="/overview">📊 Executive Overview</option>
+            <option value="/predictive">📈 Predictive & What-If</option>
+            <option value="/powerbi" selected>⚡ Power BI Data Hub</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- De-cluttered Segmented Tabs -->
+    <div class="workspace-tabs-bar" style="max-width: 580px;">
+      <button type="button" class="workspace-tab-btn active" onclick="switchPbiSubTab('pipeline', this)">
+        ⚡ 1-Click Data Pipeline & Downloads
+      </button>
+      <button type="button" class="workspace-tab-btn" onclick="switchPbiSubTab('whatif', this)">
+        📈 Predictive & What-If Engine
+      </button>
+      <button type="button" class="workspace-tab-btn" onclick="switchPbiSubTab('dax', this)">
+        📊 DAX & Power Query Code
+      </button>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SUB-TAB 1: 1-CLICK POWER BI PIPELINE & DOWNLOADS -->
+    <!-- ======================================================================= -->
+    <div class="workspace-tab-panel active" id="pbi-panel-pipeline">
+      <!-- Sync Banner -->
+      <div class="card" style="margin-block-end: 1.5rem; background: linear-gradient(135deg, #0A192F 0%, #172A45 100%); color: #FFFFFF;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h3 style="color: #FFFFFF; font-size: 1.25rem;">Live Power BI Data Pipeline Synchronization</h3>
+            <p style="color: #94A3B8; font-size: 0.88rem; margin-top: 0.25rem;">
+              Click below to query SQLite and regenerate all 4 cleaned CSV datasets in <code>BudgetTrackerAnalytics/02_CleanData/</code>. Then click "Refresh" in Power BI Desktop!
+            </p>
+          </div>
+          <button type="button" class="btn btn-teal btn-lg" id="btn-export-all-pbi" style="font-size: 1rem; padding: 0.85rem 1.5rem;">
+            ⚡ 1-Click Sync & Refresh All CSVs
+          </button>
+        </div>
+        <div id="export-status-msg" style="margin-top: 0.75rem; font-size: 0.85rem; color: #5EEAD4; font-weight: 600; display: none;"></div>
+      </div>
+
+      <!-- Dataset Download Cards -->
+      <div class="landing-section-title">
+        <h2>Transformed Datasets & Power BI Theme</h2>
+        <p>Direct download links for pre-processed datasets matching the Power BI Star Schema architecture.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-block-end: 2rem;">
+        <!-- Individual -->
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.5rem;">👤</span>
+            <div>
+              <h4 style="margin: 0; color: var(--primary-navy);">individual_clean.csv</h4>
+              <small style="color: var(--text-muted);">Micro Household Transactions & Targets</small>
+            </div>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Cleaned 10-category personal transactions with MonthYear dimension keys and category budget targets.
+          </p>
+          <a href="/data/clean/individual_clean.csv" class="btn btn-outline btn-sm" download>⬇ Download CSV</a>
+        </div>
+
+        <!-- Organization -->
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.5rem;">🏢</span>
+            <div>
+              <h4 style="margin: 0; color: var(--primary-navy);">org_clean.csv</h4>
+              <small style="color: var(--text-muted);">Meso Enterprise Superstore Model</small>
+            </div>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Enterprise cost center records with Cost (<code>Sales - Profit</code>) and Budget Variance columns.
+          </p>
+          <a href="/data/clean/org_clean.csv" class="btn btn-outline btn-sm" download>⬇ Download CSV</a>
+        </div>
+
+        <!-- State -->
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.5rem;">🇮🇳</span>
+            <div>
+              <h4 style="margin: 0; color: var(--primary-navy);">state_clean.csv</h4>
+              <small style="color: var(--text-muted);">Macro RBI State Public Finances</small>
+            </div>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            15+ Indian states multi-year public finances (Revenue Receipts, Total Expenditure, Gross Fiscal Deficit).
+          </p>
+          <a href="/data/clean/state_clean.csv" class="btn btn-outline btn-sm" download>⬇ Download CSV</a>
+        </div>
+
+        <!-- National -->
+        <div class="card">
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.5rem;">🏛️</span>
+            <div>
+              <h4 style="margin: 0; color: var(--primary-navy);">national_clean.csv</h4>
+              <small style="color: var(--text-muted);">Macro Union Budget Official Allocations</small>
+            </div>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Ministry allocations and expenditures across Defence, Transport, Railways, Agriculture, and Education.
+          </p>
+          <a href="/data/clean/national_clean.csv" class="btn btn-outline btn-sm" download>⬇ Download CSV</a>
+        </div>
+      </div>
+
+      <!-- Star Schema Diagram Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Power BI Star Schema Relational Data Model</h3>
+            <p>Conformed multi-tier architecture connecting Micro, Meso & Macro fact tables via a shared Date Dimension</p>
+          </div>
+        </div>
+        <div style="background: #F8FAFC; border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; text-align: center;">
+          <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+            <div style="background: var(--primary-navy); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+              👤 Fact_Individual
+            </div>
+            <div style="color: var(--text-muted); font-size: 1.2rem;">&larr; (1:* via Date) &rarr;</div>
+            <div style="background: var(--accent-amber); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+              📅 Dim_Date (Conformed Dimension)
+            </div>
+            <div style="color: var(--text-muted); font-size: 1.2rem;">&larr; (1:* via Date) &rarr;</div>
+            <div style="background: var(--accent-teal); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+              🏢 Fact_OrgSuperstore
+            </div>
+          </div>
+          <div style="margin-top: 1rem; color: var(--text-muted); font-size: 0.84rem;">
+            Connected to <strong>Fact_StateFinance</strong> and <strong>Fact_NationalBudget</strong> via Year Key. Bidirectional cross-filtering disabled per Power BI enterprise best practices.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SUB-TAB 2: PREDICTIVE & WHAT-IF ENGINE -->
+    <!-- ======================================================================= -->
+    <div class="workspace-tab-panel" id="pbi-panel-whatif">
+      <!-- What-If Policy Sliders Card -->
+      <div class="card" style="margin-block-end: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <h3>Interactive Policy Sensitivity & What-If Parameter Sliders</h3>
+            <p>Adjust economic policy assumptions to dynamically project 12-month future trajectories</p>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; background: #F8FAFC; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <!-- Slider 1 -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+              <label for="slider-ind-cut" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+                👤 Micro: Personal Spending Cut Policy
+              </label>
+              <span id="badge-ind-cut" style="font-weight: 700; color: var(--accent-amber); font-size: 0.85rem;">0%</span>
+            </div>
+            <input type="range" id="slider-ind-cut" min="-20" max="30" value="0" step="5" style="width: 100%;">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Simulate household belt-tightening or discretionary spending cuts</small>
+          </div>
+
+          <!-- Slider 2 -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+              <label for="slider-org-growth" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+                🏢 Meso: Enterprise Revenue Growth Target
+              </label>
+              <span id="badge-org-growth" style="font-weight: 700; color: var(--accent-teal); font-size: 0.85rem;">0%</span>
+            </div>
+            <input type="range" id="slider-org-growth" min="-15" max="35" value="0" step="5" style="width: 100%;">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Simulate quarterly corporate expansion or margin pressure</small>
+          </div>
+
+          <!-- Slider 3 -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+              <label for="slider-state-deficit" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+                🇮🇳 Macro: Target Fiscal Deficit (% of GSDP)
+              </label>
+              <span id="badge-state-deficit" style="font-weight: 700; color: var(--primary-navy); font-size: 0.85rem;">0%</span>
+            </div>
+            <input type="range" id="slider-state-deficit" min="-2.0" max="2.0" value="0" step="0.5" style="width: 100%;">
+            <small style="color: var(--text-muted); font-size: 0.75rem;">Policy target shift relative to standard 3.0% FRBM benchmark</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision Takeaway Alert -->
+      <div class="card" style="margin-block-end: 1.5rem; background: #F0FDF4; border-color: #86EFAC;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;">💡</span>
+          <div>
+            <h4 style="margin: 0; color: #166534;">Predictive Insights & Policy Recommendations</h4>
+            <p id="predictive-takeaway-text" style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: #15803D;">
+              Loading predictive simulation model...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forecast Charts -->
+      <div class="visuals-grid">
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <h3>Micro: 12-Month Household Savings Forecast</h3>
+              <p>Historical trend + Holt-Winters exponential smoothing</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-predictive-ind"></canvas>
+          </div>
+        </div>
+
+        <div class="card col-6">
+          <div class="card-header">
+            <div>
+              <h3>Meso: Enterprise Quarterly Revenue Projections</h3>
+              <p>Projected departmental cashflow with 95% confidence intervals</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-predictive-org"></canvas>
+          </div>
+        </div>
+
+        <div class="card col-12">
+          <div class="card-header">
+            <div>
+              <h3>Macro: Indian State Deficit Convergence Forecast</h3>
+              <p>Trajectory towards FRBM 3.0% deficit ceiling</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-predictive-state"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SUB-TAB 3: DAX MEASURES & POWER QUERY CODE -->
+    <!-- ======================================================================= -->
+    <div class="workspace-tab-panel" id="pbi-panel-dax">
+      <div class="card" style="margin-block-end: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <h3>DAX Measures Library (Ready-to-Paste into Power BI)</h3>
+            <p>15+ DAX calculations for Micro Savings Rate, Meso Cost Centers, and Macro Deficit Indicators</p>
+          </div>
+          <button type="button" class="btn btn-teal btn-sm" id="btn-copy-dax">📋 Copy All DAX Code</button>
+        </div>
+        <pre id="dax-code-block" style="background: #0A192F; color: #E2E8F0; padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 0.85rem; line-height: 1.5;">
+Loading DAX measures...
+        </pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Power Query M-Language Transformation Script</h3>
+            <p>ETL cleaning and normalization code for Power Query Advanced Editor</p>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btn-copy-pq">📋 Copy M-Code</button>
+        </div>
+        <pre id="pq-code-block" style="background: #0A192F; color: #E2E8F0; padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 0.85rem; line-height: 1.5;">
+Loading Power Query script...
+        </pre>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    function switchPbiSubTab(tabName, btn) {
+      document.querySelectorAll(".workspace-tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".workspace-tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      const target = document.getElementById(`pbi-panel-${tabName}`);
+      if (target) target.classList.add("active");
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!Auth.requireAuth()) return;
+      App.bindWhatIfSliders();
+      App.bindPowerBIHub();
+      await App.loadPredictive();
+      await App.loadPowerBIHub();
+
+      // Bind export button
+      const exportBtn = document.getElementById("btn-export-all-pbi");
+      const statusMsg = document.getElementById("export-status-msg");
+      if (exportBtn) {
+        exportBtn.addEventListener("click", async () => {
+          try {
+            exportBtn.disabled = true;
+            exportBtn.innerText = "⏳ Synchronizing SQLite to CSVs...";
+            const res = await api.exportAllPowerBICSVs();
+            if (statusMsg) {
+              statusMsg.innerText = "✔ " + (res.message || "All CSV datasets synchronized successfully!");
+              statusMsg.style.display = "block";
+            }
+            App.showToast("All 4 clean CSV datasets synchronized!", "success");
+          } catch (err) {
+            alert("Error syncing CSVs: " + err.message);
+          } finally {
+            exportBtn.disabled = false;
+            exportBtn.innerText = "⚡ 1-Click Sync & Refresh All CSVs";
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organization Mode — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Meso-Level Enterprise & Department Cost Centers</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Dedicated Page Navigation Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <a href="/dashboard">🏠 Main Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">🏢 Organization Budget Studio</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Hub</a>
+        <div class="page-quick-jump">
+          <select onchange="if(this.value) window.location.href=this.value">
+            <option value="">Switch Mode...</option>
+            <option value="/dashboard">🏠 Main Hub</option>
+            <option value="/individual">👤 Individual Mode</option>
+            <option value="/organization" selected>🏢 Organization Mode</option>
+            <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+            <option value="/overview">📊 Executive Overview</option>
+            <option value="/predictive">📈 Predictive & What-If</option>
+            <option value="/powerbi">⚡ Power BI Data Hub</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top KPI Cards Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card border-teal">
+        <div class="kpi-label">Total Enterprise Sales / Revenue</div>
+        <div class="kpi-value" id="org-kpi-sales">₹0</div>
+        <div class="kpi-subtext">Aggregated Superstore Cost Model</div>
+      </div>
+      <div class="kpi-card border-navy">
+        <div class="kpi-label">Operating Expenses / Cost</div>
+        <div class="kpi-value" id="org-kpi-cost">₹0</div>
+        <div class="kpi-subtext">Formula: <code>Cost = Sales - Profit</code></div>
+      </div>
+      <div class="kpi-card border-amber">
+        <div class="kpi-label">Net Operating Profit</div>
+        <div class="kpi-value" id="org-kpi-profit">₹0</div>
+        <div class="kpi-subtext">Budget Variance: <code>Sales - Cost</code></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Operating Profit Margin %</div>
+        <div class="kpi-value" id="org-kpi-margin">0%</div>
+        <div class="kpi-subtext">Return on Operational Spending</div>
+      </div>
+    </div>
+
+    <!-- De-cluttered Segmented Tabs -->
+    <div class="workspace-tabs-bar">
+      <button type="button" class="workspace-tab-btn active" onclick="switchOrgSubTab('simulator', this)">
+        🏢 Department Simulator
+      </button>
+      <button type="button" class="workspace-tab-btn" onclick="switchOrgSubTab('orders', this)">
+        📦 Orders & Procurement Ledger
+      </button>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SUB-TAB 1: DEPARTMENT COST & MARGIN SIMULATOR -->
+    <!-- ======================================================================= -->
+    <div class="workspace-tab-panel active" id="org-panel-simulator">
+      <div class="card" style="margin-block-end: 1.5rem;">
+        <div class="card-header">
+          <div>
+            <h3>Departmental Revenue vs. Operating Cost Simulator</h3>
+            <p>Customize department sales and operating expenditures. Charts, margins, and profit variance recalculate live.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.applyOrgPreset('superstore')">🛒 Superstore Retail</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.applyOrgPreset('saas')">☁️ Cloud / SaaS</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="App.applyOrgPreset('manufacturing')">🏭 Manufacturing</button>
+          </div>
+        </div>
+
+        <!-- Simulation Configuration -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; padding: 1rem; background: #F8FAFC; border-radius: var(--radius-md); margin-block-end: 1.5rem; border: 1px solid var(--border-subtle);">
+          <div>
+            <label for="input-org-name" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy); display: block; margin-block-end: 0.35rem;">
+              Division / Enterprise Entity Name
+            </label>
+            <input type="text" id="input-org-name" class="form-control-clean" value="Superstore Retail Division">
+          </div>
+          <div>
+            <label for="input-org-year" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy); display: block; margin-block-end: 0.35rem;">
+              Fiscal Year
+            </label>
+            <select id="input-org-year" class="form-control-clean">
+              <option value="2024">FY 2024</option>
+              <option value="2023">FY 2023</option>
+              <option value="2022">FY 2022</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3 Department Input Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+          <!-- Corporate -->
+          <div class="studio-category-box" style="padding: 1.25rem;">
+            <div style="font-weight: 700; font-size: 1rem; color: var(--primary-navy); margin-block-end: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              👔 Corporate Department
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div>
+                <label for="input-dept-corp-rev" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Projected Sales / Revenue (₹)</label>
+                <input type="number" id="input-dept-corp-rev" class="form-control-clean" value="145000000" step="1000000">
+              </div>
+              <div>
+                <label for="input-dept-corp-cost" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-corp-cost" class="form-control-clean" value="108000000" step="1000000">
+              </div>
+            </div>
+          </div>
+
+          <!-- Consumer -->
+          <div class="studio-category-box" style="padding: 1.25rem;">
+            <div style="font-weight: 700; font-size: 1rem; color: var(--accent-teal); margin-block-end: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              👥 Consumer Department
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div>
+                <label for="input-dept-cons-rev" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Projected Sales / Revenue (₹)</label>
+                <input type="number" id="input-dept-cons-rev" class="form-control-clean" value="82000000" step="1000000">
+              </div>
+              <div>
+                <label for="input-dept-cons-cost" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-cons-cost" class="form-control-clean" value="61000000" step="1000000">
+              </div>
+            </div>
+          </div>
+
+          <!-- Home Office -->
+          <div class="studio-category-box" style="padding: 1.25rem;">
+            <div style="font-weight: 700; font-size: 1rem; color: var(--accent-amber); margin-block-end: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              🏠 Home Office Department
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div>
+                <label for="input-dept-home-rev" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Projected Sales / Revenue (₹)</label>
+                <input type="number" id="input-dept-home-rev" class="form-control-clean" value="46000000" step="1000000">
+              </div>
+              <div>
+                <label for="input-dept-home-cost" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-block-end: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-home-cost" class="form-control-clean" value="36000000" step="1000000">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Row -->
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-block-start: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <button type="button" class="btn btn-outline" id="btn-reset-org">🔄 Reset Values</button>
+          <button type="button" class="btn btn-teal" id="btn-compute-org">⚡ Recalculate Enterprise Model</button>
+        </div>
+      </div>
+
+      <!-- Generated Enterprise Graphs -->
+      <div class="visuals-grid">
+        <div class="card col-7">
+          <div class="card-header">
+            <div>
+              <h3>Department Revenue vs. Cost (Clustered Comparison)</h3>
+              <p>Teal: Sales Revenue • Navy: Operating Cost (Cost Centers)</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-org-dept-bar"></canvas>
+          </div>
+        </div>
+
+        <div class="card col-5">
+          <div class="card-header">
+            <div>
+              <h3>Category Profitability Distribution</h3>
+              <p>Profit contribution by product category</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-org-cat-treemap"></canvas>
+          </div>
+        </div>
+
+        <div class="card col-12">
+          <div class="card-header">
+            <div>
+              <h3>Quarterly Enterprise Revenue Trajectory</h3>
+              <p>4-Quarter performance trajectory (% YoY)</p>
+            </div>
+          </div>
+          <div class="chart-container chart-container-md">
+            <canvas id="chart-org-quarterly"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- SUB-TAB 2: ORDERS & PROCUREMENT LEDGER -->
+    <!-- ======================================================================= -->
+    <div class="workspace-tab-panel" id="org-panel-orders">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Enterprise Orders & Procurement Ledger</h3>
+            <p>Superstore procurement data stored in SQLite and synchronized with Power BI</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="order-search-input" placeholder="Search orders..." style="padding: 0.4rem 0.75rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.84rem;">
+            <select id="org-dept-filter" style="padding: 0.4rem 0.75rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.84rem;">
+              <option value="All">All Departments</option>
+              <option value="Corporate">Corporate</option>
+              <option value="Consumer">Consumer</option>
+              <option value="Home Office">Home Office</option>
+            </select>
+            <select id="org-year-filter" style="padding: 0.4rem 0.75rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 0.84rem;">
+              <option value="All">All Years</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+            </select>
+            <button class="btn btn-teal btn-sm" id="btn-open-order-modal">+ Log Order Item</button>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Order Date</th>
+                <th>Department</th>
+                <th>Region</th>
+                <th>Category</th>
+                <th>Product</th>
+                <th>Sales (₹)</th>
+                <th>Cost (₹)</th>
+                <th>Profit (₹)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="order-table-body">
+              <tr>
+                <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading enterprise orders...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- ADD ORDER MODAL -->
+  <!-- ========================================================================= -->
+  <div class="modal-backdrop" id="modal-add-order">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">Log Enterprise Purchase / Cost Item</h3>
+        <button type="button" class="modal-close" id="btn-close-order-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-order">
+          <div class="form-group-clean">
+            <label for="order-date">Order Date</label>
+            <input type="date" id="order-date" class="form-control-clean" required>
+          </div>
+          <div class="form-group-clean">
+            <label for="order-dept">Department</label>
+            <select id="order-dept" class="form-control-clean">
+              <option value="Corporate">Corporate</option>
+              <option value="Consumer">Consumer</option>
+              <option value="Home Office">Home Office</option>
+            </select>
+          </div>
+          <div class="form-group-clean">
+            <label for="order-region">Region</label>
+            <select id="order-region" class="form-control-clean">
+              <option value="South">South Region (Bengaluru / Chennai)</option>
+              <option value="West">West Region (Mumbai / Pune)</option>
+              <option value="North">North Region (Delhi NCR)</option>
+              <option value="East">East Region (Kolkata)</option>
+            </select>
+          </div>
+          <div class="form-group-clean">
+            <label for="order-cat">Category</label>
+            <select id="order-cat" class="form-control-clean">
+              <option value="Technology">Technology</option>
+              <option value="Office Supplies">Office Supplies</option>
+              <option value="Furniture">Furniture</option>
+            </select>
+          </div>
+          <div class="form-group-clean">
+            <label for="order-product">Product / Procurement Item</label>
+            <input type="text" id="order-product" class="form-control-clean" placeholder="e.g., Enterprise Server Rack, Ergonomic Chairs" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group-clean">
+              <label for="order-sales">Sales / Budget Value (₹)</label>
+              <input type="number" id="order-sales" class="form-control-clean" min="100" step="100" required placeholder="50000">
+            </div>
+            <div class="form-group-clean">
+              <label for="order-profit">Target Profit / Margin (₹)</label>
+              <input type="number" id="order-profit" class="form-control-clean" step="100" required placeholder="12500">
+            </div>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+            <button type="button" class="btn btn-outline" id="btn-cancel-order-modal">Cancel</button>
+            <button type="submit" class="btn btn-teal">Record Order Item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    function switchOrgSubTab(tabName, btn) {
+      document.querySelectorAll(".workspace-tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".workspace-tab-panel").forEach(p => p.classList.remove("active"));
+      btn.classList.add("active");
+      const target = document.getElementById(`org-panel-${tabName}`);
+      if (target) target.classList.add("active");
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!Auth.requireAuth()) return;
+      document.getElementById("order-date").value = new Date().toISOString().slice(0, 10);
+      App.initOrgStudio();
+      await App.loadOrganization();
+      App.computeOrgStudio();
+    });
+  </script>
+</body>
+</html>

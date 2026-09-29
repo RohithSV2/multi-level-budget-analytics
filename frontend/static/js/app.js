@@ -20,9 +20,6 @@ const App = {
     this.bindPowerBIHub();
     this.initIndStudio();
     this.initOrgStudio();
-
-    // Background pre-fetch so mode clicks load instantly
-    this.loadOverview().catch(() => {});
   },
 
   // ----------------------------------------------------------------------------
@@ -101,7 +98,7 @@ const App = {
   // ----------------------------------------------------------------------------
   bindModals() {
     // Open Individual Tx Modal
-    const btnAddTx = document.getElementById("btn-add-tx");
+    const btnAddTx = document.getElementById("btn-add-tx") || document.getElementById("btn-open-tx-modal");
     const modalAddTx = document.getElementById("modal-add-tx");
     if (btnAddTx && modalAddTx) {
       btnAddTx.addEventListener("click", () => modalAddTx.classList.add("open"));
@@ -115,16 +112,16 @@ const App = {
     }
 
     // Open Org Order Modal
-    const btnAddOrder = document.getElementById("btn-add-order");
+    const btnAddOrder = document.getElementById("btn-add-order") || document.getElementById("btn-open-order-modal");
     const modalAddOrder = document.getElementById("modal-add-order");
     if (btnAddOrder && modalAddOrder) {
       btnAddOrder.addEventListener("click", () => modalAddOrder.classList.add("open"));
     }
 
     // Close buttons
-    document.querySelectorAll(".modal-close-btn, .btn-modal-cancel").forEach(btn => {
+    document.querySelectorAll(".modal-close, .modal-close-btn, .btn-modal-cancel, #btn-close-tx-modal, #btn-cancel-tx-modal, #btn-close-order-modal, #btn-cancel-order-modal").forEach(btn => {
       btn.addEventListener("click", (e) => {
-        const modal = e.target.closest(".modal-backdrop");
+        const modal = e.target.closest(".modal-backdrop") || document.querySelector(".modal-backdrop.open");
         if (modal) modal.classList.remove("open");
       });
     });
@@ -146,21 +143,22 @@ const App = {
     if (formTx) {
       formTx.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const subcat = document.getElementById("tx-subcategory")?.value || document.getElementById("tx-subcat")?.value || "";
         const payload = {
-          date: document.getElementById("tx-date").value,
-          income_expense: document.getElementById("tx-type").value,
-          category: document.getElementById("tx-category").value,
-          subcategory: document.getElementById("tx-subcategory").value,
-          amount: parseFloat(document.getElementById("tx-amount").value),
-          mode: document.getElementById("tx-mode").value,
-          note: document.getElementById("tx-note").value,
+          date: document.getElementById("tx-date")?.value,
+          income_expense: document.getElementById("tx-type")?.value || "Expense",
+          category: document.getElementById("tx-category")?.value,
+          subcategory: subcat,
+          amount: parseFloat(document.getElementById("tx-amount")?.value || 0),
+          mode: document.getElementById("tx-mode")?.value || "UPI",
+          note: document.getElementById("tx-note")?.value || "",
           currency: "INR"
         };
 
         try {
           const res = await api.addTransaction(payload);
           this.showToast(res.message, "success");
-          document.getElementById("modal-add-tx").classList.remove("open");
+          document.getElementById("modal-add-tx")?.classList.remove("open");
           formTx.reset();
           await this.loadIndividual();
         } catch (err) {
@@ -174,13 +172,13 @@ const App = {
     if (formBudgets) {
       formBudgets.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const cat = document.getElementById("budget-category-select").value;
-        const amount = parseFloat(document.getElementById("budget-amount-input").value);
+        const cat = document.getElementById("budget-category-select")?.value;
+        const amount = parseFloat(document.getElementById("budget-amount-input")?.value || 0);
 
         try {
           const res = await api.updateBudget(cat, amount);
           this.showToast(res.message, "success");
-          document.getElementById("modal-budgets").classList.remove("open");
+          document.getElementById("modal-budgets")?.classList.remove("open");
           await this.loadIndividual();
         } catch (err) {
           this.showToast(err.message, "error");
@@ -193,24 +191,26 @@ const App = {
     if (formOrder) {
       formOrder.addEventListener("submit", async (e) => {
         e.preventDefault();
+        const cat = document.getElementById("order-category")?.value || document.getElementById("order-cat")?.value || "Technology";
+        const subcat = document.getElementById("order-subcategory")?.value || "General";
         const payload = {
-          order_date: document.getElementById("order-date").value,
-          department: document.getElementById("order-dept").value,
-          region: document.getElementById("order-region").value,
-          city: document.getElementById("order-city").value || "Bengaluru",
-          category: document.getElementById("order-category").value,
-          subcategory: document.getElementById("order-subcategory").value,
-          product_name: document.getElementById("order-product").value,
-          sales: parseFloat(document.getElementById("order-sales").value),
-          discount: parseFloat(document.getElementById("order-discount").value || 0),
-          profit: parseFloat(document.getElementById("order-profit").value),
-          quantity: parseInt(document.getElementById("order-qty").value || 1)
+          order_date: document.getElementById("order-date")?.value,
+          department: document.getElementById("order-dept")?.value,
+          region: document.getElementById("order-region")?.value,
+          city: document.getElementById("order-city")?.value || "Bengaluru",
+          category: cat,
+          subcategory: subcat,
+          product_name: document.getElementById("order-product")?.value || "Procurement Item",
+          sales: parseFloat(document.getElementById("order-sales")?.value || 0),
+          discount: parseFloat(document.getElementById("order-discount")?.value || 0),
+          profit: parseFloat(document.getElementById("order-profit")?.value || 0),
+          quantity: parseInt(document.getElementById("order-qty")?.value || 1)
         };
 
         try {
           const res = await api.addOrder(payload);
           this.showToast(res.message, "success");
-          document.getElementById("modal-add-order").classList.remove("open");
+          document.getElementById("modal-add-order")?.classList.remove("open");
           formOrder.reset();
           await this.loadOrganization();
         } catch (err) {
@@ -657,19 +657,31 @@ const App = {
       const data = await api.getIndividual(this.indState.category, this.indState.year);
 
       // Populate KPI values
-      document.getElementById("ind-kpi-income").textContent = `₹${data.kpis.total_income.toLocaleString('en-IN')}`;
-      document.getElementById("ind-kpi-expense").textContent = `₹${data.kpis.total_expense.toLocaleString('en-IN')}`;
+      const incEl = document.getElementById("ind-kpi-income");
+      if (incEl && data.kpis) incEl.textContent = `₹${data.kpis.total_income.toLocaleString('en-IN')}`;
+
+      const expEl = document.getElementById("ind-kpi-expense");
+      if (expEl && data.kpis) expEl.textContent = `₹${data.kpis.total_expense.toLocaleString('en-IN')}`;
       
       const netSavingsEl = document.getElementById("ind-kpi-savings");
-      netSavingsEl.textContent = `₹${data.kpis.net_savings.toLocaleString('en-IN')}`;
-      netSavingsEl.closest(".kpi-card").className = `kpi-card ${data.kpis.net_savings >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+      if (netSavingsEl && data.kpis) {
+        netSavingsEl.textContent = `₹${data.kpis.net_savings.toLocaleString('en-IN')}`;
+        if (netSavingsEl.closest(".kpi-card")) {
+          netSavingsEl.closest(".kpi-card").className = `kpi-card ${data.kpis.net_savings >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+        }
+      }
 
-      document.getElementById("ind-kpi-savings-rate").textContent = `${data.kpis.savings_rate_pct}%`;
-      document.getElementById("ind-kpi-budget").textContent = `₹${data.kpis.total_planned_budget.toLocaleString('en-IN')}`;
-      document.getElementById("ind-kpi-utilization").textContent = `${data.kpis.budget_utilization_pct}%`;
+      const rateEl = document.getElementById("ind-kpi-savings-rate");
+      if (rateEl && data.kpis) rateEl.textContent = `${data.kpis.savings_rate_pct}% Savings Rate`;
+
+      const budEl = document.getElementById("ind-kpi-budget");
+      if (budEl && data.kpis) budEl.textContent = `₹${data.kpis.total_planned_budget.toLocaleString('en-IN')}`;
+
+      const utilEl = document.getElementById("ind-kpi-utilization");
+      if (utilEl && data.kpis) utilEl.textContent = `${data.kpis.budget_utilization_pct}%`;
 
       const flagBadge = document.getElementById("ind-overspend-flag");
-      if (flagBadge) {
+      if (flagBadge && data.kpis) {
         flagBadge.textContent = data.kpis.overspend_flag;
         flagBadge.className = `tag-badge ${data.kpis.overspend_flag === 'Within Budget' ? 'tag-income' : 'tag-expense'}`;
       }
@@ -679,18 +691,19 @@ const App = {
       ChartEngine.renderIndividualLine("chart-ind-line", data.line_chart);
       ChartEngine.renderIndividualVarianceBar("chart-ind-variance", data.bar_chart);
 
-      // Render Transactions Table
-      const tbody = document.getElementById("tx-table-body");
-      if (tbody) {
+      // Render Transactions Table (support both tx-table-body and ind-table-body)
+      const tbody = document.getElementById("tx-table-body") || document.getElementById("ind-table-body");
+      if (tbody && data.transactions) {
         tbody.innerHTML = data.transactions.map(tx => `
           <tr>
-            <td><strong>${tx.date}</strong></td>
-            <td><span class="tag-badge ${tx.income_expense === 'Income' ? 'tag-income' : 'tag-expense'}">${tx.income_expense}</span></td>
+            <td><strong>#${tx.id}</strong></td>
+            <td>${tx.date}</td>
+            <td><span class="tag-badge tag-mode">${tx.mode}</span></td>
             <td>${tx.category}</td>
             <td>${tx.subcategory || '-'}</td>
-            <td><span class="tag-badge tag-mode">${tx.mode}</span></td>
-            <td><strong>₹${tx.amount.toLocaleString('en-IN')}</strong></td>
             <td>${tx.note || '-'}</td>
+            <td><strong>₹${tx.amount.toLocaleString('en-IN')}</strong></td>
+            <td><span class="tag-badge ${tx.income_expense === 'Income' ? 'tag-income' : 'tag-expense'}">${tx.income_expense}</span></td>
             <td>
               <button class="btn btn-outline btn-sm" onclick="App.deleteTransaction(${tx.id})">🗑️</button>
             </td>
@@ -708,7 +721,7 @@ const App = {
 
       // Populate category dropdown in filter
       const catFilter = document.getElementById("ind-category-filter");
-      if (catFilter && catFilter.children.length <= 1) {
+      if (catFilter && catFilter.children.length <= 1 && data.categories) {
         data.categories.forEach(c => {
           const opt = document.createElement("option");
           opt.value = c;
@@ -741,25 +754,54 @@ const App = {
       const data = await api.getOrganization(this.orgState.department, this.orgState.year);
 
       // Populate KPIs
-      document.getElementById("org-kpi-revenue").textContent = `₹${data.kpis.total_revenue.toLocaleString('en-IN')}`;
-      document.getElementById("org-kpi-cost").textContent = `₹${data.kpis.total_cost.toLocaleString('en-IN')}`;
+      const revEl = document.getElementById("org-kpi-sales") || document.getElementById("org-kpi-revenue");
+      if (revEl && data.kpis) revEl.textContent = `₹${data.kpis.total_revenue.toLocaleString('en-IN')}`;
+
+      const costEl = document.getElementById("org-kpi-cost");
+      if (costEl && data.kpis) costEl.textContent = `₹${data.kpis.total_cost.toLocaleString('en-IN')}`;
       
       const profitEl = document.getElementById("org-kpi-profit");
-      profitEl.textContent = `₹${data.kpis.total_profit.toLocaleString('en-IN')}`;
-      profitEl.closest(".kpi-card").className = `kpi-card ${data.kpis.total_profit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+      if (profitEl && data.kpis) {
+        profitEl.textContent = `₹${data.kpis.total_profit.toLocaleString('en-IN')}`;
+        if (profitEl.closest(".kpi-card")) {
+          profitEl.closest(".kpi-card").className = `kpi-card ${data.kpis.total_profit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+        }
+      }
 
-      document.getElementById("org-kpi-variance").textContent = `₹${data.kpis.budget_variance.toLocaleString('en-IN')}`;
-      document.getElementById("org-kpi-utilization").textContent = `${data.kpis.budget_utilization_pct}%`;
-      document.getElementById("org-kpi-growth").textContent = `${data.kpis.revenue_growth_pct}% YoY`;
-      document.getElementById("org-kpi-top-dept").textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e5).toFixed(1)}L)`;
+      const marginEl = document.getElementById("org-kpi-margin") || document.getElementById("org-kpi-utilization");
+      if (marginEl && data.kpis) {
+        const marginVal = data.kpis.total_revenue > 0 ? ((data.kpis.total_profit / data.kpis.total_revenue) * 100).toFixed(1) : "0.0";
+        marginEl.textContent = `${marginVal}% Margin`;
+      }
+
+      const varEl = document.getElementById("org-kpi-variance");
+      if (varEl && data.kpis) varEl.textContent = `₹${data.kpis.budget_variance.toLocaleString('en-IN')}`;
+
+      const growthEl = document.getElementById("org-kpi-growth");
+      if (growthEl && data.kpis) growthEl.textContent = `${data.kpis.revenue_growth_pct}% YoY`;
+
+      const topDeptEl = document.getElementById("org-kpi-top-dept");
+      if (topDeptEl && data.kpis) topDeptEl.textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e5).toFixed(1)}L)`;
 
       // Visuals
-      ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
-      ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
+      const barCanvas = document.getElementById("chart-org-dept-bar") ? "chart-org-dept-bar" : "chart-org-clustered";
+      ChartEngine.renderOrgClusteredBar(barCanvas, data.clustered_bar);
+
+      const growthCanvas = document.getElementById("chart-org-quarterly") ? "chart-org-quarterly" : "chart-org-growth";
+      ChartEngine.renderOrgGrowthLine(growthCanvas, data.quarterly_growth);
+
+      if (document.getElementById("chart-org-cat-treemap") && data.treemap) {
+        const catLabels = data.treemap.map(t => t.name);
+        const catValues = data.treemap.map(t => t.value);
+        ChartEngine.renderIndividualDonut("chart-org-cat-treemap", {
+          labels: catLabels,
+          data: catValues
+        });
+      }
 
       // Render Treemap-style Categories
       const treemapContainer = document.getElementById("org-treemap-container");
-      if (treemapContainer) {
+      if (treemapContainer && data.treemap) {
         treemapContainer.innerHTML = data.treemap.map(t => `
           <div style="background: #F8FAFC; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
             <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary-navy); margin-block-end: 0.5rem;">
@@ -777,10 +819,10 @@ const App = {
         `).join("");
       }
 
-      // Render Matrix Table: Region (rows) x Category (columns), values = Budget Variance
+      // Render Matrix Table
       const matrixHead = document.getElementById("org-matrix-head");
       const matrixBody = document.getElementById("org-matrix-body");
-      if (matrixHead && matrixBody) {
+      if (matrixHead && matrixBody && data.matrix) {
         matrixHead.innerHTML = `<tr><th>Region \\ Category</th>${data.matrix.categories.map(c => `<th>${c}</th>`).join("")}</tr>`;
         matrixBody.innerHTML = data.matrix.regions.map((reg, rIdx) => `
           <tr>
@@ -796,7 +838,7 @@ const App = {
 
       // Orders sample table
       const orderBody = document.getElementById("order-table-body");
-      if (orderBody) {
+      if (orderBody && data.orders) {
         orderBody.innerHTML = data.orders.map(o => `
           <tr>
             <td><strong>${o.order_id}</strong></td>
@@ -837,44 +879,62 @@ const App = {
     try {
       const data = await api.getStateNation(this.stateNationState.year);
 
-      // Populate KPIs
-      document.getElementById("state-kpi-revenue").textContent = `₹${(data.kpis.total_state_revenue/1e5).toFixed(1)} Lakh Cr`;
-      document.getElementById("state-kpi-expenditure").textContent = `₹${(data.kpis.total_state_expenditure/1e5).toFixed(1)} Lakh Cr`;
-      
-      const defEl = document.getElementById("state-kpi-deficit");
-      defEl.textContent = `₹${(data.kpis.fiscal_deficit/1e5).toFixed(1)} Lakh Cr`;
-      defEl.closest(".kpi-card").className = `kpi-card ${data.kpis.fiscal_deficit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+      // Support dedicated page IDs and legacy IDs
+      const revEl = document.getElementById("state-kpi-revenue") || document.getElementById("state-kpi-total-rev");
+      if (revEl && data.kpis) revEl.textContent = `₹${(data.kpis.total_state_revenue/1e5).toFixed(1)} Lakh Cr`;
 
-      document.getElementById("state-kpi-debt-ratio").textContent = `${data.kpis.debt_to_revenue_pct}%`;
-      document.getElementById("state-kpi-union-alloc").textContent = `₹${Number(data.kpis.total_national_allocation).toLocaleString('en-IN')} Cr`;
+      const expEl = document.getElementById("state-kpi-expenditure") || document.getElementById("state-kpi-total-exp");
+      if (expEl && data.kpis) expEl.textContent = `₹${(data.kpis.total_state_expenditure/1e5).toFixed(1)} Lakh Cr`;
 
-      // Render State Interactive Map / Chips
-      const mapContainer = document.getElementById("state-map-chips");
-      if (mapContainer) {
+      const defEl = document.getElementById("state-kpi-deficit") || document.getElementById("state-kpi-avg-deficit");
+      if (defEl && data.kpis) {
+        defEl.textContent = `${data.kpis.avg_fiscal_deficit_pct.toFixed(2)}% of GSDP`;
+        if (defEl.closest(".kpi-card")) defEl.closest(".kpi-card").className = `kpi-card ${data.kpis.fiscal_deficit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+      }
+
+      const debtEl = document.getElementById("state-kpi-debt-ratio");
+      if (debtEl && data.kpis) debtEl.textContent = `${data.kpis.debt_to_revenue_pct}%`;
+
+      const unionEl = document.getElementById("state-kpi-union-alloc") || document.getElementById("state-kpi-union-total");
+      if (unionEl && data.kpis) unionEl.textContent = `₹${Number(data.kpis.total_national_allocation).toLocaleString('en-IN')} Cr`;
+
+      // Render State Interactive Map / Chips / Cards
+      const mapContainer = document.getElementById("state-map-chips") || document.getElementById("state-cards-container");
+      if (mapContainer && data.state_map_data) {
         mapContainer.innerHTML = data.state_map_data.map(s => `
-          <div class="state-chip" onclick="alert('${s.state}\\nRevenue: ₹${s.revenue.toLocaleString()} Cr\\nExpenditure: ₹${s.expenditure.toLocaleString()} Cr\\nFiscal Deficit: ₹${s.fiscal_deficit.toLocaleString()} Cr\\nDebt Ratio: ${s.debt_ratio}%')">
-            <div class="state-chip-header">📍 ${s.state}</div>
-            <div class="state-chip-row">
+          <div class="state-chip" style="background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem;" onclick="alert('${s.state}\\nRevenue: ₹${s.revenue.toLocaleString()} Cr\\nExpenditure: ₹${s.expenditure.toLocaleString()} Cr\\nFiscal Deficit: ₹${s.fiscal_deficit.toLocaleString()} Cr\\nDebt Ratio: ${s.debt_ratio}%')">
+            <div class="state-chip-header" style="font-weight: 700; color: var(--primary-navy); margin-bottom: 0.35rem;">📍 ${s.state}</div>
+            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Revenue:</span>
-              <span class="state-chip-val">₹${(s.revenue/1000).toFixed(1)}K Cr</span>
+              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main);">₹${(s.revenue/1000).toFixed(1)}K Cr</span>
             </div>
-            <div class="state-chip-row">
+            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Deficit:</span>
-              <span class="state-chip-val" style="color: ${s.fiscal_deficit < 0 ? 'var(--danger-crimson)' : 'var(--accent-teal)'};">
+              <span class="state-chip-val" style="font-weight: 600; color: ${s.fiscal_deficit < 0 ? 'var(--danger-crimson)' : 'var(--accent-teal)'};">
                 ₹${(s.fiscal_deficit/1000).toFixed(1)}K Cr
               </span>
             </div>
-            <div class="state-chip-row">
+            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Debt Ratio:</span>
-              <span class="state-chip-val">${s.debt_ratio}%</span>
+              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main);">${s.debt_ratio}%</span>
             </div>
           </div>
         `).join("");
       }
 
       // Visuals
-      ChartEngine.renderStateLine("chart-state-line", data.state_line_chart);
-      ChartEngine.renderNationalSectorBar("chart-national-sector", data.national_bar_chart);
+      const stateCanvas = document.getElementById("chart-state-deficit-bar") ? "chart-state-deficit-bar" : "chart-state-line";
+      ChartEngine.renderStateLine(stateCanvas, data.state_line_chart);
+
+      const sectorCanvas = document.getElementById("chart-national-sector-bar") ? "chart-national-sector-bar" : "chart-national-sector";
+      ChartEngine.renderNationalSectorBar(sectorCanvas, data.national_bar_chart);
+
+      if (document.getElementById("chart-national-donut") && data.national_bar_chart) {
+        ChartEngine.renderIndividualDonut("chart-national-donut", {
+          labels: data.national_bar_chart.sectors,
+          data: data.national_bar_chart.allocation
+        });
+      }
     } catch (err) {
       console.error(err);
       this.showToast("Failed to load state & national analytics.", "error");
@@ -895,38 +955,52 @@ const App = {
   },
 
   renderPredictiveCharts(data) {
-    // 3 Side-by-Side Forecasts with 95% Confidence Bounds
-    // 1. Individual Monthly Expense Forecast
-    ChartEngine.renderForecastChart(
-      "chart-forecast-ind",
-      data.individual_forecast,
-      "Personal Monthly Outlay (₹)",
-      { main: "#1F3864", forecast: "#C77F16", band: "rgba(199, 127, 22, 0.15)" }
-    );
+    if (!data) return;
 
-    // 2. Organization Quarterly Revenue Forecast
-    ChartEngine.renderForecastChart(
-      "chart-forecast-org",
-      data.organization_forecast,
-      "Enterprise Quarterly Revenue (₹)",
-      { main: "#1F3864", forecast: "#2E7D74", band: "rgba(46, 125, 116, 0.15)" }
-    );
+    // Support both ID naming conventions
+    const canvasInd = document.getElementById("chart-predictive-ind") ? "chart-predictive-ind" : "chart-forecast-ind";
+    const canvasOrg = document.getElementById("chart-predictive-org") ? "chart-predictive-org" : "chart-forecast-org";
+    const canvasState = document.getElementById("chart-predictive-state") ? "chart-predictive-state" : "chart-forecast-state";
 
-    // 3. State Longitudinal Expenditure Forecast
-    ChartEngine.renderForecastChart(
-      "chart-forecast-state",
-      data.state_forecast,
-      "State Public Expenditure (₹)",
-      { main: "#1F3864", forecast: "#DC2626", band: "rgba(220, 38, 38, 0.15)" }
-    );
+    if (data.individual_forecast) {
+      ChartEngine.renderForecastChart(
+        canvasInd,
+        data.individual_forecast,
+        "Personal Monthly Outlay (₹)",
+        { main: "#1F3864", forecast: "#C77F16", band: "rgba(199, 127, 22, 0.15)" }
+      );
+    }
+
+    if (data.organization_forecast) {
+      ChartEngine.renderForecastChart(
+        canvasOrg,
+        data.organization_forecast,
+        "Enterprise Quarterly Revenue (₹)",
+        { main: "#1F3864", forecast: "#2E7D74", band: "rgba(46, 125, 116, 0.15)" }
+      );
+    }
+
+    if (data.state_forecast) {
+      ChartEngine.renderForecastChart(
+        canvasState,
+        data.state_forecast,
+        "State Public Expenditure (₹)",
+        { main: "#1F3864", forecast: "#DC2626", band: "rgba(220, 38, 38, 0.15)" }
+      );
+    }
 
     // Update Next-Period Projected KPI cards
-    document.getElementById("proj-kpi-ind").textContent = `₹${Number(data.individual_forecast.projected_next_month).toLocaleString('en-IN')}`;
-    document.getElementById("proj-kpi-org").textContent = `₹${Number(data.organization_forecast.projected_next_quarter).toLocaleString('en-IN')}`;
-    document.getElementById("proj-kpi-state").textContent = `₹${Number(data.state_forecast.projected_next_year).toLocaleString('en-IN')}`;
+    const pInd = document.getElementById("proj-kpi-ind");
+    if (pInd && data.individual_forecast) pInd.textContent = `₹${Number(data.individual_forecast.projected_next_month).toLocaleString('en-IN')}`;
+    
+    const pOrg = document.getElementById("proj-kpi-org");
+    if (pOrg && data.organization_forecast) pOrg.textContent = `₹${Number(data.organization_forecast.projected_next_quarter).toLocaleString('en-IN')}`;
+    
+    const pState = document.getElementById("proj-kpi-state");
+    if (pState && data.state_forecast) pState.textContent = `₹${Number(data.state_forecast.projected_next_year).toLocaleString('en-IN')}`;
 
     // Faculty Decision Takeaway Box
-    const takeawayEl = document.getElementById("forecast-takeaway-text");
+    const takeawayEl = document.getElementById("forecast-takeaway-text") || document.getElementById("predictive-takeaway-text");
     if (takeawayEl) takeawayEl.textContent = data.decision_insights;
   },
 

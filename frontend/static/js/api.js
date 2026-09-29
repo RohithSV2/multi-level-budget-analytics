@@ -5,6 +5,46 @@
 const API_BASE = "";
 
 const api = {
+  // 0. Authentication
+  async login(username, password) {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Authentication failed.");
+    return result;
+  },
+
+  async register(username, password, fullName, role) {
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, full_name: fullName, role })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Registration failed.");
+    return result;
+  },
+
+  async demoLogin(role) {
+    const res = await fetch(`${API_BASE}/api/auth/demo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error || "Demo login failed.");
+    return result;
+  },
+
+  async getAuthProfiles() {
+    const res = await fetch(`${API_BASE}/api/auth/me`);
+    if (!res.ok) throw new Error("Failed to load demo profiles.");
+    return await res.json();
+  },
+
   // 1. Executive Overview
   async getOverview(year = "All", level = "All") {
     const res = await fetch(`${API_BASE}/api/overview?year=${encodeURIComponent(year)}&level=${encodeURIComponent(level)}`);

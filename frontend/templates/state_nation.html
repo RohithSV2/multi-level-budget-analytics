@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State & Nation Mode — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Macro-Level State Public Finances & Union Budgets</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Dedicated Page Navigation Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <a href="/dashboard">🏠 Main Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">🇮🇳 State & Nation Mode</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Hub</a>
+        <div class="page-quick-jump">
+          <select onchange="if(this.value) window.location.href=this.value">
+            <option value="">Switch Mode...</option>
+            <option value="/dashboard">🏠 Main Hub</option>
+            <option value="/individual">👤 Individual Mode</option>
+            <option value="/organization">🏢 Organization Mode</option>
+            <option value="/state-nation" selected>🇮🇳 State & Nation Mode</option>
+            <option value="/overview">📊 Executive Overview</option>
+            <option value="/predictive">📈 Predictive & What-If</option>
+            <option value="/powerbi">⚡ Power BI Data Hub</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label for="state-year-filter">Fiscal Year Filter:</label>
+          <select id="state-year-filter" class="filter-select">
+            <option value="All">All Years (2021-2024)</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">
+          Source: Reserve Bank of India (RBI) State Finances & Union Budget Official Series
+        </span>
+      </div>
+    </div>
+
+    <!-- Top KPI Cards Row -->
+    <div class="kpi-grid">
+      <div class="kpi-card border-navy">
+        <div class="kpi-label">Aggregated State Revenue Receipts</div>
+        <div class="kpi-value" id="state-kpi-total-rev">₹0 Cr</div>
+        <div class="kpi-subtext">Tax & Non-Tax State Revenue</div>
+      </div>
+      <div class="kpi-card border-amber">
+        <div class="kpi-label">Total State Expenditures</div>
+        <div class="kpi-value" id="state-kpi-total-exp">₹0 Cr</div>
+        <div class="kpi-subtext">Revenue & Capital Outlay</div>
+      </div>
+      <div class="kpi-card border-teal">
+        <div class="kpi-label">Average State Fiscal Deficit</div>
+        <div class="kpi-value" id="state-kpi-avg-deficit">0.00%</div>
+        <div class="kpi-subtext">FRBM 3.0% Benchmark Target</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">National Union Budget Allocation</div>
+        <div class="kpi-value" id="state-kpi-union-total">₹0 Cr</div>
+        <div class="kpi-subtext">Central Ministries & Infrastructure</div>
+      </div>
+    </div>
+
+    <!-- Macro Visuals Grid -->
+    <div class="visuals-grid">
+      <div class="card col-7">
+        <div class="card-header">
+          <div>
+            <h3>Indian States Fiscal Deficit as % of GSDP</h3>
+            <p>Fiscal prudence benchmark (FRBM Act 3.0% threshold line highlighted)</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-lg">
+          <canvas id="chart-state-deficit-bar"></canvas>
+        </div>
+      </div>
+
+      <div class="card col-5">
+        <div class="card-header">
+          <div>
+            <h3>Union Budget Ministry Allocations</h3>
+            <p>Share of total central budget across major sectors</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-lg">
+          <canvas id="chart-national-donut"></canvas>
+        </div>
+      </div>
+
+      <div class="card col-12">
+        <div class="card-header">
+          <div>
+            <h3>Central Ministry Allocation vs. Actual Expenditure</h3>
+            <p>Execution rate across Defence, Transport, Railways, Agriculture, Rural Development & Education</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-md">
+          <canvas id="chart-national-sector-bar"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 15+ Indian State Public Finance Cards -->
+    <div class="card" style="margin-block-start: 1.5rem;">
+      <div class="card-header">
+        <div>
+          <h3>15+ Indian State Public Finance Scorecards</h3>
+          <p>Key fiscal indicators across major states (Revenue Receipts, Total Expenditure, Gross Fiscal Deficit)</p>
+        </div>
+      </div>
+      <div class="state-cards-grid" id="state-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; padding: 1rem;">
+        <!-- Dynamically rendered by app.js -->
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!Auth.requireAuth()) return;
+      await App.loadStateNation();
+    });
+  </script>
+</body>
+</html>

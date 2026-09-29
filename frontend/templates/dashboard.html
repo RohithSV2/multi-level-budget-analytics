@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mode Selection Hub — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Micro, Meso & Macro Financial Intelligence</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN HUB CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Top Breadcrumb / Workspace Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <span>🏠 <strong>Main Hub</strong></span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Mode Selection Portal</span>
+      </div>
+      <div class="page-quick-jump">
+        <label for="hub-quick-jump" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Jump to:</label>
+        <select id="hub-quick-jump" onchange="if(this.value) window.location.href=this.value">
+          <option value="">Select a Dedicated Mode...</option>
+          <option value="/individual">👤 Individual Mode</option>
+          <option value="/organization">🏢 Organization Mode</option>
+          <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+          <option value="/overview">📊 Executive Overview</option>
+          <option value="/predictive">📈 Predictive & What-If</option>
+          <option value="/powerbi">⚡ Power BI Data Hub</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Hero / Welcome Banner -->
+    <div class="landing-hero" style="margin-block-end: 2rem;">
+      <div class="landing-badge">Interactive Mode Selection Hub</div>
+      <h1 id="hub-welcome-title">Welcome to Multi-Level Budget Tracker Analytics</h1>
+      <p id="hub-welcome-desc">
+        Select any analytical tier below to launch its dedicated, uncluttered workspace equipped with live user inputs, instant recalculations, interactive visual charts, and exportable datasets.
+      </p>
+
+      <!-- Live Global KPIs -->
+      <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-block-start: 1.5rem;" id="hub-live-kpis">
+        <div class="kpi-card border-amber">
+          <div class="kpi-label">👤 Micro: Tracked Personal Spend</div>
+          <div class="kpi-value" id="kpi-micro-spend">Loading...</div>
+          <div class="kpi-subtext">Across 10 essential budget categories</div>
+        </div>
+        <div class="kpi-card border-teal">
+          <div class="kpi-label">🏢 Meso: Enterprise Revenue</div>
+          <div class="kpi-value" id="kpi-meso-rev">Loading...</div>
+          <div class="kpi-subtext">Superstore operational cashflows</div>
+        </div>
+        <div class="kpi-card border-navy">
+          <div class="kpi-label">🇮🇳 Macro: Avg State Fiscal Deficit</div>
+          <div class="kpi-value" id="kpi-macro-deficit">Loading...</div>
+          <div class="kpi-subtext">15+ Indian states benchmarked</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 PRIMARY TIER CARDS -->
+    <div class="landing-section-title">
+      <h2>Primary Analysis Modes</h2>
+      <p>Each tier below opens a dedicated, specialized page with tailored data inputs and interactive visualizations.</p>
+    </div>
+
+    <div class="mode-cards-grid">
+      <!-- 1. Individual Mode Card -->
+      <div class="mode-card mode-card-ind">
+        <div>
+          <div class="mode-icon-circle icon-amber">👤</div>
+          <div class="mode-tag">Tier 1 • Micro-Budget</div>
+          <h3 class="mode-title">Individual Mode</h3>
+          <p class="mode-desc">
+            Manage household and personal finance. Input your monthly salary, secondary income, and set custom budget thresholds across 10 spending categories. Live calculations provide your savings rate % and financial health score.
+          </p>
+          <ul class="mode-features-list">
+            <li>10-Category spend & monthly budget studio</li>
+            <li>Real-time Donut Chart & Variance color-coded bar chart</li>
+            <li>Dynamic Financial Health Scorecard (0-100 Rating)</li>
+            <li>Searchable & filterable personal transaction ledger</li>
+            <li>Add and delete personal financial transactions</li>
+          </ul>
+        </div>
+        <a href="/individual" class="btn-launch-mode btn-launch-ind" style="text-decoration: none; text-align: center;">
+          🚀 Open Individual Studio &rarr;
+        </a>
+      </div>
+
+      <!-- 2. Organization Mode Card -->
+      <div class="mode-card mode-card-org">
+        <div>
+          <div class="mode-icon-circle icon-teal">🏢</div>
+          <div class="mode-tag">Tier 2 • Meso-Budget</div>
+          <h3 class="mode-title">Organization Mode</h3>
+          <p class="mode-desc">
+            Analyze enterprise departmental finances using Superstore cost center dynamics. Model operating expenses (<code>Cost = Sales - Profit</code>), test margin scenarios, and inspect regional category profitability matrices.
+          </p>
+          <ul class="mode-features-list">
+            <li>Corporate, Consumer & Home Office department modeling</li>
+            <li>Clustered Bar Chart: Revenue vs. Cost comparison</li>
+            <li>Category Profitability Treemap & Bar chart</li>
+            <li>Enterprise Order & Procurement Cost ledger</li>
+            <li>Add custom enterprise purchase orders</li>
+          </ul>
+        </div>
+        <a href="/organization" class="btn-launch-mode btn-launch-org" style="text-decoration: none; text-align: center;">
+          🚀 Open Organization Studio &rarr;
+        </a>
+      </div>
+
+      <!-- 3. State & Nation Mode Card -->
+      <div class="mode-card mode-card-state">
+        <div>
+          <div class="mode-icon-circle icon-navy">🇮🇳</div>
+          <div class="mode-tag">Tier 3 • Macro-Budget</div>
+          <h3 class="mode-title">State & Nation Mode</h3>
+          <p class="mode-desc">
+            Explore macroeconomic public finances based on authentic Reserve Bank of India and Government of India Union Budget data series. Compare state deficits and explore Union ministry allocations.
+          </p>
+          <ul class="mode-features-list">
+            <li>15+ Indian State public finance interactive cards</li>
+            <li>Revenue Receipts vs. Expenditures & Deficit line chart</li>
+            <li>National Union Budget sector allocation breakdown</li>
+            <li>Ministry ranking (Defence, Transport, Railways, Agriculture)</li>
+            <li>Kaggle & RBI authentic statistical series</li>
+          </ul>
+        </div>
+        <a href="/state-nation" class="btn-launch-mode btn-launch-state" style="text-decoration: none; text-align: center;">
+          🚀 Open State & Nation Studio &rarr;
+        </a>
+      </div>
+    </div>
+
+    <!-- SECONDARY PORTALS -->
+    <div style="margin-block-start: 2rem; margin-block-end: 2rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-navy); margin-block-end: 1rem; text-align: center;">
+        Advanced Analytical Tools & Power BI Production Assets
+      </h3>
+      <div class="secondary-modes-grid">
+        <div class="secondary-card">
+          <div>
+            <h3>📊 Executive Overview</h3>
+            <p>Cross-tier normalized financial inflows and outflows comparative dashboard with 6 top-line KPI cards.</p>
+          </div>
+          <a href="/overview" class="btn btn-outline btn-sm" style="text-decoration: none; text-align: center;">Launch Overview &rarr;</a>
+        </div>
+
+        <div class="secondary-card">
+          <div>
+            <h3>📈 Predictive & What-If Engine</h3>
+            <p>Holt-Winters exponential smoothing forecasts with 95% confidence intervals and policy sensitivity sliders.</p>
+          </div>
+          <a href="/predictive" class="btn btn-outline btn-sm" style="text-decoration: none; text-align: center;">Launch Forecasts &rarr;</a>
+        </div>
+
+        <div class="secondary-card">
+          <div>
+            <h3>⚡ Power BI Data Hub</h3>
+            <p>Download clean CSVs, copy ready DAX measures, view Power Query M-code, and explore the Star Schema model.</p>
+          </div>
+          <a href="/powerbi" class="btn btn-teal btn-sm" style="text-decoration: none; text-align: center;">Launch Power BI Hub &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+    <p style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.25rem;">
+      Compatible with Power BI Desktop & Service • SQLite & Clean CSV Data Pipeline
+    </p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    // Enforce auth
+    if (!Auth.requireAuth()) {
+      // redirected by requireAuth
+    } else {
+      const user = Auth.getUser();
+      if (user) {
+        document.getElementById("hub-welcome-title").innerText = `Welcome back, ${user.full_name}!`;
+        document.getElementById("hub-welcome-desc").innerText = `Logged in as ${user.role} (${user.username}). Select any financial analysis tier below to launch its dedicated interactive workspace.`;
+      }
+    }
+
+    // Load top summary metrics
+    async function loadHubMetrics() {
+      try {
+        const [ind, org, stateNat] = await Promise.all([
+          api.getIndividual("All", "All"),
+          api.getOrganization("All", "All"),
+          api.getStateNation("All")
+        ]);
+
+        if (ind && ind.kpis) {
+          document.getElementById("kpi-micro-spend").innerText = "₹" + Math.round(ind.kpis.total_expense).toLocaleString("en-IN");
+        }
+        if (org && org.kpis) {
+          document.getElementById("kpi-meso-rev").innerText = "₹" + Math.round(org.kpis.total_sales).toLocaleString("en-IN");
+        }
+        if (stateNat && stateNat.kpis) {
+          document.getElementById("kpi-macro-deficit").innerText = stateNat.kpis.avg_fiscal_deficit_pct.toFixed(2) + "% of GSDP";
+        }
+      } catch (e) {
+        console.warn("Could not load summary metrics:", e);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadHubMetrics);
+  </script>
+</body>
+</html>

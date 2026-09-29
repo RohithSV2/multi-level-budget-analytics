@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Overview — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Cross-Tier Financial Intelligence Executive Summary</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Dedicated Page Navigation Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <a href="/dashboard">🏠 Main Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">📊 Executive Overview</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Hub</a>
+        <div class="page-quick-jump">
+          <select onchange="if(this.value) window.location.href=this.value">
+            <option value="">Switch Mode...</option>
+            <option value="/dashboard">🏠 Main Hub</option>
+            <option value="/individual">👤 Individual Mode</option>
+            <option value="/organization">🏢 Organization Mode</option>
+            <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+            <option value="/overview" selected>📊 Executive Overview</option>
+            <option value="/predictive">📈 Predictive & What-If</option>
+            <option value="/powerbi">⚡ Power BI Data Hub</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label for="overview-year-slicer">Year Slicer:</label>
+          <select id="overview-year-slicer" class="filter-select">
+            <option value="All">All Years (2021-2024)</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="overview-level-slicer">Level Slicer:</label>
+          <select id="overview-level-slicer" class="filter-select">
+            <option value="All">All Levels</option>
+            <option value="Individual">Individual Level</option>
+            <option value="Organization">Organization Level</option>
+            <option value="State">State Level</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">
+          Multi-Tier Star Schema Model Connected by Conformed Date Dimension
+        </span>
+      </div>
+    </div>
+
+    <!-- 6 KPI Cards Container -->
+    <div class="kpi-grid" id="overview-kpi-container">
+      <!-- Rendered dynamically by app.js -->
+    </div>
+
+    <!-- Normalized Multi-Level Combo Chart -->
+    <div class="visuals-grid">
+      <div class="card col-12">
+        <div class="card-header">
+          <div>
+            <h3>Income/Revenue vs Expenditure/Cost Across All Three Levels</h3>
+            <p>Multi-tier financial cashflow inflows and outflows normalized by year (2021-2024)</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-lg">
+          <canvas id="chart-overview-combo"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!Auth.requireAuth()) return;
+      App.bindFilters();
+      await App.loadOverview();
+    });
+  </script>
+</body>
+</html>

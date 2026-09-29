@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Access Portal — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Multi-Tier Financial Intelligence Platform</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Ready</div>
+      <div id="header-user-container">
+        <!-- Rendered by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN LANDING & AUTHENTICATION DASHBOARD -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+    <div class="auth-hero-split">
+      
+      <!-- LEFT: PROJECT OVERVIEW & VALUE PROPOSITION -->
+      <div class="auth-info-card">
+        <div class="auth-badge">Data Visualization Lab • NIE Mysuru</div>
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>
+          A unified, full-stack financial intelligence platform analyzing economic dynamics across three hierarchical tiers. Built with live user input calculation studios, real-time recalculations, Holt-Winters predictive forecasting, and verified against authentic Kaggle and RBI data series.
+        </p>
+
+        <div class="tier-list-box">
+          <div class="tier-item">
+            <div class="tier-icon">👤</div>
+            <div class="tier-details">
+              <h4>Tier 1: Micro-Level (Personal Household)</h4>
+              <p>10-Category personal spend modeling, salary & freelance income planning, dynamic savings rate calculations, and financial health scorecards.</p>
+            </div>
+          </div>
+
+          <div class="tier-item">
+            <div class="tier-icon">🏢</div>
+            <div class="tier-details">
+              <h4>Tier 2: Meso-Level (Enterprise Cost Centers)</h4>
+              <p>Corporate, Consumer & Home Office departmental budgeting using Superstore cost center dynamics (<code>Cost = Sales - Profit</code>) and margin simulations.</p>
+            </div>
+          </div>
+
+          <div class="tier-item">
+            <div class="tier-icon">🇮🇳</div>
+            <div class="tier-details">
+              <h4>Tier 3: Macro-Level (State & Union Budgets)</h4>
+              <p>Comparative public finance analytics spanning 15+ Indian states, fiscal deficit tracking (% of GSDP), and National Union Budget ministry allocations.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-block-start: 1rem;">
+          <span class="highlight-pill">⚡ Interactive User Inputs</span>
+          <span class="highlight-pill">📊 Power BI Star Schema</span>
+          <span class="highlight-pill">📈 Holt-Winters Forecasting</span>
+          <span class="highlight-pill">🔄 1-Click CSV Sync</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: LOGIN & REGISTRATION CARD -->
+      <div class="auth-form-card">
+        <div class="auth-nav-tabs">
+          <button type="button" class="auth-tab-link active" id="tab-btn-signin" onclick="showAuthTab('signin')">Sign In</button>
+          <button type="button" class="auth-tab-link" id="tab-btn-register" onclick="showAuthTab('register')">Create Account</button>
+        </div>
+
+        <!-- Alert Banner -->
+        <div id="auth-alert" class="auth-alert"></div>
+
+        <!-- SIGN IN FORM -->
+        <form id="form-signin" onsubmit="handleSignIn(event)">
+          <div class="form-group-clean">
+            <label for="signin-username">Username or User ID</label>
+            <input type="text" id="signin-username" class="form-control-clean" placeholder="Enter username (e.g., faculty)" required autocomplete="username">
+          </div>
+
+          <div class="form-group-clean">
+            <label for="signin-password">Password</label>
+            <input type="password" id="signin-password" class="form-control-clean" placeholder="Enter password" required autocomplete="current-password">
+          </div>
+
+          <button type="submit" id="btn-signin-submit" class="btn-auth-submit">
+            🚀 Sign In to Dashboard
+          </button>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form id="form-register" style="display: none;" onsubmit="handleRegister(event)">
+          <div class="form-group-clean">
+            <label for="reg-fullname">Full Name</label>
+            <input type="text" id="reg-fullname" class="form-control-clean" placeholder="e.g., Dr. Jane Smith" required>
+          </div>
+
+          <div class="form-group-clean">
+            <label for="reg-username">Desired Username</label>
+            <input type="text" id="reg-username" class="form-control-clean" placeholder="e.g., janesmith" required minlength="3">
+          </div>
+
+          <div class="form-group-clean">
+            <label for="reg-role">Role / Department</label>
+            <select id="reg-role" class="form-control-clean">
+              <option value="Student Researcher">Student Researcher</option>
+              <option value="Faculty / Examiner">Faculty / Examiner</option>
+              <option value="Lead Analyst">Lead Financial Analyst</option>
+              <option value="Guest Reviewer">Guest Reviewer</option>
+            </select>
+          </div>
+
+          <div class="form-group-clean">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" class="form-control-clean" placeholder="Create a password (min 4 chars)" required minlength="4">
+          </div>
+
+          <button type="submit" id="btn-register-submit" class="btn-auth-submit">
+            ✨ Register & Create Account
+          </button>
+        </form>
+
+        <!-- QUICK 1-CLICK DEMO ACCESS -->
+        <div class="auth-divider">
+          <span>Quick 1-Click Evaluation Access</span>
+        </div>
+
+        <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-block-end: 0.75rem;">
+          Click any pre-configured evaluator profile below for instant access:
+        </p>
+
+        <div class="demo-login-grid">
+          <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('faculty')">
+            <span class="icon">🎓</span>
+            <div class="info">
+              <strong>Faculty Evaluator</strong>
+              <small>nie2026</small>
+            </div>
+          </button>
+
+          <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('student')">
+            <span class="icon">👤</span>
+            <div class="info">
+              <strong>Student Analyst</strong>
+              <small>student123</small>
+            </div>
+          </button>
+
+          <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('admin')">
+            <span class="icon">🏢</span>
+            <div class="info">
+              <strong>Lead Admin</strong>
+              <small>admin123</small>
+            </div>
+          </button>
+
+          <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('demo')">
+            <span class="icon">🌐</span>
+            <div class="info">
+              <strong>Guest Reviewer</strong>
+              <small>demo123</small>
+            </div>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+    <p style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.25rem;">
+      Compatible with Power BI Desktop & Service • Automated SQLite & Clean CSV Export
+    </p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script>
+    // Tab Switcher
+    function showAuthTab(tab) {
+      const signinForm = document.getElementById("form-signin");
+      const registerForm = document.getElementById("form-register");
+      const signinBtn = document.getElementById("tab-btn-signin");
+      const registerBtn = document.getElementById("tab-btn-register");
+      const alertBox = document.getElementById("auth-alert");
+      alertBox.style.display = "none";
+
+      if (tab === "signin") {
+        signinForm.style.display = "block";
+        registerForm.style.display = "none";
+        signinBtn.classList.add("active");
+        registerBtn.classList.remove("active");
+      } else {
+        signinForm.style.display = "none";
+        registerForm.style.display = "block";
+        registerBtn.classList.add("active");
+        signinBtn.classList.remove("active");
+      }
+    }
+
+    function showAlert(msg, isSuccess = false) {
+      const alertBox = document.getElementById("auth-alert");
+      alertBox.className = "auth-alert " + (isSuccess ? "auth-alert-success" : "auth-alert-error");
+      alertBox.textContent = msg;
+      alertBox.style.display = "block";
+    }
+
+    // Auto-redirect if already authenticated
+    window.addEventListener("DOMContentLoaded", () => {
+      const user = Auth.getUser();
+      if (user) {
+        showAlert(`Already logged in as ${user.full_name} (${user.role}). Redirecting to Dashboard...`, true);
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 800);
+      }
+    });
+
+    // Form Handlers
+    async function handleSignIn(e) {
+      e.preventDefault();
+      const u = document.getElementById("signin-username").value.trim();
+      const p = document.getElementById("signin-password").value;
+      const submitBtn = document.getElementById("btn-signin-submit");
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⏳ Authenticating...";
+        const res = await api.login(u, p);
+        if (res.success) {
+          Auth.setUser(res.user);
+          showAlert(`Welcome, ${res.user.full_name}! Redirecting to Mode Dashboard...`, true);
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 600);
+        } else {
+          showAlert(res.error || "Login failed.");
+        }
+      } catch (err) {
+        showAlert(err.message || "Invalid credentials. Try our quick demo buttons below.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 Sign In to Dashboard";
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const fullName = document.getElementById("reg-fullname").value.trim();
+      const username = document.getElementById("reg-username").value.trim();
+      const role = document.getElementById("reg-role").value;
+      const password = document.getElementById("reg-password").value;
+      const submitBtn = document.getElementById("btn-register-submit");
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⏳ Registering...";
+        const res = await api.register(username, password, fullName, role);
+        if (res.success) {
+          Auth.setUser(res.user);
+          showAlert("Registration successful! Entering Dashboard...", true);
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 800);
+        } else {
+          showAlert(res.error || "Registration failed.");
+        }
+      } catch (err) {
+        showAlert(err.message || "Failed to create account.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "✨ Register & Create Account";
+      }
+    }
+
+    async function handleDemoLogin(role) {
+      try {
+        showAlert(`Authenticating demo profile for ${role}...`, true);
+        const res = await api.demoLogin(role);
+        if (res.success) {
+          Auth.setUser(res.user);
+          showAlert(`Logged in as ${res.user.role}! Redirecting...`, true);
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 600);
+        }
+      } catch (err) {
+        showAlert("Demo login failed: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

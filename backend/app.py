@@ -6,7 +6,13 @@ from flask_cors import CORS
 import pandas as pd
 from datetime import datetime
 
-from backend.database import get_db_connection, init_db
+from backend.database import (
+    get_db_connection,
+    init_db,
+    authenticate_user,
+    create_user,
+    get_demo_user
+)
 from backend.analytics_engine import (
     get_executive_overview,
     get_individual_analytics,
@@ -31,11 +37,109 @@ CORS(app)
 init_db()
 
 # ==========================================
-# 1. FRONTEND SERVING
+# 0. AUTHENTICATION & ACCESS CONTROL API
+# ==========================================
+@app.route("/api/auth/login", methods=["POST"])
+def auth_login():
+    try:
+        body = request.get_json(force=True) or {}
+        username = body.get("username", "").strip()
+        password = body.get("password", "")
+        user = authenticate_user(username, password)
+        if user:
+            return jsonify({
+                "success": True,
+                "message": f"Welcome back, {user['full_name']}!",
+                "user": user
+            })
+        return jsonify({"success": False, "error": "Invalid username or password. Check credentials or use 1-click Demo buttons."}), 401
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/auth/register", methods=["POST"])
+def auth_register():
+    try:
+        body = request.get_json(force=True) or {}
+        username = body.get("username", "").strip()
+        password = body.get("password", "")
+        full_name = body.get("full_name", "").strip() or username
+        role = body.get("role", "Student / Analyst")
+        
+        ok, res = create_user(username, password, full_name, role)
+        if ok:
+            return jsonify({
+                "success": True,
+                "message": "Account created successfully! You can now log in.",
+                "user": res
+            })
+        return jsonify({"success": False, "error": res}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/auth/demo", methods=["POST"])
+def auth_demo():
+    try:
+        body = request.get_json(force=True) or {}
+        role = body.get("role", "faculty")
+        user = get_demo_user(role)
+        if user:
+            return jsonify({
+                "success": True,
+                "message": f"Authenticated as {user['role']} ({user['full_name']})",
+                "user": user
+            })
+        return jsonify({"success": False, "error": "Demo profile not found."}), 404
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/auth/me", methods=["GET"])
+def auth_me():
+    return jsonify({
+        "status": "online",
+        "demo_profiles": [
+            {"username": "faculty", "name": "Prof. Faculty Evaluator", "role": "Faculty / Examiner", "pass": "nie2026"},
+            {"username": "student", "name": "Rohith S V", "role": "Student Researcher", "pass": "student123"},
+            {"username": "admin", "name": "Lead Financial Administrator", "role": "System Administrator", "pass": "admin123"},
+            {"username": "demo", "name": "Guest Reviewer", "role": "Guest Analyst", "pass": "demo123"}
+        ]
+    })
+
+# ==========================================
+# 1. FRONTEND SERVING & DEDICATED PAGES
 # ==========================================
 @app.route("/")
-def index():
-    return render_template("index.html")
+@app.route("/login")
+def landing_route():
+    return render_template("login.html")
+
+@app.route("/dashboard")
+def dashboard_route():
+    return render_template("dashboard.html")
+
+@app.route("/individual")
+def individual_route():
+    return render_template("individual.html")
+
+@app.route("/organization")
+def organization_route():
+    return render_template("organization.html")
+
+@app.route("/state-nation")
+def state_nation_route():
+    return render_template("state_nation.html")
+
+@app.route("/powerbi")
+def powerbi_route():
+    return render_template("powerbi.html")
+
+@app.route("/predictive")
+def predictive_route():
+    return render_template("predictive.html")
+
+@app.route("/overview")
+def overview_route():
+    return render_template("overview.html")
+
 
 # ==========================================
 # 2. EXECUTIVE OVERVIEW API

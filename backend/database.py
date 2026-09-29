@@ -1,11 +1,25 @@
 import sqlite3
 import os
+import hashlib
+import secrets
 import pandas as pd
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ORIGINAL_DB_PATH = os.path.join(BASE_DIR, "backend", "budget_tracker.db")
 CLEAN_DATA_DIR = os.path.join(BASE_DIR, "BudgetTrackerAnalytics", "02_CleanData")
+
+def hash_password(password: str, salt: str = None) -> str:
+    if not salt:
+        salt = secrets.token_hex(8)
+    hashed = hashlib.sha256((password + salt).encode('utf-8')).hexdigest()
+    return f"{salt}:{hashed}"
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    if not stored_hash or ":" not in stored_hash:
+        return False
+    salt, hashed = stored_hash.split(":", 1)
+    return hashlib.sha256((password + salt).encode('utf-8')).hexdigest() == hashed
 
 def get_db_path():
     # If on Vercel or running in a read-only environment
@@ -100,7 +114,36 @@ def init_db():
     )
     """)
 
+    # 6. Users Authentication Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'Financial Analyst',
+        created_at TEXT NOT NULL
+    )
+    """)
+
     conn.commit()
+
+    # Pre-seed default demo accounts if not present
+    cursor.execute("SELECT COUNT(*) FROM users")
+    user_count = cursor.fetchone()[0]
+    if user_count == 0:
+        demo_accounts = [
+            ("admin", hash_password("admin123"), "Lead Financial Administrator", "System Administrator"),
+            ("faculty", hash_password("nie2026"), "Prof. Faculty Evaluator", "Faculty / Examiner"),
+            ("student", hash_password("student123"), "Rohith S V", "Student Researcher"),
+            ("demo", hash_password("demo123"), "Guest Reviewer", "Guest Analyst")
+        ]
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cursor.executemany("""
+            INSERT OR IGNORE INTO users (username, password_hash, full_name, role, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, [(u, p, n, r, now_str) for u, p, n, r in demo_accounts])
+        conn.commit()
 
     # Check if empty, if so populate from 02_CleanData
     cursor.execute("SELECT COUNT(*) FROM individual_transactions")
@@ -205,6 +248,72 @@ def init_db():
         print("Database initialized and preloaded with sample data.")
 
     conn.close()
+
+def authenticate_user(username, password):
+    if not username or not password:
+        return None
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE LOWER(username) = LOWER(?)", (username.strip(),)).fetchone()
+    conn.close()
+    if user and verify_password(password, user["password_hash"]):
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "full_name": user["full_name"],
+            "role": user["role"]
+        }
+    return None
+
+def create_user(username, password, full_name, role="Financial Analyst"):
+    username = username.strip().lower()
+    if not username or not password:
+        return False, "Username and password are required."
+    if len(username) < 3:
+        return False, "Username must be at least 3 characters."
+    if len(password) < 4:
+        return False, "Password must be at least 4 characters."
+
+    conn = get_db_connection()
+    existing = conn.execute("SELECT id FROM users WHERE LOWER(username) = ?", (username,)).fetchone()
+    if existing:
+        conn.close()
+        return False, f"Username '{username}' is already registered. Please choose another or login."
+
+    hashed = hash_password(password)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT INTO users (username, password_hash, full_name, role, created_at) VALUES (?, ?, ?, ?, ?)",
+        (username, hashed, full_name.strip() or username, role, now_str)
+    )
+    conn.commit()
+    new_user = conn.execute("SELECT id, username, full_name, role FROM users WHERE username = ?", (username,)).fetchone()
+    conn.close()
+    return True, {
+        "id": new_user["id"],
+        "username": new_user["username"],
+        "full_name": new_user["full_name"],
+        "role": new_user["role"]
+    }
+
+def get_demo_user(role_key):
+    role_map = {
+        "faculty": "faculty",
+        "student": "student",
+        "admin": "admin",
+        "demo": "demo"
+    }
+    uname = role_map.get(str(role_key).lower(), "demo")
+    conn = get_db_connection()
+    user = conn.execute("SELECT id, username, full_name, role FROM users WHERE username = ?", (uname,)).fetchone()
+    conn.close()
+    if user:
+        return {
+            "id": user["id"],
+            "username": user["username"],
+            "full_name": user["full_name"],
+            "role": user["role"]
+        }
+    return None
 
 if __name__ == "__main__":
     init_db()

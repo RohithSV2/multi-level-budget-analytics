@@ -14,12 +14,19 @@ const ChartEngine = {
     }
   },
 
+  getCtx(canvasId) {
+    const el = document.getElementById(canvasId);
+    if (!el) return null;
+    return el.getContext("2d");
+  },
+
   // ----------------------------------------------------------------------------
   // PAGE 1: EXECUTIVE COMBO CHART
   // ----------------------------------------------------------------------------
   renderExecutiveCombo(canvasId, comboData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !comboData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       data: {
@@ -55,7 +62,8 @@ const ChartEngine = {
   // ----------------------------------------------------------------------------
   renderIndividualDonut(canvasId, donutData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !donutData) return;
 
     const colors = [
       "#1F3864", "#C77F16", "#2E7D74", "#2563EB", "#D97706",
@@ -91,7 +99,8 @@ const ChartEngine = {
 
   renderIndividualLine(canvasId, lineData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !lineData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "line",
@@ -143,7 +152,8 @@ const ChartEngine = {
 
   renderIndividualVarianceBar(canvasId, barData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !barData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "bar",
@@ -184,7 +194,8 @@ const ChartEngine = {
   // ----------------------------------------------------------------------------
   renderOrgClusteredBar(canvasId, clusteredData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !clusteredData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "bar",
@@ -229,7 +240,8 @@ const ChartEngine = {
 
   renderOrgGrowthLine(canvasId, growthData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !growthData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "line",
@@ -276,7 +288,8 @@ const ChartEngine = {
   // ----------------------------------------------------------------------------
   renderStateLine(canvasId, stateLineData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !stateLineData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "line",
@@ -327,7 +340,8 @@ const ChartEngine = {
 
   renderNationalSectorBar(canvasId, nationalData) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !nationalData) return;
 
     this.instances[canvasId] = new Chart(ctx, {
       type: "bar",
@@ -368,7 +382,8 @@ const ChartEngine = {
   // ----------------------------------------------------------------------------
   renderForecastChart(canvasId, forecastObj, titleLabel, colorTheme) {
     this.destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId).getContext("2d");
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !forecastObj) return;
 
     const allLabels = [...forecastObj.history_labels, ...forecastObj.forecast_labels];
     const histLen = forecastObj.history_labels.length;
