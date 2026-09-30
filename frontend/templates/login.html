@@ -89,7 +89,7 @@
         <form id="form-signin" onsubmit="handleSignIn(event)">
           <div class="form-group-clean">
             <label for="signin-username">Username or User ID</label>
-            <input type="text" id="signin-username" class="form-control-clean" placeholder="Enter username (e.g., faculty)" required autocomplete="username">
+            <input type="text" id="signin-username" class="form-control-clean" placeholder="Enter username (e.g., student)" required autocomplete="username">
           </div>
 
           <div class="form-group-clean">
@@ -106,7 +106,7 @@
         <form id="form-register" style="display: none;" onsubmit="handleRegister(event)">
           <div class="form-group-clean">
             <label for="reg-fullname">Full Name</label>
-            <input type="text" id="reg-fullname" class="form-control-clean" placeholder="e.g., Dr. Jane Smith" required>
+            <input type="text" id="reg-fullname" class="form-control-clean" placeholder="e.g., Jane Smith" required>
           </div>
 
           <div class="form-group-clean">
@@ -118,8 +118,8 @@
             <label for="reg-role">Role / Department</label>
             <select id="reg-role" class="form-control-clean">
               <option value="Student Researcher">Student Researcher</option>
-              <option value="Faculty / Examiner">Faculty / Examiner</option>
               <option value="Lead Analyst">Lead Financial Analyst</option>
+              <option value="System Administrator">System Administrator</option>
               <option value="Guest Reviewer">Guest Reviewer</option>
             </select>
           </div>
@@ -136,22 +136,14 @@
 
         <!-- QUICK 1-CLICK DEMO ACCESS -->
         <div class="auth-divider">
-          <span>Quick 1-Click Evaluation Access</span>
+          <span>Quick 1-Click Demo Access</span>
         </div>
 
         <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-block-end: 0.75rem;">
-          Click any pre-configured evaluator profile below for instant access:
+          Click any pre-configured demo profile below for instant access:
         </p>
 
         <div class="demo-login-grid">
-          <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('faculty')">
-            <span class="icon">🎓</span>
-            <div class="info">
-              <strong>Faculty Evaluator</strong>
-              <small>nie2026</small>
-            </div>
-          </button>
-
           <button type="button" class="btn-demo-pill" onclick="handleDemoLogin('student')">
             <span class="icon">👤</span>
             <div class="info">

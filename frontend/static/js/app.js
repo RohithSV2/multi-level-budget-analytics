@@ -999,7 +999,7 @@ const App = {
     const pState = document.getElementById("proj-kpi-state");
     if (pState && data.state_forecast) pState.textContent = `₹${Number(data.state_forecast.projected_next_year).toLocaleString('en-IN')}`;
 
-    // Faculty Decision Takeaway Box
+    // Decision Takeaway Box
     const takeawayEl = document.getElementById("forecast-takeaway-text") || document.getElementById("predictive-takeaway-text");
     if (takeawayEl) takeawayEl.textContent = data.decision_insights;
   },

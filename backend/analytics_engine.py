@@ -613,7 +613,7 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
         "projected_next_year": future_state_forecast[0]
     }
 
-    # Faculty Decision-Making "So What?" Analytical Interpretation
+    # Executive Decision-Making Analytical Interpretation
     savings_impact = round(future_ind_forecast[0] * (float(whatif_ind_cut_pct) / 100.0), 2)
     org_boost = round(future_org_forecast[0] - (last_org * 1.035), 2)
 

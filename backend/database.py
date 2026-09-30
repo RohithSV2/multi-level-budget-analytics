@@ -134,7 +134,6 @@ def init_db():
     if user_count == 0:
         demo_accounts = [
             ("admin", hash_password("admin123"), "Lead Financial Administrator", "System Administrator"),
-            ("faculty", hash_password("nie2026"), "Prof. Faculty Evaluator", "Faculty / Examiner"),
             ("student", hash_password("student123"), "Rohith S V", "Student Researcher"),
             ("demo", hash_password("demo123"), "Guest Reviewer", "Guest Analyst")
         ]
@@ -297,12 +296,13 @@ def create_user(username, password, full_name, role="Financial Analyst"):
 
 def get_demo_user(role_key):
     role_map = {
-        "faculty": "faculty",
         "student": "student",
         "admin": "admin",
         "demo": "demo"
     }
-    uname = role_map.get(str(role_key).lower(), "demo")
+    uname = role_map.get(str(role_key).lower())
+    if not uname:
+        return None
     conn = get_db_connection()
     user = conn.execute("SELECT id, username, full_name, role FROM users WHERE username = ?", (uname,)).fetchone()
     conn.close()
