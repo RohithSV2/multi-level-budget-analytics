@@ -3,25 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mode Selection Hub — Multi-Level Budget Tracker Analytics</title>
+  <title>Command Hub — Multi-Level Budget Tracker Analytics</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
   <!-- ========================================================================= -->
-  <!-- 1. APP HEADER -->
+  <!-- 1. BESPOKE FLOATING GLASS HEADER -->
   <!-- ========================================================================= -->
   <header class="app-header">
-    <div class="header-brand">
+    <a href="/dashboard" class="header-brand">
       <div class="header-logo">₹</div>
       <div class="header-title-group">
-        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
-        <p>Data Visualization Lab Project • Micro, Meso & Macro Financial Intelligence</p>
+        <h1>MULTI-LEVEL BUDGET ANALYTICS</h1>
+        <p>Cross-Tier Financial Intelligence & Power BI Enterprise Architecture</p>
       </div>
-    </div>
+    </a>
     <div class="header-actions">
-      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <div class="badge-connected">SQLITE & POWER BI SYNCHRONIZED</div>
       <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
       <div id="header-user-container">
         <!-- Injected by auth.js -->
@@ -30,24 +30,24 @@
   </header>
 
   <!-- ========================================================================= -->
-  <!-- 2. MAIN HUB CONTAINER -->
+  <!-- 2. MAIN BENTO COMMAND HUB -->
   <!-- ========================================================================= -->
   <main class="main-wrapper">
 
-    <!-- Top Breadcrumb / Workspace Banner -->
+    <!-- Top Navigation Dock -->
     <div class="dedicated-nav-banner">
       <div class="breadcrumb-trail">
-        <span>🏠 <strong>Main Hub</strong></span>
+        <span style="color: var(--accent-emerald);">✦</span>
+        <span>Executive Command Hub</span>
         <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">Mode Selection Portal</span>
+        <span class="breadcrumb-current">Macro-Meso-Micro Control Center</span>
       </div>
       <div class="page-quick-jump">
-        <label for="hub-quick-jump" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Jump to:</label>
-        <select id="hub-quick-jump" onchange="if(this.value) window.location.href=this.value">
-          <option value="">Select a Dedicated Mode...</option>
-          <option value="/individual">👤 Individual Mode</option>
-          <option value="/organization">🏢 Organization Mode</option>
-          <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+        <select onchange="if(this.value) window.location.href=this.value">
+          <option value="">Jump to Workspace...</option>
+          <option value="/individual">👤 Tier 1: Individual Mode</option>
+          <option value="/organization">🏢 Tier 2: Organization Mode</option>
+          <option value="/state-nation">🇮🇳 Tier 3: State & Nation Mode</option>
           <option value="/overview">📊 Executive Overview</option>
           <option value="/predictive">📈 Predictive & What-If</option>
           <option value="/powerbi">⚡ Power BI Data Hub</option>
@@ -55,60 +55,93 @@
       </div>
     </div>
 
-    <!-- Hero / Welcome Banner -->
-    <div class="landing-hero" style="margin-block-end: 2rem;">
-      <div class="landing-badge">Interactive Mode Selection Hub</div>
-      <h1 id="hub-welcome-title">Welcome to Multi-Level Budget Tracker Analytics</h1>
-      <p id="hub-welcome-desc">
-        Select any analytical tier below to launch its dedicated, uncluttered workspace equipped with live user inputs, instant recalculations, interactive visual charts, and exportable datasets.
-      </p>
+    <!-- Asymmetrical Bento Hero Block -->
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; margin-block-end: 2rem;">
+      <!-- Welcome Hero Card -->
+      <div class="card" style="background: linear-gradient(135deg, rgba(13, 19, 31, 0.9) 0%, rgba(19, 27, 43, 0.9) 100%); border-color: rgba(16, 185, 129, 0.25);">
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: var(--accent-emerald); padding: 0.25rem 0.75rem; border-radius: var(--radius-pill); font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; margin-block-end: 1rem;">
+          ● FINANCIAL INTELLIGENCE PLATFORM
+        </div>
+        <h2 id="hub-welcome-title" style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.02em; color: #FFFFFF; margin-block-end: 0.65rem;">
+          Welcome to the Budget Command Center
+        </h2>
+        <p id="hub-welcome-desc" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin-block-end: 1.5rem;">
+          Explore micro household cash flows, meso enterprise cost centers, and macro sovereign public finances. All layers feed into an automated Star Schema and live Holt-Winters predictive engine.
+        </p>
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+          <span class="highlight-pill" style="border-color: rgba(16, 185, 129, 0.3); color: var(--accent-emerald);">✦ Micro Spend Modeling</span>
+          <span class="highlight-pill" style="border-color: rgba(99, 102, 241, 0.3); color: #A5B4FC;">✦ Meso Cost Centers</span>
+          <span class="highlight-pill" style="border-color: rgba(6, 182, 212, 0.3); color: var(--accent-cyan);">✦ Macro FRBM Compliance</span>
+          <span class="highlight-pill" style="border-color: rgba(245, 158, 11, 0.3); color: var(--accent-amber);">✦ Holt-Winters Forecasts</span>
+        </div>
+      </div>
 
-      <!-- Live Global KPIs -->
-      <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-block-start: 1.5rem;" id="hub-live-kpis">
-        <div class="kpi-card border-amber">
-          <div class="kpi-label">👤 Micro: Tracked Personal Spend</div>
-          <div class="kpi-value" id="kpi-micro-spend">Loading...</div>
-          <div class="kpi-subtext">Across 10 essential budget categories</div>
-        </div>
-        <div class="kpi-card border-teal">
-          <div class="kpi-label">🏢 Meso: Enterprise Revenue</div>
-          <div class="kpi-value" id="kpi-meso-rev">Loading...</div>
-          <div class="kpi-subtext">Superstore operational cashflows</div>
-        </div>
-        <div class="kpi-card border-navy">
-          <div class="kpi-label">🇮🇳 Macro: Avg State Fiscal Deficit</div>
-          <div class="kpi-value" id="kpi-macro-deficit">Loading...</div>
-          <div class="kpi-subtext">15+ Indian states benchmarked</div>
+      <!-- Real-Time Telemetry Tile -->
+      <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(135deg, rgba(13, 19, 31, 0.95), rgba(10, 14, 23, 0.95));">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 1rem;">
+            <span style="font-size: 0.76rem; font-weight: 700; font-family: var(--font-mono); color: var(--text-muted); text-transform: uppercase;">
+              Live System Telemetry
+            </span>
+            <span class="badge-connected" style="font-size: 0.7rem; padding: 0.2rem 0.55rem;">ACTIVE</span>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.74rem; color: var(--text-muted);">👤 Micro: Tracked Personal Expenses</div>
+              <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-emerald);" id="kpi-micro-spend">
+                Loading...
+              </div>
+            </div>
+
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.74rem; color: var(--text-muted);">🏢 Meso: Enterprise Gross Revenue</div>
+              <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: #818CF8;" id="kpi-meso-rev">
+                Loading...
+              </div>
+            </div>
+
+            <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-subtle); padding: 0.75rem 1rem; border-radius: var(--radius-sm);">
+              <div style="font-size: 0.74rem; color: var(--text-muted);">🇮🇳 Macro: Avg Indian State Fiscal Deficit</div>
+              <div style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-cyan);" id="kpi-macro-deficit">
+                Loading...
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 3 PRIMARY TIER CARDS -->
-    <div class="landing-section-title">
-      <h2>Primary Analysis Modes</h2>
-      <p>Each tier below opens a dedicated, specialized page with tailored data inputs and interactive visualizations.</p>
+    <!-- Section Title -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-block-end: 1.25rem;">
+      <div>
+        <h3 style="font-size: 1.2rem; font-weight: 800; letter-spacing: -0.01em; color: #FFFFFF;">
+          Primary Analytical Tiers
+        </h3>
+        <p style="font-size: 0.82rem; color: var(--text-muted);">Launch dedicated interactive workspaces equipped with custom live inputs and real-time Chart.js engines.</p>
+      </div>
     </div>
 
+    <!-- 3 BENTO PRIMARY TIER CARDS -->
     <div class="mode-cards-grid">
       <!-- 1. Individual Mode Card -->
       <div class="mode-card mode-card-ind">
         <div>
           <div class="mode-icon-circle icon-amber">👤</div>
-          <div class="mode-tag">Tier 1 • Micro-Budget</div>
-          <h3 class="mode-title">Individual Mode</h3>
+          <div class="mode-tag">Tier 1 • Micro-Financial Intelligence</div>
+          <h3 class="mode-title">Individual Wealth Studio</h3>
           <p class="mode-desc">
-            Manage household and personal finance. Input your monthly salary, secondary income, and set custom budget thresholds across 10 spending categories. Live calculations provide your savings rate % and financial health score.
+            Personal and household micro-budgeting studio. Input primary salary, secondary earnings, and custom category thresholds. Computes net savings, savings rate %, and dynamic 0-100 financial health scores.
           </p>
           <ul class="mode-features-list">
-            <li>10-Category spend & monthly budget studio</li>
-            <li>Real-time Donut Chart & Variance color-coded bar chart</li>
-            <li>Dynamic Financial Health Scorecard (0-100 Rating)</li>
-            <li>Searchable & filterable personal transaction ledger</li>
-            <li>Add and delete personal financial transactions</li>
+            <li>10-Category spend allocation and budget studio</li>
+            <li>Real-time donut chart and variance color-coded bar chart</li>
+            <li>Interactive financial wellness rating (0-100 score)</li>
+            <li>Searchable transaction ledger with CRUD support</li>
           </ul>
         </div>
-        <a href="/individual" class="btn-launch-mode btn-launch-ind" style="text-decoration: none; text-align: center;">
-          🚀 Open Individual Studio &rarr;
+        <a href="/individual" class="btn-launch-mode btn-launch-ind">
+          🚀 Launch Tier 1 Studio &rarr;
         </a>
       </div>
 
@@ -116,21 +149,20 @@
       <div class="mode-card mode-card-org">
         <div>
           <div class="mode-icon-circle icon-teal">🏢</div>
-          <div class="mode-tag">Tier 2 • Meso-Budget</div>
-          <h3 class="mode-title">Organization Mode</h3>
+          <div class="mode-tag">Tier 2 • Meso-Financial Cost Centers</div>
+          <h3 class="mode-title">Organization Enterprise Studio</h3>
           <p class="mode-desc">
-            Analyze enterprise departmental finances using Superstore cost center dynamics. Model operating expenses (<code>Cost = Sales - Profit</code>), test margin scenarios, and inspect regional category profitability matrices.
+            Enterprise departmental modeling using Superstore cost center dynamics. Monitor operating expenditures (<code>Cost = Sales - Profit</code>), simulate operating margins, and inspect cross-region category variance.
           </p>
           <ul class="mode-features-list">
-            <li>Corporate, Consumer & Home Office department modeling</li>
+            <li>Corporate, Consumer, and Home Office department modeling</li>
             <li>Clustered Bar Chart: Revenue vs. Cost comparison</li>
-            <li>Category Profitability Treemap & Bar chart</li>
-            <li>Enterprise Order & Procurement Cost ledger</li>
-            <li>Add custom enterprise purchase orders</li>
+            <li>Quarterly revenue trajectory & category margin treemap</li>
+            <li>Enterprise procurement ledger & order logging</li>
           </ul>
         </div>
-        <a href="/organization" class="btn-launch-mode btn-launch-org" style="text-decoration: none; text-align: center;">
-          🚀 Open Organization Studio &rarr;
+        <a href="/organization" class="btn-launch-mode btn-launch-org">
+          🚀 Launch Tier 2 Studio &rarr;
         </a>
       </div>
 
@@ -138,53 +170,52 @@
       <div class="mode-card mode-card-state">
         <div>
           <div class="mode-icon-circle icon-navy">🇮🇳</div>
-          <div class="mode-tag">Tier 3 • Macro-Budget</div>
-          <h3 class="mode-title">State & Nation Mode</h3>
+          <div class="mode-tag">Tier 3 • Macro-Public Finance</div>
+          <h3 class="mode-title">State & Nation Terminal</h3>
           <p class="mode-desc">
-            Explore macroeconomic public finances based on authentic Reserve Bank of India and Government of India Union Budget data series. Compare state deficits and explore Union ministry allocations.
+            Macroeconomic public finance analytics based on authentic Reserve Bank of India (RBI) and Government of India Union Budget data. Compare state deficits and monitor central ministry allocations.
           </p>
           <ul class="mode-features-list">
-            <li>15+ Indian State public finance interactive cards</li>
+            <li>15+ Indian State public finance scorecards</li>
             <li>Revenue Receipts vs. Expenditures & Deficit line chart</li>
-            <li>National Union Budget sector allocation breakdown</li>
-            <li>Ministry ranking (Defence, Transport, Railways, Agriculture)</li>
-            <li>Kaggle & RBI authentic statistical series</li>
+            <li>FRBM 3.0% fiscal deficit benchmark ceiling tracking</li>
+            <li>National Union Budget ministry allocation breakdown</li>
           </ul>
         </div>
-        <a href="/state-nation" class="btn-launch-mode btn-launch-state" style="text-decoration: none; text-align: center;">
-          🚀 Open State & Nation Studio &rarr;
+        <a href="/state-nation" class="btn-launch-mode btn-launch-state">
+          🚀 Launch Tier 3 Terminal &rarr;
         </a>
       </div>
     </div>
 
-    <!-- SECONDARY PORTALS -->
-    <div style="margin-block-start: 2rem; margin-block-end: 2rem;">
-      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--primary-navy); margin-block-end: 1rem; text-align: center;">
-        Advanced Analytical Tools & Power BI Production Assets
+    <!-- Advanced Analytical Portals -->
+    <div style="margin-block-start: 1rem; margin-block-end: 2rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 800; color: #FFFFFF; margin-block-end: 1rem;">
+        Advanced Production Modules & Modeling Suites
       </h3>
       <div class="secondary-modes-grid">
         <div class="secondary-card">
           <div>
-            <h3>📊 Executive Overview</h3>
-            <p>Cross-tier normalized financial inflows and outflows comparative dashboard with 6 top-line KPI cards.</p>
+            <h3>📊 Executive Cross-Tier Overview</h3>
+            <p>Unified comparative dashboard featuring normalized multi-tier cashflows and 6 conditional top-line KPI cards.</p>
           </div>
-          <a href="/overview" class="btn btn-outline btn-sm" style="text-decoration: none; text-align: center;">Launch Overview &rarr;</a>
+          <a href="/overview" class="btn btn-outline btn-sm">Launch Overview &rarr;</a>
         </div>
 
         <div class="secondary-card">
           <div>
             <h3>📈 Predictive & What-If Engine</h3>
-            <p>Holt-Winters exponential smoothing forecasts with 95% confidence intervals and policy sensitivity sliders.</p>
+            <p>Holt-Winters exponential smoothing forecasts with 95% confidence bounds and interactive policy sensitivity sliders.</p>
           </div>
-          <a href="/predictive" class="btn btn-outline btn-sm" style="text-decoration: none; text-align: center;">Launch Forecasts &rarr;</a>
+          <a href="/predictive" class="btn btn-outline btn-sm">Launch Forecasts &rarr;</a>
         </div>
 
         <div class="secondary-card">
           <div>
             <h3>⚡ Power BI Data Hub</h3>
-            <p>Download clean CSVs, copy ready DAX measures, view Power Query M-code, and explore the Star Schema model.</p>
+            <p>Transformed Star Schema datasets, DAX measures library with 1-click copy, and Power Query M-code cleaning script.</p>
           </div>
-          <a href="/powerbi" class="btn btn-teal btn-sm" style="text-decoration: none; text-align: center;">Launch Power BI Hub &rarr;</a>
+          <a href="/powerbi" class="btn btn-teal btn-sm">Launch Power BI Hub &rarr;</a>
         </div>
       </div>
     </div>
@@ -193,26 +224,24 @@
 
   <footer class="app-footer">
     <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
-    <p style="font-size: 0.75rem; color: #94A3B8; margin-top: 0.25rem;">
-      Compatible with Power BI Desktop & Service • SQLite & Clean CSV Data Pipeline
+    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+      High-Performance Python WSGI & SQLite Architecture • Automated Power BI Clean Data Pipeline
     </p>
   </footer>
 
   <script src="/static/js/api.js"></script>
   <script src="/static/js/auth.js"></script>
   <script>
-    // Enforce auth
     if (!Auth.requireAuth()) {
       // redirected by requireAuth
     } else {
       const user = Auth.getUser();
       if (user) {
-        document.getElementById("hub-welcome-title").innerText = `Welcome back, ${user.full_name}!`;
-        document.getElementById("hub-welcome-desc").innerText = `Logged in as ${user.role} (${user.username}). Select any financial analysis tier below to launch its dedicated interactive workspace.`;
+        document.getElementById("hub-welcome-title").innerText = `Welcome back, ${user.full_name}`;
+        document.getElementById("hub-welcome-desc").innerText = `Authenticated clearance: ${user.role} (${user.username}). Select any economic tier below to launch its dedicated interactive workspace.`;
       }
     }
 
-    // Load top summary metrics
     async function loadHubMetrics() {
       try {
         const [ind, org, stateNat] = await Promise.all([

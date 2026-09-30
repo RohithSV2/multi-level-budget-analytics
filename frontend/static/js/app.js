@@ -580,14 +580,14 @@ const App = {
       const treemapContainer = document.getElementById("org-treemap-container");
       if (treemapContainer) {
         treemapContainer.innerHTML = data.treemap.map(t => `
-          <div style="background: #F8FAFC; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary-navy); margin-block-end: 0.5rem;">
+          <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-block-end: 0.5rem;">
               <span>📁 ${t.name}</span>
-              <span style="color: var(--accent-teal);">₹${t.value.toLocaleString('en-IN')} Profit (Sales: ₹${t.sales.toLocaleString('en-IN')})</span>
+              <span style="color: var(--accent-cyan); font-family: var(--font-mono);">₹${t.value.toLocaleString('en-IN')} Profit (Sales: ₹${t.sales.toLocaleString('en-IN')})</span>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               ${t.children.map(c => `
-                <span class="tag-badge" style="background: rgba(31, 56, 100, 0.08); color: var(--primary-navy); font-weight: 600;">
+                <span class="tag-badge" style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); color: var(--text-main); font-weight: 600;">
                   ${c.name}: ₹${c.value.toLocaleString('en-IN')}
                 </span>
               `).join("")}
@@ -803,14 +803,14 @@ const App = {
       const treemapContainer = document.getElementById("org-treemap-container");
       if (treemapContainer && data.treemap) {
         treemapContainer.innerHTML = data.treemap.map(t => `
-          <div style="background: #F8FAFC; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--primary-navy); margin-block-end: 0.5rem;">
+          <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-block-end: 0.5rem;">
               <span>📁 ${t.name}</span>
-              <span style="color: var(--accent-teal);">₹${t.value.toLocaleString('en-IN')} Profit</span>
+              <span style="color: var(--accent-cyan); font-family: var(--font-mono);">₹${t.value.toLocaleString('en-IN')} Profit</span>
             </div>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               ${t.children.map(c => `
-                <span class="tag-badge" style="background: rgba(31, 56, 100, 0.08); color: var(--primary-navy); font-weight: 600;">
+                <span class="tag-badge" style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); color: var(--text-main); font-weight: 600;">
                   ${c.name}: ₹${c.value.toLocaleString('en-IN')}
                 </span>
               `).join("")}
@@ -902,21 +902,21 @@ const App = {
       const mapContainer = document.getElementById("state-map-chips") || document.getElementById("state-cards-container");
       if (mapContainer && data.state_map_data) {
         mapContainer.innerHTML = data.state_map_data.map(s => `
-          <div class="state-chip" style="background: #FFFFFF; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem;" onclick="alert('${s.state}\\nRevenue: ₹${s.revenue.toLocaleString()} Cr\\nExpenditure: ₹${s.expenditure.toLocaleString()} Cr\\nFiscal Deficit: ₹${s.fiscal_deficit.toLocaleString()} Cr\\nDebt Ratio: ${s.debt_ratio}%')">
-            <div class="state-chip-header" style="font-weight: 700; color: var(--primary-navy); margin-bottom: 0.35rem;">📍 ${s.state}</div>
+          <div class="state-chip" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border-subtle)'" onclick="alert('${s.state}\\nRevenue: ₹${s.revenue.toLocaleString()} Cr\\nExpenditure: ₹${s.expenditure.toLocaleString()} Cr\\nFiscal Deficit: ₹${s.fiscal_deficit.toLocaleString()} Cr\\nDebt Ratio: ${s.debt_ratio}%')">
+            <div class="state-chip-header" style="font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">📍 ${s.state}</div>
             <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Revenue:</span>
-              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main);">₹${(s.revenue/1000).toFixed(1)}K Cr</span>
+              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main); font-family: var(--font-mono);">₹${(s.revenue/1000).toFixed(1)}K Cr</span>
             </div>
             <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Deficit:</span>
-              <span class="state-chip-val" style="font-weight: 600; color: ${s.fiscal_deficit < 0 ? 'var(--danger-crimson)' : 'var(--accent-teal)'};">
+              <span class="state-chip-val" style="font-weight: 600; font-family: var(--font-mono); color: ${s.fiscal_deficit < 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)'};">
                 ₹${(s.fiscal_deficit/1000).toFixed(1)}K Cr
               </span>
             </div>
             <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
               <span>Debt Ratio:</span>
-              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main);">${s.debt_ratio}%</span>
+              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main); font-family: var(--font-mono);">${s.debt_ratio}%</span>
             </div>
           </div>
         `).join("");
@@ -967,7 +967,7 @@ const App = {
         canvasInd,
         data.individual_forecast,
         "Personal Monthly Outlay (₹)",
-        { main: "#1F3864", forecast: "#C77F16", band: "rgba(199, 127, 22, 0.15)" }
+        { main: "#06B6D4", forecast: "#F59E0B", band: "rgba(245, 158, 11, 0.18)" }
       );
     }
 
@@ -976,7 +976,7 @@ const App = {
         canvasOrg,
         data.organization_forecast,
         "Enterprise Quarterly Revenue (₹)",
-        { main: "#1F3864", forecast: "#2E7D74", band: "rgba(46, 125, 116, 0.15)" }
+        { main: "#6366F1", forecast: "#10B981", band: "rgba(16, 185, 129, 0.18)" }
       );
     }
 
@@ -985,7 +985,7 @@ const App = {
         canvasState,
         data.state_forecast,
         "State Public Expenditure (₹)",
-        { main: "#1F3864", forecast: "#DC2626", band: "rgba(220, 38, 38, 0.15)" }
+        { main: "#38BDF8", forecast: "#F43F5E", band: "rgba(244, 63, 94, 0.18)" }
       );
     }
 

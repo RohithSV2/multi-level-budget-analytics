@@ -409,6 +409,7 @@ def get_pbi_dax():
         return f.read(), 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 @app.route("/api/powerbi/powerquery", methods=["GET"])
+@app.route("/api/powerbi/pq", methods=["GET"])
 def get_pbi_pq():
     pq_file = os.path.join(PBI_DIR, "PowerQuery_M_Cleaning.pq")
     with open(pq_file, "r", encoding="utf-8") as f:

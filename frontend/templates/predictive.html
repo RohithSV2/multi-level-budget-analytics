@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predictive Analytics & What-If Engine — Multi-Level Budget Tracker Analytics</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- 1. APP HEADER -->
+  <!-- ========================================================================= -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">₹</div>
+      <div class="header-title-group">
+        <h1>MULTI-LEVEL BUDGET TRACKER ANALYTICS</h1>
+        <p>Data Visualization Lab Project • Holt-Winters Predictive Engine & Dynamic Policy What-If Simulation</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="badge-connected">● SQLite & Power BI Synced</div>
+      <button class="btn btn-teal btn-sm" id="btn-global-export-pbi">⚡ Sync Power BI CSVs</button>
+      <div id="header-user-container">
+        <!-- Injected by auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN WORKSPACE CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="main-wrapper">
+
+    <!-- Dedicated Page Navigation Banner -->
+    <div class="dedicated-nav-banner">
+      <div class="breadcrumb-trail">
+        <a href="/dashboard">🏠 Main Hub</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">📈 Predictive & What-If Engine</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Hub</a>
+        <div class="page-quick-jump">
+          <select onchange="if(this.value) window.location.href=this.value">
+            <option value="">Switch Mode...</option>
+            <option value="/dashboard">🏠 Main Hub</option>
+            <option value="/individual">👤 Individual Mode</option>
+            <option value="/organization">🏢 Organization Mode</option>
+            <option value="/state-nation">🇮🇳 State & Nation Mode</option>
+            <option value="/overview">📊 Executive Overview</option>
+            <option value="/predictive" selected>📈 Predictive & What-If</option>
+            <option value="/powerbi">⚡ Power BI Data Hub</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive What-If Simulation Studio Bento Card -->
+    <div class="card" style="margin-block-end: 1.5rem; background: var(--bg-elevated); border: 1px solid var(--border-glass);">
+      <div class="card-header" style="margin-block-end: 1rem;">
+        <div>
+          <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); color: #A5B4FC; padding: 0.2rem 0.65rem; border-radius: var(--radius-pill); font-size: 0.72rem; font-family: var(--font-mono); font-weight: 700; margin-block-end: 0.5rem;">
+            ✦ SIMULATION ENGINE
+          </div>
+          <h3 style="font-size: 1.25rem;">Interactive Policy & Scenario What-If Modeling</h3>
+          <p>Dynamically modify behavioral variables to simulate Holt-Winters time-series trajectories with 95% confidence bands.</p>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+        <!-- Slider 1 -->
+        <div style="background: var(--bg-surface); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 0.5rem;">
+            <label for="slider-ind-cut" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">
+              👤 Personal Spend Cut Target:
+            </label>
+            <span class="badge-connected" id="badge-ind-cut" style="font-family: var(--font-mono);">0%</span>
+          </div>
+          <input type="range" id="slider-ind-cut" min="-25" max="35" value="0" step="5" style="width: 100%;">
+          <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.35rem;">Discretionary spend cut % relative to baseline</small>
+        </div>
+
+        <!-- Slider 2 -->
+        <div style="background: var(--bg-surface); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 0.5rem;">
+            <label for="slider-org-growth" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">
+              🏢 Enterprise Revenue Growth:
+            </label>
+            <span class="badge-connected" id="badge-org-growth" style="font-family: var(--font-mono);">0%</span>
+          </div>
+          <input type="range" id="slider-org-growth" min="-10" max="25" value="0" step="5" style="width: 100%;">
+          <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.35rem;">Simulated top-line sales growth target %</small>
+        </div>
+
+        <!-- Slider 3 -->
+        <div style="background: var(--bg-surface); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-block-end: 0.5rem;">
+            <label for="slider-state-deficit" style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">
+              🇮🇳 State Deficit Adjustment:
+            </label>
+            <span class="badge-connected" id="badge-state-deficit" style="font-family: var(--font-mono);">0%</span>
+          </div>
+          <input type="range" id="slider-state-deficit" min="-2.0" max="2.0" value="0" step="0.5" style="width: 100%;">
+          <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 0.35rem;">Shift relative to standard 3.0% FRBM fiscal ceiling</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Decision Takeaway Alert -->
+    <div class="card" style="margin-block-end: 1.5rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 1.5rem;">💡</span>
+        <div>
+          <h4 style="margin: 0; color: var(--accent-emerald);">Predictive Insights & Policy Recommendations</h4>
+          <p id="predictive-takeaway-text" style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: var(--text-secondary);">
+            Loading predictive simulation model...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forecast Summary Projected KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card border-navy">
+        <div class="kpi-label">Projected Next Month Personal Outlay</div>
+        <div class="kpi-value" id="proj-kpi-ind" style="font-family: var(--font-mono);">₹0</div>
+        <div class="kpi-subtext">Micro Level (Jan 2025)</div>
+      </div>
+
+      <div class="kpi-card border-teal">
+        <div class="kpi-label">Projected Next Quarter Revenue</div>
+        <div class="kpi-value" id="proj-kpi-org" style="font-family: var(--font-mono);">₹0</div>
+        <div class="kpi-subtext">Meso Level (Q1 2025)</div>
+      </div>
+
+      <div class="kpi-card border-amber">
+        <div class="kpi-label">Projected Next Year Public Outlay</div>
+        <div class="kpi-value" id="proj-kpi-state" style="font-family: var(--font-mono);">₹0</div>
+        <div class="kpi-subtext">Macro Public Finance (2025)</div>
+      </div>
+    </div>
+
+    <!-- Forecast Charts Grid -->
+    <div class="visuals-grid">
+      <div class="card col-4">
+        <div class="card-header">
+          <div>
+            <h3>Micro: Personal Outlay Forecast</h3>
+            <p>6-Month Holt-Winters projection with 95% confidence intervals</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-md">
+          <canvas id="chart-predictive-ind"></canvas>
+        </div>
+      </div>
+
+      <div class="card col-4">
+        <div class="card-header">
+          <div>
+            <h3>Meso: Enterprise Revenue Forecast</h3>
+            <p>4-Quarter trajectory with exponential smoothing bands</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-md">
+          <canvas id="chart-predictive-org"></canvas>
+        </div>
+      </div>
+
+      <div class="card col-4">
+        <div class="card-header">
+          <div>
+            <h3>Macro: State Outlay Forecast</h3>
+            <p>3-Year sovereign expenditure model with volatility bands</p>
+          </div>
+        </div>
+        <div class="chart-container chart-container-md">
+          <canvas id="chart-predictive-state"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>Data Visualization Lab Project • Multi-Level Budget Tracker Analytics • NIE Mysuru</p>
+  </footer>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    window.addEventListener("DOMContentLoaded", async () => {
+      if (!Auth.requireAuth()) return;
+      App.bindWhatIfSliders();
+      await App.loadPredictive();
+    });
+  </script>
+</body>
+</html>

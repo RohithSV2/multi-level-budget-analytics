@@ -76,7 +76,7 @@
     <!-- ======================================================================= -->
     <div class="workspace-tab-panel active" id="pbi-panel-pipeline">
       <!-- Sync Banner -->
-      <div class="card" style="margin-block-end: 1.5rem; background: linear-gradient(135deg, #0A192F 0%, #172A45 100%); color: #FFFFFF;">
+      <div class="card" style="margin-block-end: 1.5rem; background: linear-gradient(135deg, rgba(13, 19, 31, 0.9) 0%, rgba(19, 27, 43, 0.9) 100%); border: 1px solid var(--border-glass); color: #FFFFFF;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div>
             <h3 style="color: #FFFFFF; font-size: 1.25rem;">Live Power BI Data Pipeline Synchronization</h3>
@@ -103,7 +103,7 @@
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
             <span style="font-size: 1.5rem;">👤</span>
             <div>
-              <h4 style="margin: 0; color: var(--primary-navy);">individual_clean.csv</h4>
+              <h4 style="margin: 0; color: var(--text-main);">individual_clean.csv</h4>
               <small style="color: var(--text-muted);">Micro Household Transactions & Targets</small>
             </div>
           </div>
@@ -118,7 +118,7 @@
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
             <span style="font-size: 1.5rem;">🏢</span>
             <div>
-              <h4 style="margin: 0; color: var(--primary-navy);">org_clean.csv</h4>
+              <h4 style="margin: 0; color: var(--text-main);">org_clean.csv</h4>
               <small style="color: var(--text-muted);">Meso Enterprise Superstore Model</small>
             </div>
           </div>
@@ -133,7 +133,7 @@
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
             <span style="font-size: 1.5rem;">🇮🇳</span>
             <div>
-              <h4 style="margin: 0; color: var(--primary-navy);">state_clean.csv</h4>
+              <h4 style="margin: 0; color: var(--text-main);">state_clean.csv</h4>
               <small style="color: var(--text-muted);">Macro RBI State Public Finances</small>
             </div>
           </div>
@@ -148,7 +148,7 @@
           <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
             <span style="font-size: 1.5rem;">🏛️</span>
             <div>
-              <h4 style="margin: 0; color: var(--primary-navy);">national_clean.csv</h4>
+              <h4 style="margin: 0; color: var(--text-main);">national_clean.csv</h4>
               <small style="color: var(--text-muted);">Macro Union Budget Official Allocations</small>
             </div>
           </div>
@@ -167,17 +167,17 @@
             <p>Conformed multi-tier architecture connecting Micro, Meso & Macro fact tables via a shared Date Dimension</p>
           </div>
         </div>
-        <div style="background: #F8FAFC; border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; text-align: center;">
+        <div style="background: var(--bg-elevated); border: 1px dashed var(--border-glass); border-radius: var(--radius-md); padding: 1.5rem; text-align: center;">
           <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-            <div style="background: var(--primary-navy); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+            <div style="background: var(--accent-cyan); color: #070A11; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 800;">
               👤 Fact_Individual
             </div>
             <div style="color: var(--text-muted); font-size: 1.2rem;">&larr; (1:* via Date) &rarr;</div>
-            <div style="background: var(--accent-amber); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+            <div style="background: var(--accent-amber); color: #070A11; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 800;">
               📅 Dim_Date (Conformed Dimension)
             </div>
             <div style="color: var(--text-muted); font-size: 1.2rem;">&larr; (1:* via Date) &rarr;</div>
-            <div style="background: var(--accent-teal); color: #fff; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 700;">
+            <div style="background: var(--accent-indigo); color: #FFFFFF; padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 800;">
               🏢 Fact_OrgSuperstore
             </div>
           </div>
@@ -200,11 +200,11 @@
             <p>Adjust economic policy assumptions to dynamically project 12-month future trajectories</p>
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1rem; background: #F8FAFC; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding: 1.25rem; background: var(--bg-elevated); border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
           <!-- Slider 1 -->
           <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
-              <label for="slider-ind-cut" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+              <label for="slider-ind-cut" style="font-weight: 700; font-size: 0.85rem; color: #FFFFFF;">
                 👤 Micro: Personal Spending Cut Policy
               </label>
               <span id="badge-ind-cut" style="font-weight: 700; color: var(--accent-amber); font-size: 0.85rem;">0%</span>
@@ -216,10 +216,10 @@
           <!-- Slider 2 -->
           <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
-              <label for="slider-org-growth" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+              <label for="slider-org-growth" style="font-weight: 700; font-size: 0.85rem; color: #FFFFFF;">
                 🏢 Meso: Enterprise Revenue Growth Target
               </label>
-              <span id="badge-org-growth" style="font-weight: 700; color: var(--accent-teal); font-size: 0.85rem;">0%</span>
+              <span id="badge-org-growth" style="font-weight: 700; color: var(--accent-emerald); font-size: 0.85rem;">0%</span>
             </div>
             <input type="range" id="slider-org-growth" min="-15" max="35" value="0" step="5" style="width: 100%;">
             <small style="color: var(--text-muted); font-size: 0.75rem;">Simulate quarterly corporate expansion or margin pressure</small>
@@ -228,10 +228,10 @@
           <!-- Slider 3 -->
           <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
-              <label for="slider-state-deficit" style="font-weight: 700; font-size: 0.85rem; color: var(--primary-navy);">
+              <label for="slider-state-deficit" style="font-weight: 700; font-size: 0.85rem; color: #FFFFFF;">
                 🇮🇳 Macro: Target Fiscal Deficit (% of GSDP)
               </label>
-              <span id="badge-state-deficit" style="font-weight: 700; color: var(--primary-navy); font-size: 0.85rem;">0%</span>
+              <span id="badge-state-deficit" style="font-weight: 700; color: var(--accent-cyan); font-size: 0.85rem;">0%</span>
             </div>
             <input type="range" id="slider-state-deficit" min="-2.0" max="2.0" value="0" step="0.5" style="width: 100%;">
             <small style="color: var(--text-muted); font-size: 0.75rem;">Policy target shift relative to standard 3.0% FRBM benchmark</small>
@@ -240,12 +240,12 @@
       </div>
 
       <!-- Decision Takeaway Alert -->
-      <div class="card" style="margin-block-end: 1.5rem; background: #F0FDF4; border-color: #86EFAC;">
+      <div class="card" style="margin-block-end: 1.5rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25);">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <span style="font-size: 1.5rem;">💡</span>
           <div>
-            <h4 style="margin: 0; color: #166534;">Predictive Insights & Policy Recommendations</h4>
-            <p id="predictive-takeaway-text" style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: #15803D;">
+            <h4 style="margin: 0; color: var(--accent-emerald);">Predictive Insights & Policy Recommendations</h4>
+            <p id="predictive-takeaway-text" style="margin: 0.25rem 0 0 0; font-size: 0.88rem; color: var(--text-secondary);">
               Loading predictive simulation model...
             </p>
           </div>
@@ -304,7 +304,7 @@
           </div>
           <button type="button" class="btn btn-teal btn-sm" id="btn-copy-dax">📋 Copy All DAX Code</button>
         </div>
-        <pre id="dax-code-block" style="background: #0A192F; color: #E2E8F0; padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 0.85rem; line-height: 1.5;">
+        <pre id="dax-code-block" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-code); padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6;">
 Loading DAX measures...
         </pre>
       </div>
@@ -317,7 +317,7 @@ Loading DAX measures...
           </div>
           <button type="button" class="btn btn-outline btn-sm" id="btn-copy-pq">📋 Copy M-Code</button>
         </div>
-        <pre id="pq-code-block" style="background: #0A192F; color: #E2E8F0; padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 0.85rem; line-height: 1.5;">
+        <pre id="pq-code-block" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); color: var(--text-code); padding: 1.25rem; border-radius: var(--radius-md); max-height: 400px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6;">
 Loading Power Query script...
         </pre>
       </div>

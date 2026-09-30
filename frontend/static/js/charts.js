@@ -1,8 +1,23 @@
 // ==============================================================================
-// MULTI-LEVEL BUDGET TRACKER ANALYTICS — CHARTS & VISUALIZATIONS ENGINE
-// Powered by Chart.js with Power BI Theme Palette
-// Primary: #1F3864, Accent: #C77F16, Teal: #2E7D74, Red: #DC2626
+// MULTI-LEVEL BUDGET TRACKER ANALYTICS — BESPOKE FINTECH CHART ENGINE
+// Powered by Chart.js with Cyber-Fintech Neon Dark Theme Palette
+// Colors: Emerald (#10B981), Cyan (#06B6D4), Indigo (#6366F1), Amber (#F59E0B), Rose (#F43F5E)
 // ==============================================================================
+
+// Set Global Chart.js Defaults for Dark Obsidian Theme
+if (typeof Chart !== "undefined") {
+  Chart.defaults.color = "#94A3B8";
+  Chart.defaults.font.family = "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.plugins.tooltip.backgroundColor = "rgba(13, 19, 31, 0.95)";
+  Chart.defaults.plugins.tooltip.titleColor = "#FFFFFF";
+  Chart.defaults.plugins.tooltip.bodyColor = "#CBD5E1";
+  Chart.defaults.plugins.tooltip.borderColor = "rgba(255, 255, 255, 0.15)";
+  Chart.defaults.plugins.tooltip.borderWidth = 1;
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.plugins.tooltip.cornerRadius = 8;
+  Chart.defaults.plugins.legend.labels.color = "#CBD5E1";
+}
 
 const ChartEngine = {
   instances: {},
@@ -28,28 +43,46 @@ const ChartEngine = {
     const ctx = this.getCtx(canvasId);
     if (!ctx || !comboData) return;
 
+    // Enhance datasets with modern neon strokes
+    const styledDatasets = (comboData.datasets || []).map((ds, i) => {
+      const colors = ["#10B981", "#F43F5E", "#06B6D4", "#6366F1"];
+      const bgColors = ["rgba(16, 185, 129, 0.2)", "rgba(244, 63, 94, 0.2)", "rgba(6, 182, 212, 0.2)", "rgba(99, 102, 241, 0.2)"];
+      return {
+        ...ds,
+        borderColor: colors[i % colors.length],
+        backgroundColor: ds.type === 'line' ? bgColors[i % bgColors.length] : colors[i % colors.length],
+        borderWidth: 2.5,
+        borderRadius: 6
+      };
+    });
+
     this.instances[canvasId] = new Chart(ctx, {
       data: {
         labels: comboData.labels,
-        datasets: comboData.datasets
+        datasets: styledDatasets
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
         plugins: {
-          legend: { position: "top", labels: { boxWidth: 14, font: { family: "Segoe UI", weight: "600" } } },
+          legend: { position: "top", labels: { boxWidth: 14, font: { weight: "600" } } },
           tooltip: {
             callbacks: {
-              label: (context) => ` ${context.dataset.label}: ₹${Number(context.raw).toLocaleString()}`
+              label: (context) => ` ${context.dataset.label}: ₹${Number(context.raw).toLocaleString('en-IN')}`
             }
           }
         },
         scales: {
-          x: { grid: { display: false } },
+          x: { 
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: { color: "#94A3B8" }
+          },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString()))
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -65,9 +98,9 @@ const ChartEngine = {
     const ctx = this.getCtx(canvasId);
     if (!ctx || !donutData) return;
 
-    const colors = [
-      "#1F3864", "#C77F16", "#2E7D74", "#2563EB", "#D97706",
-      "#0D9488", "#4F46E5", "#DC2626", "#8B5CF6", "#059669"
+    const neonPalette = [
+      "#10B981", "#06B6D4", "#6366F1", "#F59E0B", "#F43F5E",
+      "#8B5CF6", "#38BDF8", "#34D399", "#EC4899", "#F97316"
     ];
 
     this.instances[canvasId] = new Chart(ctx, {
@@ -76,19 +109,26 @@ const ChartEngine = {
         labels: donutData.labels,
         datasets: [{
           data: donutData.data,
-          backgroundColor: colors.slice(0, donutData.labels.length),
-          borderWidth: 2,
-          borderColor: "#FFFFFF"
+          backgroundColor: neonPalette.slice(0, donutData.labels.length),
+          borderWidth: 3,
+          borderColor: "#0D131F"
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "right", labels: { boxWidth: 12, font: { family: "Segoe UI", size: 11 } } },
+          legend: { 
+            position: "right", 
+            labels: { 
+              boxWidth: 12, 
+              color: "#CBD5E1", 
+              font: { size: 11, weight: "600" } 
+            } 
+          },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` ${ctx.label}: ₹${Number(ctx.raw).toLocaleString()}`
+              label: (ctx) => ` ${ctx.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
             }
           }
         },
@@ -110,20 +150,21 @@ const ChartEngine = {
           {
             label: "Actual Total Expense",
             data: lineData.actual_expense,
-            borderColor: "#1F3864",
-            backgroundColor: "rgba(31, 56, 100, 0.08)",
+            borderColor: "#06B6D4",
+            backgroundColor: "rgba(6, 182, 212, 0.12)",
             fill: true,
-            tension: 0.25,
+            tension: 0.35,
             borderWidth: 2.5,
-            pointRadius: 3
+            pointRadius: 4,
+            pointBackgroundColor: "#06B6D4"
           },
           {
-            label: "Total Planned Budget Threshold",
-            data: lineData.planned_budget,
-            borderColor: "#C77F16",
-            borderDash: [6, 6],
-            borderWidth: 2,
+            label: "Monthly Budget Limit",
+            data: lineData.budget_limit,
+            borderColor: "#F59E0B",
+            borderDash: [5, 5],
             fill: false,
+            borderWidth: 2,
             pointRadius: 0
           }
         ]
@@ -132,17 +173,20 @@ const ChartEngine = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "top", labels: { boxWidth: 14 } },
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString()}`
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
             }
           }
         },
         scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString())
+              color: "#94A3B8",
+              callback: (val) => "₹" + Number(val).toLocaleString('en-IN')
             }
           }
         }
@@ -155,6 +199,9 @@ const ChartEngine = {
     const ctx = this.getCtx(canvasId);
     if (!ctx || !barData) return;
 
+    // Use neon emerald for favorable (negative or positive variance depending on logic), rose for overspend
+    const colors = barData.variance.map(v => v >= 0 ? "#10B981" : "#F43F5E");
+
     this.instances[canvasId] = new Chart(ctx, {
       type: "bar",
       data: {
@@ -162,8 +209,8 @@ const ChartEngine = {
         datasets: [{
           label: "Budget Variance (₹)",
           data: barData.variance,
-          backgroundColor: barData.colors,
-          borderRadius: 4
+          backgroundColor: colors,
+          borderRadius: 6
         }]
       },
       options: {
@@ -174,15 +221,21 @@ const ChartEngine = {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` Variance: ₹${Number(ctx.raw).toLocaleString()} (${barData.flags[ctx.dataIndex]})`
+              label: (ctx) => ` Variance: ₹${Number(ctx.raw).toLocaleString('en-IN')} (${barData.flags[ctx.dataIndex]})`
             }
           }
         },
         scales: {
           x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + Number(val).toLocaleString()
+              color: "#94A3B8",
+              callback: (val) => "₹" + Number(val).toLocaleString('en-IN')
             }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: "#CBD5E1", font: { weight: "600" } }
           }
         }
       }
@@ -203,16 +256,16 @@ const ChartEngine = {
         labels: clusteredData.departments,
         datasets: [
           {
-            label: "Total Revenue (Org)",
+            label: "Department Revenue (Sales)",
             data: clusteredData.revenue,
-            backgroundColor: "#1F3864",
-            borderRadius: 4
+            backgroundColor: "#06B6D4",
+            borderRadius: 6
           },
           {
-            label: "Total Cost (Org)",
+            label: "Operating Cost",
             data: clusteredData.cost,
-            backgroundColor: "#C77F16",
-            borderRadius: 4
+            backgroundColor: "#6366F1",
+            borderRadius: 6
           }
         ]
       },
@@ -220,17 +273,20 @@ const ChartEngine = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "top" },
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString()}`
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
             }
           }
         },
         scales: {
+          x: { grid: { display: false }, ticks: { color: "#CBD5E1", font: { weight: "600" } } },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val / 1e5).toFixed(1) + " L")
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -251,13 +307,13 @@ const ChartEngine = {
           {
             label: "Quarterly Revenue Growth %",
             data: growthData.growth_pct,
-            borderColor: "#2E7D74",
-            backgroundColor: "rgba(46, 125, 116, 0.15)",
+            borderColor: "#10B981",
+            backgroundColor: "rgba(16, 185, 129, 0.15)",
             borderWidth: 2.5,
             fill: true,
-            tension: 0.3,
-            pointRadius: 4,
-            pointBackgroundColor: "#2E7D74"
+            tension: 0.35,
+            pointRadius: 5,
+            pointBackgroundColor: "#10B981"
           }
         ]
       },
@@ -265,7 +321,7 @@ const ChartEngine = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "top" },
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
               label: (ctx) => ` Growth: ${Number(ctx.raw).toFixed(2)}%`
@@ -273,8 +329,11 @@ const ChartEngine = {
           }
         },
         scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
+              color: "#94A3B8",
               callback: (val) => `${val}%`
             }
           }
@@ -297,22 +356,24 @@ const ChartEngine = {
         labels: stateLineData.years,
         datasets: [
           {
-            label: "Total State Revenue",
+            label: "State Revenue Receipts",
             data: stateLineData.revenue,
-            borderColor: "#2E7D74",
-            backgroundColor: "rgba(46, 125, 116, 0.1)",
+            borderColor: "#06B6D4",
+            backgroundColor: "rgba(6, 182, 212, 0.12)",
             fill: true,
-            tension: 0.25,
-            borderWidth: 2.5
+            tension: 0.3,
+            borderWidth: 2.5,
+            pointRadius: 4
           },
           {
-            label: "Total State Expenditure",
+            label: "State Expenditures",
             data: stateLineData.expenditure,
-            borderColor: "#DC2626",
-            backgroundColor: "rgba(220, 38, 38, 0.1)",
+            borderColor: "#F43F5E",
+            backgroundColor: "rgba(244, 63, 94, 0.12)",
             fill: true,
-            tension: 0.25,
-            borderWidth: 2.5
+            tension: 0.3,
+            borderWidth: 2.5,
+            pointRadius: 4
           }
         ]
       },
@@ -320,17 +381,20 @@ const ChartEngine = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: "top" },
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString()}`
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
             }
           }
         },
         scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val / 1e5).toFixed(1) + " L")
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -350,8 +414,8 @@ const ChartEngine = {
         datasets: [{
           label: "National Sector Allocation (₹ Cr)",
           data: nationalData.allocation,
-          backgroundColor: "#1F3864",
-          borderRadius: 4
+          backgroundColor: "#6366F1",
+          borderRadius: 6
         }]
       },
       options: {
@@ -362,15 +426,21 @@ const ChartEngine = {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` Allocation: ₹${Number(ctx.raw).toLocaleString()} Cr (${nationalData.share_pct[ctx.dataIndex]}% share)`
+              label: (ctx) => ` Allocation: ₹${Number(ctx.raw).toLocaleString('en-IN')} Cr (${nationalData.share_pct[ctx.dataIndex]}% share)`
             }
           }
         },
         scales: {
           x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + Number(val).toLocaleString() + " Cr"
+              color: "#94A3B8",
+              callback: (val) => "₹" + Number(val).toLocaleString('en-IN') + " Cr"
             }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: "#CBD5E1", font: { weight: "600" } }
           }
         }
       }
@@ -405,42 +475,46 @@ const ChartEngine = {
     lowerLine.push(forecastObj.history_values[histLen - 1]);
     lowerLine.push(...forecastObj.lower_bound);
 
+    const themeColors = colorTheme || { main: "#06B6D4", forecast: "#10B981", band: "rgba(16, 185, 129, 0.15)" };
+
     this.instances[canvasId] = new Chart(ctx, {
       type: "line",
       data: {
         labels: allLabels,
         datasets: [
           {
-            label: "Historical",
+            label: "Historical Actuals",
             data: histLine,
-            borderColor: colorTheme.main,
+            borderColor: themeColors.main,
             borderWidth: 2.5,
-            fill: false,
-            tension: 0.2
+            pointRadius: 3,
+            pointBackgroundColor: themeColors.main
           },
           {
-            label: "Forecast Projection",
+            label: "Forecast Trajectory",
             data: forecastLine,
-            borderColor: colorTheme.forecast,
+            borderColor: themeColors.forecast,
             borderDash: [5, 5],
             borderWidth: 2.5,
-            fill: false,
-            tension: 0.2
+            pointRadius: 4,
+            pointBackgroundColor: themeColors.forecast
           },
           {
             label: "95% Upper Bound",
             data: upperLine,
-            borderColor: "transparent",
-            backgroundColor: colorTheme.band,
+            borderColor: "rgba(255, 255, 255, 0.2)",
+            borderWidth: 1,
+            pointRadius: 0,
             fill: "+1",
-            pointRadius: 0
+            backgroundColor: themeColors.band
           },
           {
             label: "95% Lower Bound",
             data: lowerLine,
-            borderColor: "transparent",
-            backgroundColor: "transparent",
-            pointRadius: 0
+            borderColor: "rgba(255, 255, 255, 0.2)",
+            borderWidth: 1,
+            pointRadius: 0,
+            fill: false
           }
         ]
       },
@@ -448,21 +522,20 @@ const ChartEngine = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            labels: {
-              filter: (item) => item.text === "Historical" || item.text === "Forecast Projection" || item.text === "95% Upper Bound"
-            }
-          },
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
-              label: (ctx) => ctx.raw ? ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString()}` : ""
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
             }
           }
         },
         scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
           y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString()))
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
             }
           }
         }
