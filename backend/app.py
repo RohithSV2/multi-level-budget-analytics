@@ -80,7 +80,7 @@ def auth_register():
 def auth_demo():
     try:
         body = request.get_json(force=True) or {}
-        role = body.get("role", "student")
+        role = body.get("role", "user")
         user = get_demo_user(role)
         if user:
             return jsonify({
@@ -97,9 +97,9 @@ def auth_me():
     return jsonify({
         "status": "online",
         "demo_profiles": [
-            {"username": "student", "name": "Rohith S V", "role": "Student Researcher", "pass": "student123"},
-            {"username": "admin", "name": "Lead Financial Administrator", "role": "System Administrator", "pass": "admin123"},
-            {"username": "demo", "name": "Guest Reviewer", "role": "Guest Analyst", "pass": "demo123"}
+            {"username": "admin", "name": "Administrator", "role": "Admin", "pass": "admin123"},
+            {"username": "user", "name": "Verified User", "role": "User", "pass": "user123"},
+            {"username": "guest", "name": "Guest Reviewer", "role": "Guest", "pass": "guest123"}
         ]
     })
 

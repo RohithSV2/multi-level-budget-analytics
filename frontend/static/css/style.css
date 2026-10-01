@@ -1418,3 +1418,451 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--text-muted);
   margin-block-start: 4rem;
 }
+
+/* ==========================================================================
+   BUDGETRIX TEMPLATE THEME & SIDEBAR SUITE (Reference Exact Match)
+   ========================================================================== */
+:root {
+  --bx-bg-base: #080B11;
+  --bx-bg-sidebar: #090D15;
+  --bx-bg-card: #0C111C;
+  --bx-bg-elevated: #0E1422;
+  --bx-coral: #FF5738;
+  --bx-coral-hover: #E5492B;
+  --bx-coral-glow: rgba(255, 87, 56, 0.28);
+  --bx-cyan: #38BDF8;
+  --bx-cyan-subtle: rgba(56, 189, 248, 0.12);
+  --bx-border-subtle: rgba(255, 255, 255, 0.08);
+  --bx-border-blue: rgba(56, 189, 248, 0.25);
+  --bx-text-main: #FFFFFF;
+  --bx-text-muted: #94A3B8;
+  --bx-font-tech: 'JetBrains Mono', monospace;
+}
+
+/* Master App Container */
+.bx-app-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bx-bg-base);
+  color: #F8FAFC;
+  font-family: var(--font-sans);
+}
+
+/* BUDGETRIX Dark Left Sidebar */
+.bx-sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  background-color: var(--bx-bg-sidebar);
+  border-right: 1px solid var(--bx-border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease;
+  z-index: 100;
+}
+
+.bx-sidebar.collapsed {
+  width: 76px;
+  padding: 1.5rem 0.5rem;
+}
+
+.bx-sidebar.collapsed .bx-brand-title,
+.bx-sidebar.collapsed .bx-nav-text,
+.bx-sidebar.collapsed .bx-status-box,
+.bx-sidebar.collapsed .bx-collapse-label {
+  display: none;
+}
+
+.bx-sidebar.collapsed .bx-nav-link {
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+/* Sidebar Brand */
+.bx-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem 1.75rem 0.5rem;
+}
+
+.bx-logo-box {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 87, 56, 0.12);
+  border: 2px solid var(--bx-coral);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bx-coral);
+  flex-shrink: 0;
+  box-shadow: 0 0 12px var(--bx-coral-glow);
+}
+
+.bx-logo-box svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--bx-coral);
+}
+
+.bx-brand-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #FFFFFF;
+  text-transform: uppercase;
+}
+
+/* Sidebar Navigation */
+.bx-nav-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+}
+
+.bx-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 8px;
+  color: var(--bx-text-muted);
+  text-decoration: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  border-left: 3px solid transparent;
+}
+
+.bx-nav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #FFFFFF;
+}
+
+.bx-nav-link.active {
+  background: rgba(255, 87, 56, 0.08);
+  color: var(--bx-coral);
+  font-weight: 700;
+  border-left: 3px solid var(--bx-coral);
+}
+
+.bx-nav-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bx-nav-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Sidebar Footer / Status & Collapse */
+.bx-sidebar-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.bx-status-box {
+  background: #0E131F;
+  border: 1px solid var(--bx-border-subtle);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+}
+
+.bx-status-label {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bx-cyan);
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.bx-status-text {
+  font-size: 0.82rem;
+  color: var(--bx-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.bx-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bx-coral);
+  display: inline-block;
+  box-shadow: 0 0 8px rgba(255, 87, 56, 0.7);
+}
+
+.bx-status-dot.green {
+  background: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+}
+
+.bx-collapse-btn {
+  background: #0E131F;
+  border: 1px solid var(--bx-border-subtle);
+  color: var(--bx-text-muted);
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+
+.bx-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+/* BUDGETRIX Main Content Container */
+.bx-main {
+  flex: 1;
+  min-width: 0;
+  padding: 2.25rem 3rem;
+  overflow-y: auto;
+  max-width: 1540px;
+}
+
+/* Header Breadcrumb Tag */
+.bx-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--bx-cyan);
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Page Titles */
+.bx-page-title {
+  font-family: 'Space Mono', 'JetBrains Mono', monospace;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.45rem;
+  line-height: 1.15;
+}
+
+.bx-page-subtitle {
+  color: var(--bx-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin-bottom: 1.6rem;
+  max-width: 950px;
+}
+
+/* Action Row (Buttons, Year Picker, Badges) */
+.bx-action-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+}
+
+.bx-btn-coral {
+  background: var(--bx-coral);
+  color: #FFFFFF;
+  border: none;
+  padding: 0.65rem 1.35rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(255, 87, 56, 0.3);
+}
+
+.bx-btn-coral:hover {
+  background: var(--bx-coral-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 87, 56, 0.4);
+}
+
+/* Segmented Year Picker */
+.bx-year-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #0E131F;
+  border: 1px solid var(--bx-border-subtle);
+  border-radius: 8px;
+  padding: 0.25rem 0.4rem;
+}
+
+.bx-year-label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748B;
+  letter-spacing: 0.05em;
+  padding: 0 0.5rem;
+}
+
+.bx-year-btn {
+  background: transparent;
+  border: none;
+  color: var(--bx-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bx-year-btn:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bx-year-btn.active {
+  background: var(--bx-coral);
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* Status Badges */
+.bx-badge-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.08);
+  color: #F59E0B;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+}
+
+.bx-badge-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  background: rgba(16, 185, 129, 0.08);
+  color: #10B981;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+}
+
+/* Blue Callout Card */
+.bx-callout-blue {
+  background: #0E1626;
+  border: 1px solid var(--bx-border-blue);
+  border-left: 4px solid var(--bx-cyan);
+  border-radius: 8px;
+  padding: 1.15rem 1.4rem;
+  margin-bottom: 1.75rem;
+}
+
+.bx-callout-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-bottom: 0.35rem;
+}
+
+.bx-callout-text {
+  color: var(--bx-text-muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+/* 3 Summary Insights Columns */
+.bx-insights-grid {
+  background: var(--bx-bg-card);
+  border: 1px solid var(--bx-border-subtle);
+  border-radius: 12px;
+  padding: 1.35rem 1.6rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.bx-insight-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bx-insight-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--bx-cyan);
+}
+
+.bx-insight-desc {
+  font-size: 0.86rem;
+  color: var(--bx-text-muted);
+  line-height: 1.55;
+}
+
+/* Responsive Breakpoints for BUDGETRIX */
+@media (max-width: 992px) {
+  .bx-app-container {
+    flex-direction: column;
+  }
+  .bx-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .bx-sidebar.collapsed {
+    width: 100%;
+  }
+  .bx-insights-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  .bx-main {
+    padding: 1.5rem;
+  }
+}
+

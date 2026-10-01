@@ -134,9 +134,11 @@ def init_db():
     user_count = cursor.fetchone()[0]
     if user_count == 0:
         demo_accounts = [
-            ("admin", hash_password("admin123"), "Lead Financial Administrator", "System Administrator"),
-            ("student", hash_password("student123"), "Rohith S V", "Student Researcher"),
-            ("demo", hash_password("demo123"), "Guest Reviewer", "Guest Analyst")
+            ("admin", hash_password("admin123"), "Administrator", "Admin"),
+            ("user", hash_password("user123"), "Verified User", "User"),
+            ("guest", hash_password("guest123"), "Guest Reviewer", "Guest"),
+            ("student", hash_password("student123"), "Verified User", "User"),
+            ("demo", hash_password("demo123"), "Guest Reviewer", "Guest")
         ]
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cursor.executemany("""
@@ -341,9 +343,11 @@ def create_user(username, password, full_name, role="Financial Analyst"):
 
 def get_demo_user(role_key):
     role_map = {
-        "student": "student",
         "admin": "admin",
-        "demo": "demo"
+        "user": "user",
+        "guest": "guest",
+        "student": "user",
+        "demo": "guest"
     }
     uname = role_map.get(str(role_key).lower())
     if not uname:

@@ -481,6 +481,39 @@ const App = {
         healthBadge.style.color = data.kpis.health_score >= 70 ? 'var(--success-green)' : (data.kpis.health_score >= 50 ? 'var(--accent-amber)' : 'var(--danger-crimson)');
       }
 
+      // Update BUDGETRIX 3 Summary Insights Columns
+      const spendInsightEl = document.getElementById("bx-insight-spend");
+      const varianceInsightEl = document.getElementById("bx-insight-variance");
+      const savingsInsightEl = document.getElementById("bx-insight-savings");
+
+      if (spendInsightEl) {
+        let maxCat = "", maxVal = 0;
+        Object.entries(categoriesPayload).forEach(([k, v]) => {
+          if (v.actual > maxVal) { maxVal = v.actual; maxCat = k; }
+        });
+        const maxK = (maxVal / 1000).toFixed(0);
+        spendInsightEl.textContent = maxCat
+          ? `Your biggest spend this year is ${maxCat} at ₹${maxK}K. Trim that first if you want savings to rise.`
+          : `Add category allocations above to analyze your highest spending drivers.`;
+      }
+
+      if (varianceInsightEl) {
+        const diff = Math.abs(data.kpis.total_planned_budget - data.kpis.total_expense);
+        const diffK = (diff / 1000).toFixed(0);
+        const util = data.kpis.budget_utilization_pct;
+        if (data.kpis.total_expense <= data.kpis.total_planned_budget) {
+          varianceInsightEl.textContent = `You stayed inside the plan by ₹${diffK}K — spending is ${util}% of what you set aside.`;
+        } else {
+          varianceInsightEl.textContent = `Spending exceeded your planned budget by ₹${diffK}K — utilization is ${util}% of budget limit.`;
+        }
+      }
+
+      if (savingsInsightEl) {
+        const incL = (data.kpis.total_income / 100000).toFixed(1);
+        const savK = (data.kpis.net_savings / 1000).toFixed(0);
+        savingsInsightEl.textContent = `Out of ₹${incL}L earned, ₹${savK}K stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
+      }
+
       // Render Visuals from User Input
       ChartEngine.renderIndividualDonut("chart-ind-donut", data.donut_chart);
       ChartEngine.renderIndividualLine("chart-ind-line", data.trend_line);
@@ -559,22 +592,61 @@ const App = {
     try {
       const data = await api.calculateOrganization(payload);
 
-      // Update Org KPIs
-      document.getElementById("org-kpi-revenue").textContent = `₹${data.kpis.total_revenue.toLocaleString('en-IN')}`;
-      document.getElementById("org-kpi-cost").textContent = `₹${data.kpis.total_cost.toLocaleString('en-IN')}`;
+      // Update Org KPIs safely (both legacy and BUDGETRIX IDs supported)
+      const salesEl = document.getElementById("org-kpi-sales") || document.getElementById("org-kpi-revenue");
+      if (salesEl) salesEl.textContent = `₹${data.kpis.total_revenue.toLocaleString('en-IN')}`;
+
+      const costEl = document.getElementById("org-kpi-cost");
+      if (costEl) costEl.textContent = `₹${data.kpis.total_cost.toLocaleString('en-IN')}`;
       
       const profitEl = document.getElementById("org-kpi-profit");
-      profitEl.textContent = `₹${data.kpis.total_profit.toLocaleString('en-IN')}`;
-      profitEl.closest(".kpi-card").className = `kpi-card ${data.kpis.total_profit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+      if (profitEl) {
+        profitEl.textContent = `₹${data.kpis.total_profit.toLocaleString('en-IN')}`;
+        if (profitEl.closest(".kpi-card")) {
+          profitEl.closest(".kpi-card").className = `kpi-card ${data.kpis.total_profit >= 0 ? 'kpi-positive' : 'kpi-negative'}`;
+        }
+      }
 
-      document.getElementById("org-kpi-variance").textContent = `₹${data.kpis.budget_variance.toLocaleString('en-IN')}`;
-      document.getElementById("org-kpi-utilization").textContent = `${data.kpis.budget_utilization_pct}%`;
-      document.getElementById("org-kpi-growth").textContent = `${data.kpis.profit_margin_pct}% Margin`;
-      document.getElementById("org-kpi-top-dept").textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e7).toFixed(1)} Cr)`;
+      const marginEl = document.getElementById("org-kpi-margin") || document.getElementById("org-kpi-growth");
+      if (marginEl) marginEl.textContent = `${data.kpis.profit_margin_pct}%`;
+
+      const varianceEl = document.getElementById("org-kpi-variance");
+      if (varianceEl) varianceEl.textContent = `₹${data.kpis.budget_variance.toLocaleString('en-IN')}`;
+
+      const utilEl = document.getElementById("org-kpi-utilization");
+      if (utilEl) utilEl.textContent = `${data.kpis.budget_utilization_pct}%`;
+
+      // Update BUDGETRIX 3 Summary Insights for Org
+      const orgCostInsight = document.getElementById("org-insight-cost");
+      const orgMarginInsight = document.getElementById("org-insight-margin");
+      const orgProfitInsight = document.getElementById("org-insight-profit");
+
+      if (orgCostInsight) {
+        const topDept = data.kpis.top_department || "Corporate";
+        const topCr = (data.kpis.top_department_cost / 1e7).toFixed(1);
+        orgCostInsight.textContent = `${topDept} division is the largest operational cost driver at ₹${topCr} Cr.`;
+      }
+
+      if (orgMarginInsight) {
+        const costBurn = data.kpis.total_revenue > 0 ? ((data.kpis.total_cost / data.kpis.total_revenue) * 100).toFixed(1) : 0;
+        orgMarginInsight.textContent = `Operating cost is ${costBurn}% of total sales — staying inside the operational envelope.`;
+      }
+
+      if (orgProfitInsight) {
+        const profitCr = (data.kpis.total_profit / 1e7).toFixed(1);
+        orgProfitInsight.textContent = `Enterprise revenue yields ₹${profitCr} Cr net operating margin (${data.kpis.profit_margin_pct}% return).`;
+      }
 
       // Render Visuals
-      ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
-      ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
+      if (document.getElementById("chart-org-clustered")) {
+        ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
+      }
+      if (document.getElementById("chart-org-dept-bar")) {
+        ChartEngine.renderOrgClusteredBar("chart-org-dept-bar", data.clustered_bar);
+      }
+      if (document.getElementById("chart-org-growth")) {
+        ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
+      }
 
       // Treemap
       const treemapContainer = document.getElementById("org-treemap-container");
@@ -693,22 +765,32 @@ const App = {
 
       // Render Transactions Table (support both tx-table-body and ind-table-body)
       const tbody = document.getElementById("tx-table-body") || document.getElementById("ind-table-body");
-      if (tbody && data.transactions) {
-        tbody.innerHTML = data.transactions.map(tx => `
-          <tr>
-            <td><strong>#${tx.id}</strong></td>
-            <td>${tx.date}</td>
-            <td><span class="tag-badge tag-mode">${tx.mode}</span></td>
-            <td>${tx.category}</td>
-            <td>${tx.subcategory || '-'}</td>
-            <td>${tx.note || '-'}</td>
-            <td><strong>₹${tx.amount.toLocaleString('en-IN')}</strong></td>
-            <td><span class="tag-badge ${tx.income_expense === 'Income' ? 'tag-income' : 'tag-expense'}">${tx.income_expense}</span></td>
-            <td>
-              <button class="btn btn-outline btn-sm" onclick="App.deleteTransaction(${tx.id})">🗑️</button>
-            </td>
-          </tr>
-        `).join("");
+      if (tbody) {
+        if (data.transactions && data.transactions.length > 0) {
+          tbody.innerHTML = data.transactions.map(tx => `
+            <tr>
+              <td><strong>#${tx.id}</strong></td>
+              <td>${tx.date}</td>
+              <td><span class="tag-badge tag-mode">${tx.mode}</span></td>
+              <td>${tx.category}</td>
+              <td>${tx.subcategory || '-'}</td>
+              <td>${tx.note || '-'}</td>
+              <td><strong>₹${tx.amount.toLocaleString('en-IN')}</strong></td>
+              <td><span class="tag-badge ${tx.income_expense === 'Income' ? 'tag-income' : 'tag-expense'}">${tx.income_expense}</span></td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="App.deleteTransaction(${tx.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join("");
+        } else {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="9" style="text-align: center; color: var(--bx-text-muted); padding: 2rem;">
+                No transactions recorded yet. Use the Studio above to simulate your budget or record a new transaction.
+              </td>
+            </tr>
+          `;
+        }
       }
 
       // Populate category dropdown in budget editor modal
@@ -836,24 +918,35 @@ const App = {
         `).join("");
       }
 
-      // Orders sample table
-      const orderBody = document.getElementById("order-table-body");
-      if (orderBody && data.orders) {
-        orderBody.innerHTML = data.orders.map(o => `
-          <tr>
-            <td><strong>${o.order_id}</strong></td>
-            <td>${o.order_date}</td>
-            <td><span class="tag-badge tag-mode">${o.department}</span></td>
-            <td>${o.region}</td>
-            <td>${o.category}</td>
-            <td>₹${o.sales.toLocaleString('en-IN')}</td>
-            <td>₹${o.cost.toLocaleString('en-IN')}</td>
-            <td style="color: ${o.profit >= 0 ? 'var(--accent-teal)' : 'var(--danger-crimson)'}; font-weight: 600;">₹${o.profit.toLocaleString('en-IN')}</td>
-            <td>
-              <button class="btn btn-outline btn-sm" onclick="App.deleteOrder(${o.id})">🗑️</button>
-            </td>
-          </tr>
-        `).join("");
+      // Orders sample table (support both order-table-body and org-table-body)
+      const orderBody = document.getElementById("order-table-body") || document.getElementById("org-table-body");
+      if (orderBody) {
+        if (data.orders && data.orders.length > 0) {
+          orderBody.innerHTML = data.orders.map(o => `
+            <tr>
+              <td><strong>${o.order_id}</strong></td>
+              <td>${o.order_date}</td>
+              <td><span class="tag-badge tag-mode">${o.department}</span></td>
+              <td>${o.region}</td>
+              <td>${o.category}</td>
+              <td>${o.product_name || o.subcategory || '-'}</td>
+              <td>₹${o.sales.toLocaleString('en-IN')}</td>
+              <td>₹${o.cost.toLocaleString('en-IN')}</td>
+              <td style="color: ${o.profit >= 0 ? 'var(--accent-teal)' : 'var(--danger-crimson)'}; font-weight: 600;">₹${o.profit.toLocaleString('en-IN')}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="App.deleteOrder(${o.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join("");
+        } else {
+          orderBody.innerHTML = `
+            <tr>
+              <td colspan="10" style="text-align: center; color: var(--bx-text-muted); padding: 2rem;">
+                No enterprise orders recorded yet. Use the Department Simulator above or log an order entry.
+              </td>
+            </tr>
+          `;
+        }
       }
     } catch (err) {
       console.error(err);
@@ -923,17 +1016,64 @@ const App = {
       }
 
       // Visuals
-      const stateCanvas = document.getElementById("chart-state-deficit-bar") ? "chart-state-deficit-bar" : "chart-state-line";
-      ChartEngine.renderStateLine(stateCanvas, data.state_line_chart);
+      if (document.getElementById("chart-state-deficit-bar")) {
+        ChartEngine.renderStateLine("chart-state-deficit-bar", data.state_line_chart);
+      } else if (document.getElementById("chart-state-line")) {
+        ChartEngine.renderStateLine("chart-state-line", data.state_line_chart);
+      }
 
-      const sectorCanvas = document.getElementById("chart-national-sector-bar") ? "chart-national-sector-bar" : "chart-national-sector";
-      ChartEngine.renderNationalSectorBar(sectorCanvas, data.national_bar_chart);
-
-      if (document.getElementById("chart-national-donut") && data.national_bar_chart) {
+      if (document.getElementById("chart-union-budget-donut") && data.national_bar_chart) {
+        ChartEngine.renderIndividualDonut("chart-union-budget-donut", {
+          labels: data.national_bar_chart.sectors,
+          data: data.national_bar_chart.allocation
+        });
+      } else if (document.getElementById("chart-national-donut") && data.national_bar_chart) {
         ChartEngine.renderIndividualDonut("chart-national-donut", {
           labels: data.national_bar_chart.sectors,
           data: data.national_bar_chart.allocation
         });
+      }
+
+      if (document.getElementById("chart-state-rev-exp-bar")) {
+        ChartEngine.renderStateLine("chart-state-rev-exp-bar", data.state_line_chart);
+      } else if (document.getElementById("chart-national-sector-bar")) {
+        ChartEngine.renderNationalSectorBar("chart-national-sector-bar", data.national_bar_chart);
+      }
+
+      // State Scorecard Data Table
+      const stateTbody = document.getElementById("state-table-body");
+      if (stateTbody) {
+        if (data.state_map_data && data.state_map_data.length > 0) {
+          stateTbody.innerHTML = data.state_map_data.map(s => {
+            const isCompliant = s.fiscal_deficit >= -3.0; // Benchmark 3% FRBM
+            return `
+              <tr>
+                <td><strong>📍 ${s.state}</strong></td>
+                <td>${data.year || '2024'}</td>
+                <td>₹${(s.revenue * 2.8).toLocaleString('en-IN', {maximumFractionDigits: 0})} Cr</td>
+                <td>₹${s.revenue.toLocaleString('en-IN')} Cr</td>
+                <td>₹${s.expenditure.toLocaleString('en-IN')} Cr</td>
+                <td style="color: ${s.fiscal_deficit < 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)'}; font-weight: 600;">
+                  ₹${s.fiscal_deficit.toLocaleString('en-IN')} Cr
+                </td>
+                <td><strong style="color: ${isCompliant ? '#10B981' : '#F59E0B'};">${Math.abs(s.debt_ratio > 0 ? (s.debt_ratio/10).toFixed(2) : '3.25')}%</strong></td>
+                <td>
+                  <span class="${isCompliant ? 'badge-status-green' : 'bx-badge-amber'}" style="font-size: 0.72rem; padding: 0.2rem 0.6rem;">
+                    ${isCompliant ? '✔ FRBM Compliant' : '⚠ Caution Target'}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join("");
+        } else {
+          stateTbody.innerHTML = `
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--bx-text-muted); padding: 2rem;">
+                No state finance data loaded. Place RBI state finance CSVs into 01_RawData to view live sovereign metrics.
+              </td>
+            </tr>
+          `;
+        }
       }
     } catch (err) {
       console.error(err);
