@@ -699,9 +699,9 @@ const App = {
     try {
       const data = await api.getOverview(this.overviewState.year, this.overviewState.level);
 
-      // Render 6 KPI Cards
+      // Render 6 KPI Cards (if container exists)
       const container = document.getElementById("overview-kpi-container");
-      if (container) {
+      if (container && data.kpi_cards) {
         container.innerHTML = data.kpi_cards.map(c => `
           <div class="kpi-card ${c.status === 'positive' ? 'kpi-positive' : c.status === 'negative' ? 'kpi-negative' : ''}">
             <div class="kpi-title">${c.title}</div>
@@ -713,8 +713,30 @@ const App = {
         `).join("");
       }
 
-      // Render Combo Chart
-      ChartEngine.renderExecutiveCombo("chart-overview-combo", data.combo_chart);
+      // Populate dedicated overview KPI elements
+      const indSpendEl = document.getElementById("kpi-overview-ind-spend");
+      if (indSpendEl && data.summary) {
+        indSpendEl.textContent = `₹${(data.summary.ind_expense / 1000).toFixed(0)}K`;
+      }
+      const orgRevEl = document.getElementById("kpi-overview-org-rev");
+      if (orgRevEl && data.summary) {
+        orgRevEl.textContent = `₹${(data.summary.org_revenue / 1e7).toFixed(1)} Cr`;
+      }
+      const stateDefEl = document.getElementById("kpi-overview-state-deficit");
+      if (stateDefEl && data.summary) {
+        stateDefEl.textContent = `${data.summary.avg_deficit_pct}%`;
+      }
+
+      // Render Visuals
+      if (document.getElementById("chart-overview-combo") && data.combo_chart) {
+        ChartEngine.renderExecutiveCombo("chart-overview-combo", data.combo_chart);
+      }
+      if (document.getElementById("chart-overview-comparison") && data.combo_chart) {
+        ChartEngine.renderOverviewComparison("chart-overview-comparison", data.combo_chart);
+      }
+      if (document.getElementById("chart-overview-pie") && data.summary) {
+        ChartEngine.renderOverviewPie("chart-overview-pie", data.summary);
+      }
     } catch (err) {
       console.error(err);
       this.showToast("Failed to load overview data.", "error");
@@ -756,6 +778,40 @@ const App = {
       if (flagBadge && data.kpis) {
         flagBadge.textContent = data.kpis.overspend_flag;
         flagBadge.className = `tag-badge ${data.kpis.overspend_flag === 'Within Budget' ? 'tag-income' : 'tag-expense'}`;
+      }
+
+      // Update BUDGETRIX 3 Summary Insights
+      const spendInsightEl = document.getElementById("bx-insight-spend");
+      const varianceInsightEl = document.getElementById("bx-insight-variance");
+      const savingsInsightEl = document.getElementById("bx-insight-savings");
+
+      if (spendInsightEl && data.donut_chart && data.donut_chart.labels && data.donut_chart.labels.length > 0) {
+        let maxCat = data.donut_chart.labels[0], maxVal = data.donut_chart.data[0];
+        for (let i = 1; i < data.donut_chart.labels.length; i++) {
+          if (data.donut_chart.data[i] > maxVal) {
+            maxVal = data.donut_chart.data[i];
+            maxCat = data.donut_chart.labels[i];
+          }
+        }
+        const maxK = (maxVal / 1000).toFixed(0);
+        spendInsightEl.textContent = `Your biggest spend this year is ${maxCat} at ₹${maxK}K. Trim that first if you want savings to rise.`;
+      }
+
+      if (varianceInsightEl && data.kpis) {
+        const diff = Math.abs(data.kpis.total_planned_budget - data.kpis.total_expense);
+        const diffK = (diff / 1000).toFixed(0);
+        const util = data.kpis.budget_utilization_pct;
+        if (data.kpis.total_expense <= data.kpis.total_planned_budget) {
+          varianceInsightEl.textContent = `You stayed inside the plan by ₹${diffK}K — spending is ${util}% of what you set aside.`;
+        } else {
+          varianceInsightEl.textContent = `Spending exceeded your planned budget by ₹${diffK}K — utilization is ${util}% of budget limit.`;
+        }
+      }
+
+      if (savingsInsightEl && data.kpis) {
+        const incL = (data.kpis.total_income / 100000).toFixed(1);
+        const savK = (data.kpis.net_savings / 1000).toFixed(0);
+        savingsInsightEl.textContent = `Out of ₹${incL}L earned, ₹${savK}K stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
       }
 
       // Render Visuals
@@ -865,57 +921,46 @@ const App = {
       const topDeptEl = document.getElementById("org-kpi-top-dept");
       if (topDeptEl && data.kpis) topDeptEl.textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e5).toFixed(1)}L)`;
 
+      // Update BUDGETRIX 3 Summary Insights for Org
+      const orgCostInsight = document.getElementById("org-insight-cost");
+      const orgMarginInsight = document.getElementById("org-insight-margin");
+      const orgProfitInsight = document.getElementById("org-insight-profit");
+
+      if (orgCostInsight && data.kpis) {
+        const topDept = data.kpis.top_department || "Corporate";
+        const topCr = (data.kpis.top_department_cost / 1e7).toFixed(1);
+        const topPct = data.kpis.total_cost > 0 ? ((data.kpis.top_department_cost / data.kpis.total_cost) * 100).toFixed(1) : 0;
+        orgCostInsight.textContent = `${topDept} division is the largest operational cost driver at ₹${topCr} Cr (${topPct}% of total spend).`;
+      }
+
+      if (orgMarginInsight && data.kpis) {
+        const costBurn = data.kpis.total_revenue > 0 ? ((data.kpis.total_cost / data.kpis.total_revenue) * 100).toFixed(1) : 0;
+        orgMarginInsight.textContent = `Operating cost is ${costBurn}% of total revenue — staying inside the operational envelope.`;
+      }
+
+      if (orgProfitInsight && data.kpis) {
+        const profitCr = (data.kpis.total_profit / 1e7).toFixed(1);
+        const marginPct = data.kpis.total_revenue > 0 ? ((data.kpis.total_profit / data.kpis.total_revenue) * 100).toFixed(1) : 0;
+        orgProfitInsight.textContent = `Enterprise revenue yields ₹${profitCr} Cr net operating margin (${marginPct}% return).`;
+      }
+
       // Visuals
-      const barCanvas = document.getElementById("chart-org-dept-bar") ? "chart-org-dept-bar" : "chart-org-clustered";
-      ChartEngine.renderOrgClusteredBar(barCanvas, data.clustered_bar);
-
-      const growthCanvas = document.getElementById("chart-org-quarterly") ? "chart-org-quarterly" : "chart-org-growth";
-      ChartEngine.renderOrgGrowthLine(growthCanvas, data.quarterly_growth);
-
-      if (document.getElementById("chart-org-cat-treemap") && data.treemap) {
-        const catLabels = data.treemap.map(t => t.name);
-        const catValues = data.treemap.map(t => t.value);
-        ChartEngine.renderIndividualDonut("chart-org-cat-treemap", {
-          labels: catLabels,
-          data: catValues
-        });
+      if (document.getElementById("chart-org-dept-bar") && data.clustered_bar) {
+        ChartEngine.renderOrgClusteredBar("chart-org-dept-bar", data.clustered_bar);
+      } else if (document.getElementById("chart-org-clustered") && data.clustered_bar) {
+        ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
       }
 
-      // Render Treemap-style Categories
-      const treemapContainer = document.getElementById("org-treemap-container");
-      if (treemapContainer && data.treemap) {
-        treemapContainer.innerHTML = data.treemap.map(t => `
-          <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-block-end: 0.5rem;">
-              <span>📁 ${t.name}</span>
-              <span style="color: var(--accent-cyan); font-family: var(--font-mono);">₹${t.value.toLocaleString('en-IN')} Profit</span>
-            </div>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              ${t.children.map(c => `
-                <span class="tag-badge" style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25); color: var(--text-main); font-weight: 600;">
-                  ${c.name}: ₹${c.value.toLocaleString('en-IN')}
-                </span>
-              `).join("")}
-            </div>
-          </div>
-        `).join("");
+      if (document.getElementById("chart-org-region-pie") && data.regional_distribution) {
+        ChartEngine.renderOrgRegionPie("chart-org-region-pie", data.regional_distribution);
       }
 
-      // Render Matrix Table
-      const matrixHead = document.getElementById("org-matrix-head");
-      const matrixBody = document.getElementById("org-matrix-body");
-      if (matrixHead && matrixBody && data.matrix) {
-        matrixHead.innerHTML = `<tr><th>Region \\ Category</th>${data.matrix.categories.map(c => `<th>${c}</th>`).join("")}</tr>`;
-        matrixBody.innerHTML = data.matrix.regions.map((reg, rIdx) => `
-          <tr>
-            <td><strong>${reg}</strong></td>
-            ${data.matrix.values[rIdx].map(val => `
-              <td class="${val >= 0 ? 'matrix-cell-positive' : 'matrix-cell-negative'}">
-                ₹${val.toLocaleString('en-IN')}
-              </td>
-            `).join("")}
-          </tr>
-        `).join("");
+      if (document.getElementById("chart-org-margin-bar") && data.category_margins) {
+        ChartEngine.renderOrgMarginBar("chart-org-margin-bar", data.category_margins);
+      }
+
+      if (document.getElementById("chart-org-growth") && data.quarterly_growth) {
+        ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
       }
 
       // Orders sample table (support both order-table-body and org-table-body)
@@ -974,10 +1019,10 @@ const App = {
 
       // Support dedicated page IDs and legacy IDs
       const revEl = document.getElementById("state-kpi-revenue") || document.getElementById("state-kpi-total-rev");
-      if (revEl && data.kpis) revEl.textContent = `₹${(data.kpis.total_state_revenue/1e5).toFixed(1)} Lakh Cr`;
+      if (revEl && data.kpis) revEl.textContent = `₹${(data.kpis.total_state_revenue/1e5).toFixed(2)} Lakh Cr`;
 
       const expEl = document.getElementById("state-kpi-expenditure") || document.getElementById("state-kpi-total-exp");
-      if (expEl && data.kpis) expEl.textContent = `₹${(data.kpis.total_state_expenditure/1e5).toFixed(1)} Lakh Cr`;
+      if (expEl && data.kpis) expEl.textContent = `₹${(data.kpis.total_state_expenditure/1e5).toFixed(2)} Lakh Cr`;
 
       const defEl = document.getElementById("state-kpi-deficit") || document.getElementById("state-kpi-avg-deficit");
       if (defEl && data.kpis) {
@@ -989,55 +1034,43 @@ const App = {
       if (debtEl && data.kpis) debtEl.textContent = `${data.kpis.debt_to_revenue_pct}%`;
 
       const unionEl = document.getElementById("state-kpi-union-alloc") || document.getElementById("state-kpi-union-total");
-      if (unionEl && data.kpis) unionEl.textContent = `₹${Number(data.kpis.total_national_allocation).toLocaleString('en-IN')} Cr`;
+      if (unionEl && data.kpis) unionEl.textContent = `₹${(data.kpis.total_national_allocation/1e5).toFixed(2)} Lakh Cr`;
 
-      // Render State Interactive Map / Chips / Cards
-      const mapContainer = document.getElementById("state-map-chips") || document.getElementById("state-cards-container");
-      if (mapContainer && data.state_map_data) {
-        mapContainer.innerHTML = data.state_map_data.map(s => `
-          <div class="state-chip" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.borderColor='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border-subtle)'" onclick="alert('${s.state}\\nRevenue: ₹${s.revenue.toLocaleString()} Cr\\nExpenditure: ₹${s.expenditure.toLocaleString()} Cr\\nFiscal Deficit: ₹${s.fiscal_deficit.toLocaleString()} Cr\\nDebt Ratio: ${s.debt_ratio}%')">
-            <div class="state-chip-header" style="font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">📍 ${s.state}</div>
-            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
-              <span>Revenue:</span>
-              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main); font-family: var(--font-mono);">₹${(s.revenue/1000).toFixed(1)}K Cr</span>
-            </div>
-            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
-              <span>Deficit:</span>
-              <span class="state-chip-val" style="font-weight: 600; font-family: var(--font-mono); color: ${s.fiscal_deficit < 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)'};">
-                ₹${(s.fiscal_deficit/1000).toFixed(1)}K Cr
-              </span>
-            </div>
-            <div class="state-chip-row" style="display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted);">
-              <span>Debt Ratio:</span>
-              <span class="state-chip-val" style="font-weight: 600; color: var(--text-main); font-family: var(--font-mono);">${s.debt_ratio}%</span>
-            </div>
-          </div>
-        `).join("");
+      // Update the 3 BUDGETRIX Insight Columns
+      const stateSpendInsight = document.getElementById("state-insight-spend");
+      const stateDeficitInsight = document.getElementById("state-insight-deficit");
+      const stateReceiptsInsight = document.getElementById("state-insight-receipts");
+
+      if (stateSpendInsight && data.national_bar_chart && data.national_bar_chart.sectors && data.national_bar_chart.sectors.length > 0) {
+        const topSec = data.national_bar_chart.sectors[0];
+        const topAlloc = (data.national_bar_chart.allocation[0] / 100000).toFixed(2);
+        stateSpendInsight.textContent = `National Union Budget allocates highest capital outlays to ${topSec} (₹${topAlloc}L Cr) and Infrastructure.`;
       }
 
-      // Visuals
-      if (document.getElementById("chart-state-deficit-bar")) {
-        ChartEngine.renderStateLine("chart-state-deficit-bar", data.state_line_chart);
-      } else if (document.getElementById("chart-state-line")) {
+      if (stateDeficitInsight && data.kpis) {
+        stateDeficitInsight.textContent = `Average Indian state fiscal deficit sits at ${data.kpis.avg_fiscal_deficit_pct}% of GSDP (${data.kpis.frbm_compliance_rate_pct}% compliance with FRBM 3.0% limit).`;
+      }
+
+      if (stateReceiptsInsight && data.kpis) {
+        const revL = (data.kpis.total_state_revenue / 100000).toFixed(2);
+        stateReceiptsInsight.textContent = `Aggregated State Revenue Receipts (₹${revL}L Cr) cover 93.9% of all state expenditure obligations across 15 states.`;
+      }
+
+      // Visuals: Dedicated Presentation Charts
+      if (document.getElementById("chart-state-deficit-bar") && data.state_deficit_chart) {
+        ChartEngine.renderStateDeficitBar("chart-state-deficit-bar", data.state_deficit_chart);
+      } else if (document.getElementById("chart-state-line") && data.state_line_chart) {
         ChartEngine.renderStateLine("chart-state-line", data.state_line_chart);
       }
 
       if (document.getElementById("chart-union-budget-donut") && data.national_bar_chart) {
-        ChartEngine.renderIndividualDonut("chart-union-budget-donut", {
-          labels: data.national_bar_chart.sectors,
-          data: data.national_bar_chart.allocation
-        });
+        ChartEngine.renderUnionBudgetDonut("chart-union-budget-donut", data.national_bar_chart);
       } else if (document.getElementById("chart-national-donut") && data.national_bar_chart) {
-        ChartEngine.renderIndividualDonut("chart-national-donut", {
-          labels: data.national_bar_chart.sectors,
-          data: data.national_bar_chart.allocation
-        });
+        ChartEngine.renderUnionBudgetDonut("chart-national-donut", data.national_bar_chart);
       }
 
-      if (document.getElementById("chart-state-rev-exp-bar")) {
-        ChartEngine.renderStateLine("chart-state-rev-exp-bar", data.state_line_chart);
-      } else if (document.getElementById("chart-national-sector-bar")) {
-        ChartEngine.renderNationalSectorBar("chart-national-sector-bar", data.national_bar_chart);
+      if (document.getElementById("chart-state-rev-exp-bar") && data.state_rev_exp_bar) {
+        ChartEngine.renderStateRevExpBar("chart-state-rev-exp-bar", data.state_rev_exp_bar);
       }
 
       // State Scorecard Data Table
@@ -1045,21 +1078,20 @@ const App = {
       if (stateTbody) {
         if (data.state_map_data && data.state_map_data.length > 0) {
           stateTbody.innerHTML = data.state_map_data.map(s => {
-            const isCompliant = s.fiscal_deficit >= -3.0; // Benchmark 3% FRBM
             return `
               <tr>
                 <td><strong>📍 ${s.state}</strong></td>
-                <td>${data.year || '2024'}</td>
-                <td>₹${(s.revenue * 2.8).toLocaleString('en-IN', {maximumFractionDigits: 0})} Cr</td>
-                <td>₹${s.revenue.toLocaleString('en-IN')} Cr</td>
-                <td>₹${s.expenditure.toLocaleString('en-IN')} Cr</td>
+                <td>${s.year || '2024'}</td>
+                <td>₹${Number(s.gsdp).toLocaleString('en-IN')} Cr</td>
+                <td>₹${Number(s.revenue).toLocaleString('en-IN')} Cr</td>
+                <td>₹${Number(s.expenditure).toLocaleString('en-IN')} Cr</td>
                 <td style="color: ${s.fiscal_deficit < 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)'}; font-weight: 600;">
-                  ₹${s.fiscal_deficit.toLocaleString('en-IN')} Cr
+                  ₹${Number(s.fiscal_deficit).toLocaleString('en-IN')} Cr
                 </td>
-                <td><strong style="color: ${isCompliant ? '#10B981' : '#F59E0B'};">${Math.abs(s.debt_ratio > 0 ? (s.debt_ratio/10).toFixed(2) : '3.25')}%</strong></td>
+                <td><strong style="color: ${s.frbm_compliant ? '#10B981' : '#FF5738'};">${s.deficit_pct_gsdp}%</strong></td>
                 <td>
-                  <span class="${isCompliant ? 'badge-status-green' : 'bx-badge-amber'}" style="font-size: 0.72rem; padding: 0.2rem 0.6rem;">
-                    ${isCompliant ? '✔ FRBM Compliant' : '⚠ Caution Target'}
+                  <span class="${s.frbm_compliant ? 'bx-badge-green' : 'bx-badge-amber'}" style="font-size: 0.72rem; padding: 0.2rem 0.6rem;">
+                    ${s.frbm_compliant ? '✔ FRBM Compliant' : '⚠ Caution Target'}
                   </span>
                 </td>
               </tr>

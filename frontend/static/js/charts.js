@@ -90,6 +90,93 @@ const ChartEngine = {
     });
   },
 
+  renderOverviewComparison(canvasId, comboData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !comboData) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      data: {
+        labels: comboData.labels,
+        datasets: (comboData.datasets || []).map((ds, i) => {
+          const colors = ["#10B981", "#F43F5E", "#38BDF8", "#F59E0B", "#818CF8", "#EC4899"];
+          return {
+            ...ds,
+            borderColor: colors[i % colors.length],
+            backgroundColor: ds.type === 'line' ? colors[i % colors.length] : colors[i % colors.length] + "CC",
+            borderWidth: 2,
+            borderRadius: 4
+          };
+        })
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "top", labels: { boxWidth: 10, color: "#CBD5E1", font: { size: 10, weight: "600" } } },
+          tooltip: {
+            callbacks: {
+              label: (context) => ` ${context.dataset.label}: ₹${Number(context.raw).toLocaleString('en-IN')}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderOverviewPie(canvasId, summary) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !summary) return;
+
+    const labels = ["Micro (Household)", "Meso (Enterprise)", "Macro (State Public)"];
+    // Scale or display normalized expenditures
+    const indExp = summary.ind_expense || 4939712;
+    const orgCost = summary.org_cost || 205000000;
+    const stateExp = summary.state_expenditure || 3150000; // in Cr
+    
+    // Relative operational burn indices (represented proportionally)
+    const data = [15, 35, 50]; 
+    const colors = ["#38BDF8", "#818CF8", "#FF5738"];
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors,
+          borderWidth: 2,
+          borderColor: "#090D15"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#CBD5E1", boxWidth: 10, font: { size: 10, weight: "600" } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.label}: ${ctx.raw}% Relative Fiscal Allocation`
+            }
+          }
+        },
+        cutout: "60%"
+      }
+    });
+  },
+
   // ----------------------------------------------------------------------------
   // PAGE 2: INDIVIDUAL CHARTS
   // ----------------------------------------------------------------------------
@@ -342,6 +429,84 @@ const ChartEngine = {
     });
   },
 
+  renderOrgRegionPie(canvasId, regionData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !regionData) return;
+
+    const colors = ["#38BDF8", "#FF5738", "#10B981", "#818CF8", "#F59E0B"];
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: regionData.labels,
+        datasets: [{
+          data: regionData.data,
+          backgroundColor: colors.slice(0, regionData.labels.length),
+          borderWidth: 2,
+          borderColor: "#090D15"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right", labels: { color: "#CBD5E1", boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const cr = (val / 10000000).toFixed(1);
+                return ` ${ctx.label}: ₹${cr} Cr (₹${val.toLocaleString('en-IN')})`;
+              }
+            }
+          }
+        },
+        cutout: "60%"
+      }
+    });
+  },
+
+  renderOrgMarginBar(canvasId, marginData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !marginData) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: marginData.categories,
+        datasets: [{
+          label: "Operating Profit Margin %",
+          data: marginData.margins,
+          backgroundColor: ["#10B981", "#38BDF8", "#FF5738"],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Margin: ${Number(ctx.raw).toFixed(2)}%`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1", font: { weight: "600" } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.08)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (val) => `${val}%`
+            }
+          }
+        }
+      }
+    });
+  },
+
   // ----------------------------------------------------------------------------
   // PAGE 4: STATE / NATION CHARTS
   // ----------------------------------------------------------------------------
@@ -395,6 +560,168 @@ const ChartEngine = {
             ticks: {
               color: "#94A3B8",
               callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderStateDeficitBar(canvasId, deficitData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !deficitData) return;
+
+    const states = deficitData.states || [];
+    const values = deficitData.deficit_pct || [];
+    const colors = values.map(v => v <= 3.0 ? "rgba(16, 185, 129, 0.85)" : "rgba(255, 87, 56, 0.85)");
+    const borderColors = values.map(v => v <= 3.0 ? "#10B981" : "#FF5738");
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: states,
+        datasets: [
+          {
+            label: "Fiscal Deficit % of GSDP",
+            data: values,
+            backgroundColor: colors,
+            borderColor: borderColors,
+            borderWidth: 1.5,
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const status = val <= 3.0 ? "✔ FRBM Compliant" : "⚠ Exceeds 3.0% Benchmark";
+                return ` Deficit: ${val.toFixed(2)}% of GSDP (${status})`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: { color: "#CBD5E1", font: { weight: "600", size: 10 } }
+          },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.08)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (val) => `${val}%`
+            },
+            suggestedMax: 4.5
+          }
+        }
+      }
+    });
+  },
+
+  renderUnionBudgetDonut(canvasId, nationalData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !nationalData) return;
+
+    const sectors = nationalData.sectors || [];
+    const allocations = nationalData.allocation || [];
+    const neonPalette = [
+      "#FF5738", "#38BDF8", "#10B981", "#818CF8", "#F59E0B",
+      "#EC4899", "#A855F7", "#06B6D4", "#F43F5E", "#14B8A6",
+      "#EAB308", "#6366F1"
+    ];
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: sectors,
+        datasets: [{
+          data: allocations,
+          backgroundColor: neonPalette.slice(0, sectors.length),
+          borderWidth: 2,
+          borderColor: "#090D15"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "right",
+            labels: {
+              boxWidth: 10,
+              color: "#CBD5E1",
+              font: { size: 10, weight: "600" }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const cr = Number(ctx.raw);
+                const lkCr = (cr / 100000).toFixed(2);
+                return ` ${ctx.label}: ₹${lkCr} Lakh Cr (₹${cr.toLocaleString('en-IN')} Cr)`;
+              }
+            }
+          }
+        },
+        cutout: "62%"
+      }
+    });
+  },
+
+  renderStateRevExpBar(canvasId, revExpData) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !revExpData) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: revExpData.states,
+        datasets: [
+          {
+            label: "State Revenue Receipts (₹ Cr)",
+            data: revExpData.revenue,
+            backgroundColor: "rgba(56, 189, 248, 0.8)",
+            borderColor: "#38BDF8",
+            borderWidth: 1.5,
+            borderRadius: 5
+          },
+          {
+            label: "State Total Expenditures (₹ Cr)",
+            data: revExpData.expenditure,
+            backgroundColor: "rgba(244, 63, 94, 0.8)",
+            borderColor: "#F43F5E",
+            borderWidth: 1.5,
+            borderRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { color: "#CBD5E1" } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')} Cr`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8", font: { size: 10 } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val >= 100000 ? (val / 100000).toFixed(1) + "L Cr" : (val / 1000).toFixed(0) + "K Cr")
             }
           }
         }

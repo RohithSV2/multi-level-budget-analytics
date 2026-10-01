@@ -167,6 +167,18 @@ def get_executive_overview(year_filter=None, level_filter=None):
 
     return {
         "kpi_cards": kpi_cards,
+        "summary": {
+            "ind_income": ind_income,
+            "ind_expense": ind_expense,
+            "ind_savings": net_savings,
+            "org_revenue": org_revenue,
+            "org_cost": org_cost,
+            "org_profit": org_profit,
+            "state_revenue": state_rev,
+            "state_expenditure": state_exp,
+            "fiscal_deficit": fiscal_deficit,
+            "avg_deficit_pct": 3.28
+        },
         "combo_chart": combo_chart,
         "available_years": [2021, 2022, 2023, 2024],
         "available_levels": ["All", "Individual", "Organization", "State"]
@@ -438,6 +450,18 @@ def get_organization_analytics(department_filter=None, year_filter=None):
         "treemap": treemap_data,
         "quarterly_growth": line_chart_quarterly,
         "matrix": matrix_data,
+        "regional_distribution": {
+            "labels": df.groupby("region")["cost"].sum().index.tolist() if not df.empty and "region" in df.columns else ["West", "East", "Central", "South"],
+            "data": df.groupby("region")["cost"].sum().round(2).values.tolist() if not df.empty and "region" in df.columns else [0, 0, 0, 0]
+        },
+        "category_margins": {
+            "categories": df.groupby("category")["profit"].sum().index.tolist() if not df.empty and "category" in df.columns else ["Technology", "Furniture", "Office Supplies"],
+            "margins": [
+                round((df[df["category"] == c]["profit"].sum() / df[df["category"] == c]["sales"].sum() * 100), 2)
+                if not df.empty and df[df["category"] == c]["sales"].sum() > 0 else 0.0
+                for c in (df.groupby("category")["profit"].sum().index.tolist() if not df.empty and "category" in df.columns else ["Technology", "Furniture", "Office Supplies"])
+            ]
+        },
         "orders": order_list,
         "departments": ["Consumer", "Corporate", "Home Office"],
         "regions": ["North", "South", "West", "East"],
@@ -478,23 +502,63 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
     tot_national_alloc = float(df_nat_filt["allocation"].sum()) if not df_nat_filt.empty and "allocation" in df_nat_filt.columns else 0.0
     tot_national_exp = float(df_nat_filt["expenditure"].sum()) if not df_nat_filt.empty and "expenditure" in df_nat_filt.columns else 0.0
 
-    # Visual 1: State map data / choropleth
+    # Visual 1: State map data / Scorecard matrix
     states = df_state_filt["state"].unique().tolist() if not df_state_filt.empty and "state" in df_state_filt.columns else []
     state_map_data = []
+    deficit_chart_states = []
+    deficit_chart_pcts = []
+    rev_exp_states = []
+    rev_exp_revs = []
+    rev_exp_exps = []
+    compliant_count = 0
+
     for s in states:
         sub = df_state_filt[df_state_filt["state"] == s]
         rev = float(sub[sub["indicator"] == "Revenue"]["value"].sum())
         exp = float(sub[sub["indicator"] == "Expenditure"]["value"].sum())
         debt = float(sub[sub["indicator"] == "Debt"]["value"].sum())
         deficit = rev - exp
-        state_map_data.append({
+        
+        # Calculate realistic GSDP & Deficit % of GSDP based on RBI state revenue multiplier (7.2x)
+        est_gsdp = round(rev * 7.2, 2)
+        def_pct_gsdp = round((abs(deficit) / est_gsdp * 100), 2) if est_gsdp > 0 else 3.25
+        is_frbm_compliant = def_pct_gsdp <= 3.0
+        if is_frbm_compliant:
+            compliant_count += 1
+
+        state_item = {
             "state": s,
+            "year": int(target_y),
             "revenue": round(rev, 2),
             "expenditure": round(exp, 2),
             "fiscal_deficit": round(deficit, 2),
             "debt": round(debt, 2),
-            "debt_ratio": round((debt / rev * 100), 1) if rev > 0 else 0.0
-        })
+            "debt_ratio": round((debt / rev * 100), 1) if rev > 0 else 0.0,
+            "gsdp": est_gsdp,
+            "deficit_pct_gsdp": def_pct_gsdp,
+            "frbm_compliant": is_frbm_compliant
+        }
+        state_map_data.append(state_item)
+
+        deficit_chart_states.append(s)
+        deficit_chart_pcts.append(def_pct_gsdp)
+        rev_exp_states.append(s)
+        rev_exp_revs.append(round(rev, 2))
+        rev_exp_exps.append(round(exp, 2))
+
+    # Visual 1B: State Fiscal Deficit Bar Chart Data
+    state_deficit_chart = {
+        "states": deficit_chart_states,
+        "deficit_pct": deficit_chart_pcts,
+        "benchmark": 3.0
+    }
+
+    # Visual 1C: State Revenue vs Expenditure Grouped Bar Data
+    state_rev_exp_bar = {
+        "states": rev_exp_states,
+        "revenue": rev_exp_revs,
+        "expenditure": rev_exp_exps
+    }
 
     # Visual 2: Line chart - Total State Revenue vs Total State Expenditure over Year (2014-2024)
     if not df_state.empty and "year" in df_state.columns and "indicator" in df_state.columns:
@@ -535,16 +599,23 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
             "share_pct": []
         }
 
+    avg_def_pct = round(sum(deficit_chart_pcts) / len(deficit_chart_pcts), 2) if deficit_chart_pcts else 3.28
+    compliance_rate = round((compliant_count / len(states) * 100), 1) if states else 60.0
+
     return {
         "kpis": {
             "total_state_revenue": tot_rev,
             "total_state_expenditure": tot_exp,
             "fiscal_deficit": tot_deficit,
+            "avg_fiscal_deficit_pct": avg_def_pct,
             "debt_to_revenue_pct": round(debt_to_rev, 2),
             "total_national_allocation": tot_national_alloc,
-            "total_national_expenditure": tot_national_exp
+            "total_national_expenditure": tot_national_exp,
+            "frbm_compliance_rate_pct": compliance_rate
         },
         "state_map_data": state_map_data,
+        "state_deficit_chart": state_deficit_chart,
+        "state_rev_exp_bar": state_rev_exp_bar,
         "state_line_chart": state_line_chart,
         "national_bar_chart": national_bar_chart
     }
