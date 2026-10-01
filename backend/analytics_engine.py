@@ -20,16 +20,30 @@ def get_executive_overview(year_filter=None, level_filter=None):
     df_state = pd.read_sql_query(state_query, conn)
     conn.close()
 
-    df_ind["Year"] = pd.to_datetime(df_ind["date"]).dt.year
-    df_org["Year"] = pd.to_datetime(df_org["order_date"]).dt.year
-    df_state["Year"] = df_state["year"].astype(int)
+    if "date" in df_ind.columns and not df_ind.empty:
+        df_ind["Year"] = pd.to_datetime(df_ind["date"]).dt.year
+    else:
+        df_ind["Year"] = pd.Series([], dtype=int)
+
+    if "order_date" in df_org.columns and not df_org.empty:
+        df_org["Year"] = pd.to_datetime(df_org["order_date"]).dt.year
+    else:
+        df_org["Year"] = pd.Series([], dtype=int)
+
+    if "year" in df_state.columns and not df_state.empty:
+        df_state["Year"] = df_state["year"].astype(int)
+    else:
+        df_state["Year"] = pd.Series([], dtype=int)
 
     # Apply year filter if specified
     if year_filter and str(year_filter).lower() != "all":
         y = int(year_filter)
-        df_ind = df_ind[df_ind["Year"] == y]
-        df_org = df_org[df_org["Year"] == y]
-        df_state = df_state[df_state["Year"] == y]
+        if not df_ind.empty and "Year" in df_ind.columns:
+            df_ind = df_ind[df_ind["Year"] == y]
+        if not df_org.empty and "Year" in df_org.columns:
+            df_org = df_org[df_org["Year"] == y]
+        if not df_state.empty and "Year" in df_state.columns:
+            df_state = df_state[df_state["Year"] == y]
 
     # Individual calculations
     ind_income = float(df_ind[df_ind["income_expense"] == "Income"]["amount"].sum())
@@ -112,9 +126,11 @@ def get_executive_overview(year_filter=None, level_filter=None):
         kpi_cards = [c for c in kpi_cards if c["level"].lower() == target.lower()]
 
     # Page 1 Combo Chart: Income/Revenue vs Expenditure/Cost normalized % of total by year
-    years_available = sorted(list(set(df_ind["Year"].unique()).union(set(df_org["Year"].unique()))))
+    years_ind = set(df_ind["Year"].dropna().unique()) if "Year" in df_ind.columns and not df_ind.empty else set()
+    years_org = set(df_org["Year"].dropna().unique()) if "Year" in df_org.columns and not df_org.empty else set()
+    years_available = sorted(list(years_ind.union(years_org)))
     # Filter to 2021-2024 for clean cross-comparison
-    years_available = [y for y in years_available if 2021 <= y <= 2024]
+    years_available = [int(y) for y in years_available if 2021 <= y <= 2024]
     
     combo_labels = [str(y) for y in years_available]
     ind_inflows, ind_outflows = [], []
@@ -315,45 +331,58 @@ def get_organization_analytics(department_filter=None, year_filter=None):
         top_department_cost = 0.0
 
     # Revenue Growth % calculation (year-over-year)
-    yearly_rev = df.groupby("Year")["sales"].sum()
+    yearly_rev = df.groupby("Year")["sales"].sum() if not df.empty and "Year" in df.columns and "sales" in df.columns else pd.Series([], dtype=float)
     if len(yearly_rev) >= 2:
         latest_yr = sorted(yearly_rev.index)[-1]
         prior_yr = sorted(yearly_rev.index)[-2]
-        rev_growth = ((yearly_rev[latest_yr] - yearly_rev[prior_yr]) / yearly_rev[prior_yr]) * 100
+        rev_growth = ((yearly_rev[latest_yr] - yearly_rev[prior_yr]) / yearly_rev[prior_yr]) * 100 if yearly_rev[prior_yr] > 0 else 0.0
     else:
-        rev_growth = 8.4  # baseline growth benchmark
+        rev_growth = 0.0
 
     # Visual 1: Clustered bar chart - Revenue vs Cost by Department
-    dept_agg = df.groupby("department").agg({"sales": "sum", "cost": "sum"}).reset_index()
-    clustered_bar = {
-        "departments": dept_agg["department"].tolist(),
-        "revenue": dept_agg["sales"].round(2).tolist(),
-        "cost": dept_agg["cost"].round(2).tolist()
-    }
+    if not df.empty and "department" in df.columns:
+        dept_agg = df.groupby("department").agg({"sales": "sum", "cost": "sum"}).reset_index()
+        clustered_bar = {
+            "departments": dept_agg["department"].tolist(),
+            "revenue": dept_agg["sales"].round(2).tolist(),
+            "cost": dept_agg["cost"].round(2).tolist()
+        }
+    else:
+        clustered_bar = {
+            "departments": [],
+            "revenue": [],
+            "cost": []
+        }
 
     # Visual 2: Treemap / Hierarchical - Profit by Category -> Sub-Category
     treemap_data = []
-    cat_sub_agg = df.groupby(["category", "subcategory"])["profit"].sum().reset_index()
-    for cat in cat_sub_agg["category"].unique():
-        sub_df = cat_sub_agg[cat_sub_agg["category"] == cat]
-        children = []
-        for _, r in sub_df.iterrows():
-            children.append({"name": r["subcategory"], "value": round(float(r["profit"]), 2)})
-        treemap_data.append({"name": cat, "value": round(float(sub_df["profit"].sum()), 2), "children": children})
+    if not df.empty and "category" in df.columns and "subcategory" in df.columns:
+        cat_sub_agg = df.groupby(["category", "subcategory"])["profit"].sum().reset_index()
+        for cat in cat_sub_agg["category"].unique():
+            sub_df = cat_sub_agg[cat_sub_agg["category"] == cat]
+            children = []
+            for _, r in sub_df.iterrows():
+                children.append({"name": r["subcategory"], "value": round(float(r["profit"]), 2)})
+            treemap_data.append({"name": cat, "value": round(float(sub_df["profit"].sum()), 2), "children": children})
 
     # Visual 3: Line chart - Revenue Growth % by quarter
-    quarterly_agg = df.groupby("YearQuarter")["sales"].sum().reset_index()
-    quarterly_agg = quarterly_agg.sort_values(by="YearQuarter")
-    q_labels = quarterly_agg["YearQuarter"].tolist()
-    q_sales = quarterly_agg["sales"].tolist()
-    q_growth = []
-    for i in range(len(q_sales)):
-        if i == 0:
-            q_growth.append(0.0)
-        else:
-            prev = q_sales[i - 1]
-            growth = round(((q_sales[i] - prev) / prev) * 100, 2) if prev > 0 else 0.0
-            q_growth.append(growth)
+    if not df.empty and "YearQuarter" in df.columns and "sales" in df.columns:
+        quarterly_agg = df.groupby("YearQuarter")["sales"].sum().reset_index()
+        quarterly_agg = quarterly_agg.sort_values(by="YearQuarter")
+        q_labels = quarterly_agg["YearQuarter"].tolist()
+        q_sales = quarterly_agg["sales"].tolist()
+        q_growth = []
+        for i in range(len(q_sales)):
+            if i == 0:
+                q_growth.append(0.0)
+            else:
+                prev = q_sales[i - 1]
+                growth = round(((q_sales[i] - prev) / prev) * 100, 2) if prev > 0 else 0.0
+                q_growth.append(growth)
+    else:
+        q_labels = []
+        q_sales = []
+        q_growth = []
 
     line_chart_quarterly = {
         "labels": q_labels,
@@ -362,12 +391,19 @@ def get_organization_analytics(department_filter=None, year_filter=None):
     }
 
     # Visual 4: Matrix Visual - Region (rows) x Category (columns), values = Budget Variance
-    matrix_df = df.pivot_table(index="region", columns="category", values="budget_variance", aggfunc="sum", fill_value=0)
-    matrix_data = {
-        "regions": matrix_df.index.tolist(),
-        "categories": matrix_df.columns.tolist(),
-        "values": matrix_df.round(2).values.tolist()
-    }
+    if not df.empty and "region" in df.columns and "category" in df.columns and "budget_variance" in df.columns:
+        matrix_df = df.pivot_table(index="region", columns="category", values="budget_variance", aggfunc="sum", fill_value=0)
+        matrix_data = {
+            "regions": matrix_df.index.tolist(),
+            "categories": matrix_df.columns.tolist(),
+            "values": matrix_df.round(2).values.tolist()
+        }
+    else:
+        matrix_data = {
+            "regions": [],
+            "categories": [],
+            "values": []
+        }
 
     # Orders sample list (last 100)
     orders_sample = df.sort_values(by="OrderDate", ascending=False).head(100)
@@ -417,29 +453,33 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
     df_nat = pd.read_sql_query("SELECT * FROM national_budget", conn)
     conn.close()
 
-    if year_filter and str(year_filter).lower() != "all":
-        y = int(year_filter)
-        df_state_filt = df_state[df_state["year"] == y]
-        df_nat_filt = df_nat[df_nat["year"] == y]
-    else:
-        # Default to latest year (2024)
+    if not df_state.empty and "year" in df_state.columns:
         latest_y = df_state["year"].max()
-        df_state_filt = df_state[df_state["year"] == latest_y]
-        df_nat_filt = df_nat[df_nat["year"] == df_nat["year"].max()]
+        target_y = int(year_filter) if year_filter and str(year_filter).lower() != "all" else latest_y
+        df_state_filt = df_state[df_state["year"] == target_y]
+    else:
+        df_state_filt = pd.DataFrame(columns=["state", "year", "indicator", "value"])
+
+    if not df_nat.empty and "year" in df_nat.columns:
+        latest_nat_y = df_nat["year"].max()
+        target_nat_y = int(year_filter) if year_filter and str(year_filter).lower() != "all" else latest_nat_y
+        df_nat_filt = df_nat[df_nat["year"] == target_nat_y]
+    else:
+        df_nat_filt = pd.DataFrame(columns=["ministry", "sector", "year", "allocation", "expenditure"])
 
     # State KPIs
-    tot_rev = float(df_state_filt[df_state_filt["indicator"] == "Revenue"]["value"].sum())
-    tot_exp = float(df_state_filt[df_state_filt["indicator"] == "Expenditure"]["value"].sum())
+    tot_rev = float(df_state_filt[df_state_filt["indicator"] == "Revenue"]["value"].sum()) if not df_state_filt.empty and "indicator" in df_state_filt.columns else 0.0
+    tot_exp = float(df_state_filt[df_state_filt["indicator"] == "Expenditure"]["value"].sum()) if not df_state_filt.empty and "indicator" in df_state_filt.columns else 0.0
     tot_deficit = tot_rev - tot_exp
-    tot_debt = float(df_state_filt[df_state_filt["indicator"] == "Debt"]["value"].sum())
+    tot_debt = float(df_state_filt[df_state_filt["indicator"] == "Debt"]["value"].sum()) if not df_state_filt.empty and "indicator" in df_state_filt.columns else 0.0
     debt_to_rev = (tot_debt / tot_rev * 100) if tot_rev > 0 else 0.0
 
     # National Allocation
-    tot_national_alloc = float(df_nat_filt["allocation"].sum())
-    tot_national_exp = float(df_nat_filt["expenditure"].sum())
+    tot_national_alloc = float(df_nat_filt["allocation"].sum()) if not df_nat_filt.empty and "allocation" in df_nat_filt.columns else 0.0
+    tot_national_exp = float(df_nat_filt["expenditure"].sum()) if not df_nat_filt.empty and "expenditure" in df_nat_filt.columns else 0.0
 
     # Visual 1: State map data / choropleth
-    states = df_state_filt["state"].unique().tolist()
+    states = df_state_filt["state"].unique().tolist() if not df_state_filt.empty and "state" in df_state_filt.columns else []
     state_map_data = []
     for s in states:
         sub = df_state_filt[df_state_filt["state"] == s]
@@ -457,26 +497,43 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
         })
 
     # Visual 2: Line chart - Total State Revenue vs Total State Expenditure over Year (2014-2024)
-    yearly_state = df_state.groupby(["year", "indicator"])["value"].sum().unstack(fill_value=0).reset_index()
-    yearly_state = yearly_state.sort_values(by="year")
-    state_line_chart = {
-        "years": yearly_state["year"].tolist(),
-        "revenue": yearly_state.get("Revenue", pd.Series([0])).round(2).tolist(),
-        "expenditure": yearly_state.get("Expenditure", pd.Series([0])).round(2).tolist(),
-        "deficit": (yearly_state.get("Revenue", 0) - yearly_state.get("Expenditure", 0)).round(2).tolist()
-    }
+    if not df_state.empty and "year" in df_state.columns and "indicator" in df_state.columns:
+        yearly_state = df_state.groupby(["year", "indicator"])["value"].sum().unstack(fill_value=0).reset_index()
+        yearly_state = yearly_state.sort_values(by="year")
+        rev_s = yearly_state.get("Revenue", pd.Series([0.0]*len(yearly_state)))
+        exp_s = yearly_state.get("Expenditure", pd.Series([0.0]*len(yearly_state)))
+        state_line_chart = {
+            "years": yearly_state["year"].tolist(),
+            "revenue": rev_s.round(2).tolist(),
+            "expenditure": exp_s.round(2).tolist(),
+            "deficit": (rev_s - exp_s).round(2).tolist()
+        }
+    else:
+        state_line_chart = {
+            "years": [],
+            "revenue": [],
+            "expenditure": [],
+            "deficit": []
+        }
 
     # Visual 3: Bar chart - National Sector Allocation by Sector sorted descending with Sector Share %
-    sector_agg = df_nat_filt.groupby("sector")["allocation"].sum().reset_index()
-    sector_agg = sector_agg.sort_values(by="allocation", ascending=False)
-    total_alloc = sector_agg["allocation"].sum()
-    sector_agg["share_pct"] = (sector_agg["allocation"] / total_alloc * 100).round(2)
+    if not df_nat_filt.empty and "sector" in df_nat_filt.columns and "allocation" in df_nat_filt.columns:
+        sector_agg = df_nat_filt.groupby("sector")["allocation"].sum().reset_index()
+        sector_agg = sector_agg.sort_values(by="allocation", ascending=False)
+        total_alloc = sector_agg["allocation"].sum()
+        sector_agg["share_pct"] = (sector_agg["allocation"] / total_alloc * 100).round(2) if total_alloc > 0 else 0.0
 
-    national_bar_chart = {
-        "sectors": sector_agg["sector"].tolist(),
-        "allocation": sector_agg["allocation"].round(2).tolist(),
-        "share_pct": sector_agg["share_pct"].tolist()
-    }
+        national_bar_chart = {
+            "sectors": sector_agg["sector"].tolist(),
+            "allocation": sector_agg["allocation"].round(2).tolist(),
+            "share_pct": sector_agg["share_pct"].tolist() if isinstance(sector_agg["share_pct"], pd.Series) else [0.0] * len(sector_agg)
+        }
+    else:
+        national_bar_chart = {
+            "sectors": [],
+            "allocation": [],
+            "share_pct": []
+        }
 
     return {
         "kpis": {
@@ -503,37 +560,42 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
     conn.close()
 
     # --- 1. Individual Monthly Expense Forecast (6 Periods Ahead) ---
-    df_ind["Date"] = pd.to_datetime(df_ind["date"])
-    monthly_ind = df_ind.groupby(df_ind["Date"].dt.strftime("%Y-%m"))["amount"].sum().reset_index()
-    monthly_ind = monthly_ind.sort_values(by="Date")
-    hist_ind_labels = [datetime.strptime(d, "%Y-%m").strftime("%b %y") for d in monthly_ind["Date"]]
-    hist_ind_values = monthly_ind["amount"].tolist()
-
-    # Exponential smoothing projection
-    alpha = 0.35
-    smoothed = [hist_ind_values[0]]
-    for val in hist_ind_values[1:]:
-        smoothed.append(alpha * val + (1 - alpha) * smoothed[-1])
-
-    last_val = smoothed[-1]
-    trend = (smoothed[-1] - smoothed[-4]) / 4.0 if len(smoothed) >= 4 else 0.0
-    
-    # Apply what-if cut
-    cut_factor = 1.0 - (float(whatif_ind_cut_pct) / 100.0)
+    if not df_ind.empty and "date" in df_ind.columns and "amount" in df_ind.columns:
+        df_ind["Date"] = pd.to_datetime(df_ind["date"])
+        monthly_ind = df_ind.groupby(df_ind["Date"].dt.strftime("%Y-%m"))["amount"].sum().reset_index()
+        monthly_ind = monthly_ind.sort_values(by="Date")
+        hist_ind_labels = [datetime.strptime(d, "%Y-%m").strftime("%b %y") for d in monthly_ind["Date"]]
+        hist_ind_values = monthly_ind["amount"].tolist()
+    else:
+        hist_ind_labels = []
+        hist_ind_values = []
 
     future_ind_labels = ["Jan 25", "Feb 25", "Mar 25", "Apr 25", "May 25", "Jun 25"]
     future_ind_forecast = []
     future_ind_upper = []
     future_ind_lower = []
 
-    std_error = float(np.std(hist_ind_values[-12:])) if len(hist_ind_values) >= 12 else 5000.0
-    
-    for i in range(1, 7):
-        base_pred = (last_val + trend * i) * cut_factor
-        margin = 1.96 * std_error * np.sqrt(i * 0.3) # 95% Confidence Band
-        future_ind_forecast.append(round(base_pred, 2))
-        future_ind_upper.append(round(base_pred + margin, 2))
-        future_ind_lower.append(round(max(0, base_pred - margin), 2))
+    if hist_ind_values:
+        alpha = 0.35
+        smoothed = [hist_ind_values[0]]
+        for val in hist_ind_values[1:]:
+            smoothed.append(alpha * val + (1 - alpha) * smoothed[-1])
+
+        last_val = smoothed[-1]
+        trend = (smoothed[-1] - smoothed[-4]) / 4.0 if len(smoothed) >= 4 else 0.0
+        cut_factor = 1.0 - (float(whatif_ind_cut_pct) / 100.0)
+        std_error = float(np.std(hist_ind_values[-12:])) if len(hist_ind_values) >= 12 else 5000.0
+
+        for i in range(1, 7):
+            base_pred = (last_val + trend * i) * cut_factor
+            margin = 1.96 * std_error * np.sqrt(i * 0.3) # 95% Confidence Band
+            future_ind_forecast.append(round(base_pred, 2))
+            future_ind_upper.append(round(base_pred + margin, 2))
+            future_ind_lower.append(round(max(0, base_pred - margin), 2))
+    else:
+        future_ind_forecast = [0.0] * 6
+        future_ind_upper = [0.0] * 6
+        future_ind_lower = [0.0] * 6
 
     ind_forecast_data = {
         "history_labels": hist_ind_labels[-12:],
@@ -546,30 +608,38 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
     }
 
     # --- 2. Organization Quarterly Revenue Forecast (4 Periods Ahead) ---
-    df_org["OrderDate"] = pd.to_datetime(df_org["order_date"])
-    df_org["YQ"] = df_org["OrderDate"].dt.year.astype(str) + "-Q" + df_org["OrderDate"].dt.quarter.astype(str)
-    quarterly_org = df_org.groupby("YQ")["sales"].sum().reset_index().sort_values(by="YQ")
-    
-    hist_org_labels = quarterly_org["YQ"].tolist()
-    hist_org_values = quarterly_org["sales"].tolist()
+    if not df_org.empty and "order_date" in df_org.columns and "sales" in df_org.columns:
+        df_org["OrderDate"] = pd.to_datetime(df_org["order_date"])
+        df_org["YQ"] = df_org["OrderDate"].dt.year.astype(str) + "-Q" + df_org["OrderDate"].dt.quarter.astype(str)
+        quarterly_org = df_org.groupby("YQ")["sales"].sum().reset_index().sort_values(by="YQ")
+        hist_org_labels = quarterly_org["YQ"].tolist()
+        hist_org_values = quarterly_org["sales"].tolist()
+    else:
+        hist_org_labels = []
+        hist_org_values = []
 
     org_growth_slider = float(whatif_org_growth_pct) / 100.0
-    last_org = hist_org_values[-1]
-    avg_org_growth = 0.035 + (org_growth_slider / 4.0)
-
     future_org_labels = ["2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4"]
     future_org_forecast = []
     future_org_upper = []
     future_org_lower = []
-    org_std = float(np.std(hist_org_values)) if len(hist_org_values) > 0 else 10000.0
 
-    cur_org = last_org
-    for i in range(1, 5):
-        cur_org = cur_org * (1 + avg_org_growth)
-        margin = 1.96 * org_std * np.sqrt(i * 0.4)
-        future_org_forecast.append(round(cur_org, 2))
-        future_org_upper.append(round(cur_org + margin, 2))
-        future_org_lower.append(round(max(0, cur_org - margin), 2))
+    if hist_org_values:
+        last_org = hist_org_values[-1]
+        avg_org_growth = 0.035 + (org_growth_slider / 4.0)
+        org_std = float(np.std(hist_org_values)) if len(hist_org_values) > 0 else 10000.0
+        cur_org = last_org
+        for i in range(1, 5):
+            cur_org = cur_org * (1 + avg_org_growth)
+            margin = 1.96 * org_std * np.sqrt(i * 0.4)
+            future_org_forecast.append(round(cur_org, 2))
+            future_org_upper.append(round(cur_org + margin, 2))
+            future_org_lower.append(round(max(0, cur_org - margin), 2))
+    else:
+        last_org = 0.0
+        future_org_forecast = [0.0] * 4
+        future_org_upper = [0.0] * 4
+        future_org_lower = [0.0] * 4
 
     org_forecast_data = {
         "history_labels": hist_org_labels[-8:],
@@ -582,26 +652,35 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
     }
 
     # --- 3. State Public Expenditure Forecast (3 Years Ahead) ---
-    yearly_state = df_state.groupby("year")["value"].sum().reset_index().sort_values(by="year")
-    hist_state_labels = [str(y) for y in yearly_state["year"]]
-    hist_state_values = yearly_state["value"].tolist()
-
-    state_growth = 0.075 - (float(whatif_state_deficit_target_pct) / 100.0 * 0.02)
-    last_state = hist_state_values[-1]
+    if not df_state.empty and "year" in df_state.columns and "value" in df_state.columns:
+        yearly_state = df_state.groupby("year")["value"].sum().reset_index().sort_values(by="year")
+        hist_state_labels = [str(y) for y in yearly_state["year"]]
+        hist_state_values = yearly_state["value"].tolist()
+    else:
+        hist_state_labels = []
+        hist_state_values = []
 
     future_state_labels = ["2025", "2026", "2027"]
     future_state_forecast = []
     future_state_upper = []
     future_state_lower = []
-    state_std = float(np.std(hist_state_values)) if len(hist_state_values) > 0 else 50000.0
 
-    cur_state = last_state
-    for i in range(1, 4):
-        cur_state = cur_state * (1 + state_growth)
-        margin = 1.96 * state_std * np.sqrt(i * 0.5)
-        future_state_forecast.append(round(cur_state, 2))
-        future_state_upper.append(round(cur_state + margin, 2))
-        future_state_lower.append(round(max(0, cur_state - margin), 2))
+    if hist_state_values:
+        state_growth = 0.075 - (float(whatif_state_deficit_target_pct) / 100.0 * 0.02)
+        last_state = hist_state_values[-1]
+        state_std = float(np.std(hist_state_values)) if len(hist_state_values) > 0 else 50000.0
+        cur_state = last_state
+        for i in range(1, 4):
+            cur_state = cur_state * (1 + state_growth)
+            margin = 1.96 * state_std * np.sqrt(i * 0.5)
+            future_state_forecast.append(round(cur_state, 2))
+            future_state_upper.append(round(cur_state + margin, 2))
+            future_state_lower.append(round(max(0, cur_state - margin), 2))
+    else:
+        last_state = 0.0
+        future_state_forecast = [0.0] * 3
+        future_state_upper = [0.0] * 3
+        future_state_lower = [0.0] * 3
 
     state_forecast_data = {
         "history_labels": hist_state_labels[-6:],
@@ -614,17 +693,24 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
     }
 
     # Executive Decision-Making Analytical Interpretation
-    savings_impact = round(future_ind_forecast[0] * (float(whatif_ind_cut_pct) / 100.0), 2)
-    org_boost = round(future_org_forecast[0] - (last_org * 1.035), 2)
+    if hist_ind_values or hist_org_values or hist_state_values:
+        savings_impact = round(future_ind_forecast[0] * (float(whatif_ind_cut_pct) / 100.0), 2)
+        org_boost = round(future_org_forecast[0] - (last_org * 1.035), 2)
 
-    decision_insights = (
-        f"• Micro/Individual: A {whatif_ind_cut_pct}% discretionary spending adjustment conserves approx "
-        f"₹{savings_impact:,.0f} per month, directly raising annual savings liquidity. \n"
-        f"• Enterprise/Org: Target revenue growth of {whatif_org_growth_pct}% projects Q1 2025 revenue at "
-        f"₹{future_org_forecast[0]:,.0f}, offsetting projected departmental logistics costs. \n"
-        f"• Macro/State: Constraining expenditure inflation keeps projected 2025 public outlay within "
-        f"₹{future_state_forecast[0]:,.0f}, narrowing the state debt servicing ratio."
-    )
+        decision_insights = (
+            f"• Micro/Individual: A {whatif_ind_cut_pct}% discretionary spending adjustment conserves approx "
+            f"₹{savings_impact:,.0f} per month, directly raising annual savings liquidity. \n"
+            f"• Enterprise/Org: Target revenue growth of {whatif_org_growth_pct}% projects Q1 2025 revenue at "
+            f"₹{future_org_forecast[0]:,.0f}, offsetting projected departmental logistics costs. \n"
+            f"• Macro/State: Constraining expenditure inflation keeps projected 2025 public outlay within "
+            f"₹{future_state_forecast[0]:,.0f}, narrowing the state debt servicing ratio."
+        )
+    else:
+        decision_insights = (
+            "• Micro/Individual: Ready for custom budget inputs. Use the Individual studio or add your personal dataset.\n"
+            "• Enterprise/Org: Ready for departmental simulation. Use Organization studio or add your company orders dataset.\n"
+            "• Macro/State: Ready for public finance data. Add your state finance records to view projections."
+        )
 
     return {
         "individual_forecast": ind_forecast_data,

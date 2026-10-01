@@ -421,9 +421,13 @@ def export_all_csvs():
         # Export Individual
         df_ind = pd.read_sql_query("SELECT * FROM individual_transactions", conn)
         df_budgets = pd.read_sql_query("SELECT * FROM category_budgets", conn)
-        budget_map = dict(zip(df_budgets["category"], df_budgets["monthly_budget"]))
-        df_ind["MonthYear"] = pd.to_datetime(df_ind["date"]).dt.strftime("%b %Y")
-        df_ind["MonthlyBudget"] = df_ind["category"].map(budget_map).fillna(5000.0)
+        budget_map = dict(zip(df_budgets["category"], df_budgets["monthly_budget"])) if not df_budgets.empty else {}
+        if not df_ind.empty and "date" in df_ind.columns:
+            df_ind["MonthYear"] = pd.to_datetime(df_ind["date"]).dt.strftime("%b %Y")
+            df_ind["MonthlyBudget"] = df_ind["category"].map(budget_map).fillna(5000.0)
+        else:
+            df_ind["MonthYear"] = pd.Series([], dtype=str)
+            df_ind["MonthlyBudget"] = pd.Series([], dtype=float)
         df_ind.to_csv(os.path.join(CLEAN_DATA_DIR, "individual_clean.csv"), index=False)
 
         # Export Organization
@@ -441,7 +445,20 @@ def export_all_csvs():
 
         return jsonify({
             "success": True,
-            "message": "All 4 clean CSV datasets refreshed successfully! Ready for 1-click Power BI refresh."
+            "message": "All clean CSV datasets synchronized successfully! Ready for Power BI refresh."
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/data/reload", methods=["POST"])
+def reload_datasets_route():
+    try:
+        from backend.database import load_csvs_into_db
+        count = load_csvs_into_db()
+        return jsonify({
+            "success": True,
+            "message": f"Datasets reloaded into SQLite database ({count} records imported from CSVs).",
+            "records_imported": count
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
