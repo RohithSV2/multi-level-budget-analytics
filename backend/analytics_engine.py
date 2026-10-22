@@ -288,6 +288,57 @@ def get_individual_analytics(category_filter=None, year_filter=None):
             "currency": r.get("currency", "INR")
         })
 
+    # Visual 4: Payment Mode Breakdown (UPI, Card, Net Banking, Cash)
+    if not df_exp.empty and "mode" in df_exp.columns:
+        mode_agg = df_exp.groupby("mode")["amount"].sum().reset_index()
+        mode_agg = mode_agg.sort_values(by="amount", ascending=False)
+        mode_donut = {
+            "labels": mode_agg["mode"].tolist(),
+            "data": mode_agg["amount"].round(2).tolist()
+        }
+    else:
+        mode_donut = {"labels": [], "data": []}
+
+    # Visual 5: Monthly Inflows vs Outflows (Cashflow)
+    all_months = sorted(list(set(df["YearMonth"].dropna().unique())))
+    flow_labels, inc_flow, exp_flow = [], [], []
+    for ym in all_months[-12:]:
+        try:
+            label = datetime.strptime(ym, "%Y-%m").strftime("%b %Y")
+        except Exception:
+            label = ym
+        flow_labels.append(label)
+        sub_ym = df[df["YearMonth"] == ym]
+        inc_flow.append(round(float(sub_ym[sub_ym["income_expense"] == "Income"]["amount"].sum()), 2))
+        exp_flow.append(round(float(sub_ym[sub_ym["income_expense"] == "Expense"]["amount"].sum()), 2))
+    monthly_flow = {
+        "labels": flow_labels,
+        "income": inc_flow,
+        "expense": exp_flow
+    }
+
+    # Visual 6: Top 8 Expense Subcategories
+    if not df_exp.empty and "subcategory" in df_exp.columns:
+        sub_exp = df_exp[df_exp["subcategory"].notna() & (df_exp["subcategory"] != "")].groupby("subcategory")["amount"].sum().reset_index()
+        sub_exp = sub_exp.sort_values(by="amount", ascending=False).head(8)
+        top_subcategories = {
+            "subcategories": sub_exp["subcategory"].tolist(),
+            "amount": sub_exp["amount"].round(2).tolist()
+        }
+    else:
+        top_subcategories = {"subcategories": [], "amount": []}
+
+    # Visual 7: Cumulative Net Wealth Accumulation
+    cum_savings = []
+    running_total = 0.0
+    for i in range(len(flow_labels)):
+        running_total += (inc_flow[i] - exp_flow[i])
+        cum_savings.append(round(running_total, 2))
+    cumulative_savings = {
+        "labels": flow_labels,
+        "cumulative": cum_savings
+    }
+
     return {
         "kpis": {
             "total_income": total_income,
@@ -302,6 +353,10 @@ def get_individual_analytics(category_filter=None, year_filter=None):
         "donut_chart": donut_chart,
         "line_chart": line_chart,
         "bar_chart": bar_chart,
+        "mode_donut": mode_donut,
+        "monthly_flow": monthly_flow,
+        "top_subcategories": top_subcategories,
+        "cumulative_savings": cumulative_savings,
         "transactions": tx_list,
         "budgets": budget_map,
         "categories": sorted(list(budget_map.keys()))
@@ -435,6 +490,56 @@ def get_organization_analytics(department_filter=None, year_filter=None):
             "budget_variance": float(r["budget_variance"])
         })
 
+    # Visual 4: Quarterly Revenue, Profit & Cost Trajectory
+    if not df.empty and "OrderDate" in df.columns:
+        df["YearQ"] = df["OrderDate"].dt.year.astype(str) + "-Q" + df["OrderDate"].dt.quarter.astype(str)
+        df["QName"] = "Q" + df["OrderDate"].dt.quarter.astype(str) + " " + df["OrderDate"].dt.year.astype(str)
+        q_agg = df.groupby(["YearQ", "QName"]).agg({"sales": "sum", "profit": "sum", "cost": "sum"}).reset_index().sort_values("YearQ")
+        quarterly_trend = {
+            "quarters": q_agg["QName"].tolist()[-8:],
+            "sales": q_agg["sales"].round(2).tolist()[-8:],
+            "profit": q_agg["profit"].round(2).tolist()[-8:],
+            "cost": q_agg["cost"].round(2).tolist()[-8:]
+        }
+    else:
+        quarterly_trend = {"quarters": [], "sales": [], "profit": [], "cost": []}
+
+    # Visual 5: Product Subcategory Profitability Leaderboard
+    if not df.empty and "subcategory" in df.columns:
+        sub_agg = df.groupby("subcategory").agg({"profit": "sum", "sales": "sum"}).reset_index().sort_values(by="profit", ascending=False).head(8)
+        subcat_profit = {
+            "subcategories": sub_agg["subcategory"].tolist(),
+            "profit": sub_agg["profit"].round(2).tolist(),
+            "sales": sub_agg["sales"].round(2).tolist()
+        }
+    else:
+        subcat_profit = {"subcategories": [], "profit": [], "sales": []}
+
+    # Visual 6: Department Operational Cost Share
+    if not df.empty and "department" in df.columns:
+        dept_agg = df.groupby("department")["cost"].sum().reset_index()
+        dept_expense_pie = {
+            "departments": dept_agg["department"].tolist(),
+            "cost": dept_agg["cost"].round(2).tolist()
+        }
+    else:
+        dept_expense_pie = {"departments": [], "cost": []}
+
+    # Visual 7: Discount Impact on Profit Margin
+    if not df.empty and "discount" in df.columns:
+        bins = [-0.01, 0.0, 0.10, 0.20, 1.0]
+        labels = ["0% (Full Price)", "1-10% (Low)", "11-20% (Mod)", ">20% (High)"]
+        df["disc_tier"] = pd.cut(df["discount"], bins=bins, labels=labels)
+        disc_agg = df.groupby("disc_tier", observed=False).agg({"sales": "sum", "profit": "sum"}).reset_index()
+        disc_agg["margin_pct"] = ((disc_agg["profit"] / disc_agg["sales"]) * 100).round(2).fillna(0.0)
+        discount_impact = {
+            "tiers": disc_agg["disc_tier"].astype(str).tolist(),
+            "margin_pct": disc_agg["margin_pct"].tolist(),
+            "sales": disc_agg["sales"].round(2).tolist()
+        }
+    else:
+        discount_impact = {"tiers": [], "margin_pct": [], "sales": []}
+
     return {
         "kpis": {
             "total_revenue": total_revenue,
@@ -462,6 +567,10 @@ def get_organization_analytics(department_filter=None, year_filter=None):
                 for c in (df.groupby("category")["profit"].sum().index.tolist() if not df.empty and "category" in df.columns else ["Technology", "Furniture", "Office Supplies"])
             ]
         },
+        "quarterly_trend": quarterly_trend,
+        "subcat_profit": subcat_profit,
+        "dept_expense_pie": dept_expense_pie,
+        "discount_impact": discount_impact,
         "orders": order_list,
         "departments": ["Consumer", "Corporate", "Home Office"],
         "regions": ["North", "South", "West", "East"],
@@ -599,6 +708,50 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
             "share_pct": []
         }
 
+    # Visual 4: 10-Year Historical Debt & Revenue Trajectory (2014-2024)
+    if not df_state.empty and "year" in df_state.columns and "indicator" in df_state.columns:
+        traj = df_state.groupby(["year", "indicator"])["value"].sum().unstack(fill_value=0).reset_index().sort_values(by="year")
+        debt_s = traj.get("Debt", pd.Series([0.0]*len(traj)))
+        rev_s_traj = traj.get("Revenue", pd.Series([0.0]*len(traj)))
+        exp_s_traj = traj.get("Expenditure", pd.Series([0.0]*len(traj)))
+        state_debt_trajectory = {
+            "years": traj["year"].tolist(),
+            "debt": debt_s.round(2).tolist(),
+            "revenue": rev_s_traj.round(2).tolist(),
+            "expenditure": exp_s_traj.round(2).tolist()
+        }
+    else:
+        state_debt_trajectory = {"years": [], "debt": [], "revenue": [], "expenditure": []}
+
+    # Visual 5: Top 10 Indian States Fiscal Capacity Leaderboard (by Revenue)
+    top_states = sorted(state_map_data, key=lambda x: x["revenue"], reverse=True)[:10]
+    state_rev_rank = {
+        "states": [s["state"] for s in top_states],
+        "revenue": [s["revenue"] for s in top_states],
+        "gsdp": [s["gsdp"] for s in top_states]
+    }
+
+    # Visual 6: Union Budget: Budgeted Allocation vs Actual Expenditure
+    if not df_nat_filt.empty and "ministry" in df_nat_filt.columns and "allocation" in df_nat_filt.columns:
+        nat_sorted = df_nat_filt.sort_values(by="allocation", ascending=False).head(8)
+        short_names = [m.replace("Ministry of ", "") for m in nat_sorted["ministry"].tolist()]
+        national_alloc_vs_exp = {
+            "ministries": short_names,
+            "allocation": nat_sorted["allocation"].round(2).tolist(),
+            "expenditure": nat_sorted["expenditure"].round(2).tolist(),
+            "utilization_pct": ((nat_sorted["expenditure"] / nat_sorted["allocation"]) * 100).round(1).tolist()
+        }
+    else:
+        national_alloc_vs_exp = {"ministries": [], "allocation": [], "expenditure": [], "utilization_pct": []}
+
+    # Visual 7: State Debt-to-Revenue Leverage Burden Ratio
+    burden_sorted = sorted(state_map_data, key=lambda x: x["debt_ratio"], reverse=True)
+    state_debt_burden = {
+        "states": [s["state"] for s in burden_sorted],
+        "debt_ratio": [s["debt_ratio"] for s in burden_sorted],
+        "benchmark": 300.0
+    }
+
     avg_def_pct = round(sum(deficit_chart_pcts) / len(deficit_chart_pcts), 2) if deficit_chart_pcts else 3.28
     compliance_rate = round((compliant_count / len(states) * 100), 1) if states else 60.0
 
@@ -617,7 +770,11 @@ def get_state_nation_analytics(state_filter=None, year_filter=None):
         "state_deficit_chart": state_deficit_chart,
         "state_rev_exp_bar": state_rev_exp_bar,
         "state_line_chart": state_line_chart,
-        "national_bar_chart": national_bar_chart
+        "national_bar_chart": national_bar_chart,
+        "state_debt_trajectory": state_debt_trajectory,
+        "state_rev_rank": state_rev_rank,
+        "state_debt_burden": state_debt_burden,
+        "national_alloc_vs_exp": national_alloc_vs_exp
     }
 
 # ==========================================

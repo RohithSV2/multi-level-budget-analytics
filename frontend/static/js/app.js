@@ -1,6 +1,485 @@
 // ==============================================================================
-// MULTI-LEVEL BUDGET TRACKER ANALYTICS — MAIN APPLICATION CONTROLLER
+// VISUAL MANAGER: DYNAMIC GRAPH SELECTOR & LAYOUT CONTROLLER
 // ==============================================================================
+const VisualManager = {
+  catalogs: {
+    state_nation: [
+      {
+        id: "card-state-deficit-bar",
+        canvasId: "chart-state-deficit-bar",
+        title: "Indian States Fiscal Deficit as % of GSDP",
+        subtitle: "Fiscal prudence benchmark (FRBM Act 3.0% statutory threshold line highlighted)",
+        desc: "Color-coded state deficits against statutory FRBM 3.0% limit with Emerald (Compliant) and Coral (Caution).",
+        tag: "FRBM Prudence",
+        category: "state",
+        default: true,
+        render: (d) => d && d.state_deficit_chart && ChartEngine.renderStateDeficitBar("chart-state-deficit-bar", d.state_deficit_chart)
+      },
+      {
+        id: "card-union-budget-donut",
+        canvasId: "chart-union-budget-donut",
+        title: "National Union Budget Allocation",
+        subtitle: "Proportional breakdown by major Central Ministries (₹ Lakh Cr)",
+        desc: "Interactive doughnut breakdown of India's central ministry outlays across Defence, Infrastructure, Health, and Education.",
+        tag: "Union Outlay",
+        category: "national",
+        default: true,
+        render: (d) => d && d.national_bar_chart && ChartEngine.renderUnionBudgetDonut("chart-union-budget-donut", d.national_bar_chart)
+      },
+      {
+        id: "card-state-rev-exp-bar",
+        canvasId: "chart-state-rev-exp-bar",
+        title: "State Revenue Receipts vs. Expenditures",
+        subtitle: "Comparative fiscal capacity across major Indian states (₹ Crores)",
+        desc: "Direct grouped comparison of total revenue receipts against actual spending commitments across 15 states.",
+        tag: "Receipts vs Outlay",
+        category: "state",
+        default: true,
+        render: (d) => d && d.state_rev_exp_bar && ChartEngine.renderStateRevExpBar("chart-state-rev-exp-bar", d.state_rev_exp_bar)
+      },
+      {
+        id: "card-state-debt-trajectory",
+        canvasId: "chart-state-debt-trajectory",
+        title: "10-Year Historical Debt & Revenue Expansion",
+        subtitle: "Decadal macro expansion of sovereign liabilities vs revenue receipts (2014-2024)",
+        desc: "Multi-line decadal trajectory showing aggregate Indian state debt and revenue growth from 2014 to 2024.",
+        tag: "10-Year Trajectory",
+        category: "state",
+        default: false,
+        render: (d) => d && d.state_debt_trajectory && ChartEngine.renderStateDebtTrajectory("chart-state-debt-trajectory", d.state_debt_trajectory)
+      },
+      {
+        id: "card-state-rev-rank",
+        canvasId: "chart-state-rev-rank",
+        title: "Top Indian States Fiscal Capacity Leaderboard",
+        subtitle: "Top 10 highest revenue generating states in India (₹ Lakh Cr)",
+        desc: "Horizontal ranked comparison of India's top 10 economic powerhouse states by gross revenue receipts.",
+        tag: "Revenue Ranking",
+        category: "state",
+        default: false,
+        render: (d) => d && d.state_rev_rank && ChartEngine.renderStateRevRank("chart-state-rev-rank", d.state_rev_rank)
+      },
+      {
+        id: "card-national-alloc-vs-exp",
+        canvasId: "chart-national-alloc-vs-exp",
+        title: "Union Budget: Outlay vs. Actual Expenditure",
+        subtitle: "Ministry-by-ministry capital execution rate & budget utilization",
+        desc: "Grouped bar analysis evaluating implementation efficiency and capital outturn across central ministries.",
+        tag: "Budget Execution",
+        category: "national",
+        default: false,
+        render: (d) => d && d.national_alloc_vs_exp && ChartEngine.renderNationalAllocVsExp("chart-national-alloc-vs-exp", d.national_alloc_vs_exp)
+      },
+      {
+        id: "card-state-debt-burden",
+        canvasId: "chart-state-debt-burden",
+        title: "State Debt-to-Revenue Leverage Ratio",
+        subtitle: "Outstanding debt as a percentage of annual state revenues (300% prudential guideline)",
+        desc: "Evaluates sovereign debt sustainability by calculating total liabilities relative to annual tax collections.",
+        tag: "Debt Sustainability",
+        category: "state",
+        default: false,
+        render: (d) => d && d.state_debt_burden && ChartEngine.renderStateDebtBurden("chart-state-debt-burden", d.state_debt_burden)
+      }
+    ],
+
+    organization: [
+      {
+        id: "card-org-dept-bar",
+        canvasId: "chart-org-dept-bar",
+        title: "Cost vs. Revenue by Department",
+        subtitle: "Operational cost allocations vs generated revenue",
+        desc: "Clustered bar chart comparing operating expenses against gross revenue across Corporate, Consumer, and Home Office divisions.",
+        tag: "Department Split",
+        category: "dept",
+        default: true,
+        render: (d) => d && d.clustered_bar && ChartEngine.renderOrgClusteredBar("chart-org-dept-bar", d.clustered_bar)
+      },
+      {
+        id: "card-org-region-pie",
+        canvasId: "chart-org-region-pie",
+        title: "Regional Operational Burn",
+        subtitle: "Expense distribution across geographic operating regions",
+        desc: "Doughnut chart plotting enterprise expense distribution across East, North, South, and West territories.",
+        tag: "Regional Geography",
+        category: "dept",
+        default: true,
+        render: (d) => d && d.regional_distribution && ChartEngine.renderOrgRegionPie("chart-org-region-pie", d.regional_distribution)
+      },
+      {
+        id: "card-org-margin-bar",
+        canvasId: "chart-org-margin-bar",
+        title: "Operating Profit Margin by Category",
+        subtitle: "Profit contribution margin (%) per superstore category",
+        desc: "Evaluates realized profitability margins for Technology, Office Supplies, and Furniture.",
+        tag: "Category Margin",
+        category: "profit",
+        default: true,
+        render: (d) => d && d.category_margins && ChartEngine.renderOrgMarginBar("chart-org-margin-bar", d.category_margins)
+      },
+      {
+        id: "card-org-quarterly-trend",
+        canvasId: "chart-org-quarterly-trend",
+        title: "Quarterly Revenue, Cost & Profit Trajectory",
+        subtitle: "Multi-quarter financial performance trajectory across 2021-2024",
+        desc: "Comprehensive quarterly trend tracking commercial sales, operational costs, and bottom-line profit.",
+        tag: "Quarterly Trajectory",
+        category: "profit",
+        default: false,
+        render: (d) => d && d.quarterly_trend && ChartEngine.renderOrgQuarterlyTrend("chart-org-quarterly-trend", d.quarterly_trend)
+      },
+      {
+        id: "card-org-subcat-profit",
+        canvasId: "chart-org-subcat-profit",
+        title: "Product Subcategory Profitability Leaderboard",
+        subtitle: "Top 8 product lines delivering highest enterprise net returns",
+        desc: "Horizontal ranked leaderboard identifying top product margin drivers (Copiers, Machines, Accessories, Phones).",
+        tag: "Product Leaderboard",
+        category: "profit",
+        default: false,
+        render: (d) => d && d.subcat_profit && ChartEngine.renderOrgSubcatProfit("chart-org-subcat-profit", d.subcat_profit)
+      },
+      {
+        id: "card-org-dept-expense-pie",
+        canvasId: "chart-org-dept-expense-pie",
+        title: "Department Operational Cost Share",
+        subtitle: "Relative operational expenditure allocation between divisions",
+        desc: "Proportional cost center expenditure distribution across the enterprise.",
+        tag: "Cost Allocation",
+        category: "dept",
+        default: false,
+        render: (d) => d && d.dept_expense_pie && ChartEngine.renderOrgDeptExpensePie("chart-org-dept-expense-pie", d.dept_expense_pie)
+      },
+      {
+        id: "card-org-discount-impact",
+        canvasId: "chart-org-discount-impact",
+        title: "Discount Impact on Operating Margins",
+        subtitle: "Analysis of margin erosion across tiered discount bands",
+        desc: "Price elasticity analysis showing how increasing discounts impact realized profit contribution margins.",
+        tag: "Pricing Elasticity",
+        category: "profit",
+        default: false,
+        render: (d) => d && d.discount_impact && ChartEngine.renderOrgDiscountImpact("chart-org-discount-impact", d.discount_impact)
+      }
+    ],
+
+    individual: [
+      {
+        id: "card-ind-donut",
+        canvasId: "chart-ind-donut",
+        title: "Monthly Expense Breakdown",
+        subtitle: "Proportion of monthly spend across 10 categories",
+        desc: "Personal spend distribution across household categories: Housing, Groceries, Dining, Utilities, and Shopping.",
+        tag: "Category Breakdown",
+        category: "budget",
+        default: true,
+        render: (d) => d && d.donut_chart && ChartEngine.renderIndividualDonut("chart-ind-donut", d.donut_chart)
+      },
+      {
+        id: "card-ind-variance",
+        canvasId: "chart-ind-variance",
+        title: "Target Budget vs. Actual Spend Variance",
+        subtitle: "Green: Under target (Favorable) • Crimson: Over target (Unfavorable)",
+        desc: "Category-by-category variance measuring actual monthly outflow against planned budget allocations.",
+        tag: "Budget Variance",
+        category: "budget",
+        default: true,
+        render: (d) => d && d.bar_chart && ChartEngine.renderIndividualVarianceBar("chart-ind-variance", d.bar_chart)
+      },
+      {
+        id: "card-ind-line",
+        canvasId: "chart-ind-line",
+        title: "12-Month Projected Savings Trajectory",
+        subtitle: "Simulated cashflow trend vs. minimum target safety threshold",
+        desc: "Forecasting timeline tracking monthly expenditures against planned baseline thresholds.",
+        tag: "Savings Trend",
+        category: "savings",
+        default: true,
+        render: (d) => d && d.line_chart && ChartEngine.renderIndividualLine("chart-ind-line", d.line_chart)
+      },
+      {
+        id: "card-ind-mode-donut",
+        canvasId: "chart-ind-mode-donut",
+        title: "Payment Channel Distribution",
+        subtitle: "Breakdown of expenses via UPI, Credit Card, Net Banking, and Cash",
+        desc: "Payment channel analytics measuring digital UPI usage vs card and cash payments.",
+        tag: "Payment Modes",
+        category: "savings",
+        default: false,
+        render: (d) => d && d.mode_donut && ChartEngine.renderIndModeDonut("chart-ind-mode-donut", d.mode_donut)
+      },
+      {
+        id: "card-ind-monthly-flow",
+        canvasId: "chart-ind-monthly-flow",
+        title: "Monthly Inflows vs. Outflows (Cashflow)",
+        subtitle: "Comparison of monthly income vs expenses across active months",
+        desc: "Dual bar tracking monthly income vs expenses showing cashflow surplus across 12 months.",
+        tag: "Cashflow Flow",
+        category: "savings",
+        default: false,
+        render: (d) => d && d.monthly_flow && ChartEngine.renderIndMonthlyFlow("chart-ind-monthly-flow", d.monthly_flow)
+      },
+      {
+        id: "card-ind-top-subcats",
+        canvasId: "chart-ind-top-subcats",
+        title: "Top Discretionary Expense Drivers",
+        subtitle: "Leading expense subcategories ranked by cumulative outflow",
+        desc: "Granular subcategory ranking identifying specific lifestyle spend drivers.",
+        tag: "Top Subcategories",
+        category: "budget",
+        default: false,
+        render: (d) => d && d.top_subcategories && ChartEngine.renderIndTopSubcats("chart-ind-top-subcats", d.top_subcategories)
+      },
+      {
+        id: "card-ind-cumulative-savings",
+        canvasId: "chart-ind-cumulative-savings",
+        title: "Cumulative Net Wealth Accumulation",
+        subtitle: "Cumulative savings trajectory progression over active months",
+        desc: "Stepped growth trajectory of cumulative net retained savings across all recorded transactions.",
+        tag: "Wealth Accumulation",
+        category: "savings",
+        default: false,
+        render: (d) => d && d.cumulative_savings && ChartEngine.renderIndCumulativeSavings("chart-ind-cumulative-savings", d.cumulative_savings)
+      }
+    ]
+  },
+
+  activeCards: {
+    state_nation: new Set(),
+    organization: new Set(),
+    individual: new Set()
+  },
+
+  latestData: {
+    state_nation: null,
+    organization: null,
+    individual: null
+  },
+
+  init(pageType, data) {
+    if (!this.catalogs[pageType]) return;
+    this.latestData[pageType] = data;
+
+    const saved = localStorage.getItem("bx_visible_" + pageType);
+    if (saved) {
+      try {
+        const arr = JSON.parse(saved);
+        this.activeCards[pageType] = new Set(arr);
+      } catch (e) {
+        this.resetToDefaults(pageType);
+      }
+    } else {
+      this.resetToDefaults(pageType);
+    }
+
+    this.bindUI(pageType);
+    this.applyVisibility(pageType);
+  },
+
+  resetToDefaults(pageType) {
+    const catalog = this.catalogs[pageType] || [];
+    this.activeCards[pageType] = new Set(catalog.filter(c => c.default).map(c => c.id));
+  },
+
+  bindUI(pageType) {
+    document.querySelectorAll(".bx-pill-btn").forEach(btn => {
+      btn.onclick = () => {
+        const preset = btn.dataset.preset;
+        document.querySelectorAll(".bx-pill-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.applyPreset(pageType, preset);
+      };
+    });
+
+    const openBtn = document.getElementById("btn-open-visuals-modal");
+    if (openBtn) {
+      openBtn.onclick = () => this.openCustomizerModal(pageType);
+    }
+
+    const closeBtn = document.getElementById("btn-close-visuals-modal");
+    if (closeBtn) {
+      closeBtn.onclick = () => this.closeCustomizerModal();
+    }
+    const cancelBtn = document.getElementById("btn-cancel-visuals-modal");
+    if (cancelBtn) {
+      cancelBtn.onclick = () => this.closeCustomizerModal();
+    }
+
+    const selAll = document.getElementById("btn-modal-select-all");
+    if (selAll) {
+      selAll.onclick = () => {
+        const catalog = this.catalogs[pageType] || [];
+        catalog.forEach(c => {
+          const el = document.getElementById(`picker-choice-${c.id}`);
+          if (el) el.classList.add("selected");
+        });
+      };
+    }
+
+    const deselAll = document.getElementById("btn-modal-deselect-all");
+    if (deselAll) {
+      deselAll.onclick = () => {
+        const catalog = this.catalogs[pageType] || [];
+        catalog.forEach(c => {
+          const el = document.getElementById(`picker-choice-${c.id}`);
+          if (el) el.classList.remove("selected");
+        });
+      };
+    }
+
+    const resetDef = document.getElementById("btn-modal-reset-default");
+    if (resetDef) {
+      resetDef.onclick = () => {
+        const catalog = this.catalogs[pageType] || [];
+        catalog.forEach(c => {
+          const el = document.getElementById(`picker-choice-${c.id}`);
+          if (el) {
+            if (c.default) el.classList.add("selected");
+            else el.classList.remove("selected");
+          }
+        });
+      };
+    }
+
+    const applyBtn = document.getElementById("btn-apply-visuals");
+    if (applyBtn) {
+      applyBtn.onclick = () => {
+        const catalog = this.catalogs[pageType] || [];
+        const newSet = new Set();
+        catalog.forEach(c => {
+          const el = document.getElementById(`picker-choice-${c.id}`);
+          if (el && el.classList.contains("selected")) {
+            newSet.add(c.id);
+          }
+        });
+        this.activeCards[pageType] = newSet;
+        this.save(pageType);
+        this.applyVisibility(pageType);
+        this.closeCustomizerModal();
+        if (typeof App !== "undefined" && App.showToast) {
+          App.showToast(`Updated visuals: ${newSet.size} graphs active!`, "success");
+        }
+      };
+    }
+  },
+
+  applyPreset(pageType, preset) {
+    const catalog = this.catalogs[pageType] || [];
+    if (preset === "all") {
+      this.activeCards[pageType] = new Set(catalog.map(c => c.id));
+    } else if (preset === "recommended") {
+      this.activeCards[pageType] = new Set(catalog.filter(c => c.default).map(c => c.id));
+    } else {
+      this.activeCards[pageType] = new Set(catalog.filter(c => c.category === preset || c.default).map(c => c.id));
+    }
+    this.save(pageType);
+    this.applyVisibility(pageType);
+    if (typeof App !== "undefined" && App.showToast) {
+      App.showToast(`Applied preset: ${this.activeCards[pageType].size} visuals displayed`, "info");
+    }
+  },
+
+  hideCard(pageType, cardId) {
+    if (this.activeCards[pageType]) {
+      this.activeCards[pageType].delete(cardId);
+      this.save(pageType);
+      this.applyVisibility(pageType);
+      if (typeof App !== "undefined" && App.showToast) {
+        App.showToast("Graph hidden from dashboard.", "info");
+      }
+    }
+  },
+
+  applyVisibility(pageType) {
+    const catalog = this.catalogs[pageType] || [];
+    const active = this.activeCards[pageType] || new Set();
+
+    let visibleCount = 0;
+    catalog.forEach(c => {
+      const cardEl = document.getElementById(c.id);
+      if (cardEl) {
+        if (active.has(c.id)) {
+          cardEl.style.display = "";
+          visibleCount++;
+        } else {
+          cardEl.style.display = "none";
+        }
+      }
+    });
+
+    const countEl = document.getElementById("visuals-active-count");
+    if (countEl) countEl.textContent = `${visibleCount} of ${catalog.length}`;
+
+    const badgeEl = document.getElementById("visuals-badge-count");
+    if (badgeEl) badgeEl.textContent = `${visibleCount}`;
+
+    const emptyCard = document.getElementById("visuals-empty-card");
+    if (emptyCard) {
+      emptyCard.style.display = visibleCount === 0 ? "flex" : "none";
+    }
+
+    if (this.latestData[pageType]) {
+      this.renderActiveCharts(pageType, this.latestData[pageType]);
+    }
+  },
+
+  renderActiveCharts(pageType, data) {
+    this.latestData[pageType] = data;
+    const catalog = this.catalogs[pageType] || [];
+    const active = this.activeCards[pageType] || new Set();
+
+    catalog.forEach(c => {
+      if (active.has(c.id) && document.getElementById(c.canvasId)) {
+        try {
+          c.render(data);
+        } catch (err) {
+          console.error("Error rendering chart " + c.canvasId, err);
+        }
+      }
+    });
+  },
+
+  openCustomizerModal(pageType) {
+    const catalog = this.catalogs[pageType] || [];
+    const active = this.activeCards[pageType] || new Set();
+    const grid = document.getElementById("visuals-picker-container");
+    if (!grid) return;
+
+    grid.innerHTML = catalog.map(c => `
+      <div class="visual-choice-card ${active.has(c.id) ? 'selected' : ''}" id="picker-choice-${c.id}" onclick="VisualManager.togglePickerChoice('${c.id}')">
+        <div class="visual-choice-header">
+          <div class="visual-choice-title">${c.title}</div>
+          <div class="custom-toggle-switch"></div>
+        </div>
+        <div class="visual-choice-desc">${c.desc}</div>
+        <div class="visual-choice-meta">
+          <span class="visual-tag-badge">${c.tag}</span>
+          <span style="font-size: 0.72rem; color: var(--bx-text-muted); font-family: var(--bx-font-tech);">#${c.id.replace('card-', '')}</span>
+        </div>
+      </div>
+    `).join("");
+
+    const modal = document.getElementById("modal-custom-visuals");
+    if (modal) modal.classList.add("open");
+  },
+
+  togglePickerChoice(cardId) {
+    const el = document.getElementById(`picker-choice-${cardId}`);
+    if (el) el.classList.toggle("selected");
+  },
+
+  closeCustomizerModal() {
+    const modal = document.getElementById("modal-custom-visuals");
+    if (modal) modal.classList.remove("open");
+  },
+
+  save(pageType) {
+    if (this.activeCards[pageType]) {
+      localStorage.setItem("bx_visible_" + pageType, JSON.stringify(Array.from(this.activeCards[pageType])));
+    }
+  }
+};
+window.VisualManager = VisualManager;
 
 const App = {
   activeTab: "landing",
@@ -814,10 +1293,8 @@ const App = {
         savingsInsightEl.textContent = `Out of ₹${incL}L earned, ₹${savK}K stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
       }
 
-      // Render Visuals
-      ChartEngine.renderIndividualDonut("chart-ind-donut", data.donut_chart);
-      ChartEngine.renderIndividualLine("chart-ind-line", data.line_chart);
-      ChartEngine.renderIndividualVarianceBar("chart-ind-variance", data.bar_chart);
+      // Render Visuals with Customizer
+      VisualManager.init("individual", data);
 
       // Render Transactions Table (support both tx-table-body and ind-table-body)
       const tbody = document.getElementById("tx-table-body") || document.getElementById("ind-table-body");
@@ -944,24 +1421,8 @@ const App = {
         orgProfitInsight.textContent = `Enterprise revenue yields ₹${profitCr} Cr net operating margin (${marginPct}% return).`;
       }
 
-      // Visuals
-      if (document.getElementById("chart-org-dept-bar") && data.clustered_bar) {
-        ChartEngine.renderOrgClusteredBar("chart-org-dept-bar", data.clustered_bar);
-      } else if (document.getElementById("chart-org-clustered") && data.clustered_bar) {
-        ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
-      }
-
-      if (document.getElementById("chart-org-region-pie") && data.regional_distribution) {
-        ChartEngine.renderOrgRegionPie("chart-org-region-pie", data.regional_distribution);
-      }
-
-      if (document.getElementById("chart-org-margin-bar") && data.category_margins) {
-        ChartEngine.renderOrgMarginBar("chart-org-margin-bar", data.category_margins);
-      }
-
-      if (document.getElementById("chart-org-growth") && data.quarterly_growth) {
-        ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
-      }
+      // Render Visuals with Customizer
+      VisualManager.init("organization", data);
 
       // Orders sample table (support both order-table-body and org-table-body)
       const orderBody = document.getElementById("order-table-body") || document.getElementById("org-table-body");
@@ -1056,22 +1517,8 @@ const App = {
         stateReceiptsInsight.textContent = `Aggregated State Revenue Receipts (₹${revL}L Cr) cover 93.9% of all state expenditure obligations across 15 states.`;
       }
 
-      // Visuals: Dedicated Presentation Charts
-      if (document.getElementById("chart-state-deficit-bar") && data.state_deficit_chart) {
-        ChartEngine.renderStateDeficitBar("chart-state-deficit-bar", data.state_deficit_chart);
-      } else if (document.getElementById("chart-state-line") && data.state_line_chart) {
-        ChartEngine.renderStateLine("chart-state-line", data.state_line_chart);
-      }
-
-      if (document.getElementById("chart-union-budget-donut") && data.national_bar_chart) {
-        ChartEngine.renderUnionBudgetDonut("chart-union-budget-donut", data.national_bar_chart);
-      } else if (document.getElementById("chart-national-donut") && data.national_bar_chart) {
-        ChartEngine.renderUnionBudgetDonut("chart-national-donut", data.national_bar_chart);
-      }
-
-      if (document.getElementById("chart-state-rev-exp-bar") && data.state_rev_exp_bar) {
-        ChartEngine.renderStateRevExpBar("chart-state-rev-exp-bar", data.state_rev_exp_bar);
-      }
+      // Render Visuals with Customizer
+      VisualManager.init("state_nation", data);
 
       // State Scorecard Data Table
       const stateTbody = document.getElementById("state-table-body");

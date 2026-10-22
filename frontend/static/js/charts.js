@@ -868,5 +868,595 @@ const ChartEngine = {
         }
       }
     });
+  },
+
+  // ----------------------------------------------------------------------------
+  // EXTENDED NATION & STATE VISUALS
+  // ----------------------------------------------------------------------------
+  renderStateDebtTrajectory(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.years,
+        datasets: [
+          {
+            label: "Aggregate State Debt (₹ Cr)",
+            data: data.debt,
+            borderColor: "#FF5738",
+            backgroundColor: "rgba(255, 87, 56, 0.12)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: "#FF5738"
+          },
+          {
+            label: "Total State Revenue Receipts (₹ Cr)",
+            data: data.revenue,
+            borderColor: "#38BDF8",
+            backgroundColor: "rgba(56, 189, 248, 0.1)",
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointBackgroundColor: "#38BDF8"
+          },
+          {
+            label: "Total State Expenditures (₹ Cr)",
+            data: data.expenditure,
+            borderColor: "#818CF8",
+            borderWidth: 2,
+            borderDash: [5, 4],
+            fill: false,
+            tension: 0.3,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { color: "#CBD5E1", boxWidth: 12, font: { size: 11, weight: "600" } } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const lkCr = (val / 100000).toFixed(2);
+                return ` ${ctx.dataset.label}: ₹${lkCr} Lakh Cr (₹${val.toLocaleString('en-IN')} Cr)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (val) => "₹" + (val / 100000).toFixed(1) + "L Cr"
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderStateRevRank(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.states,
+        datasets: [{
+          label: "Revenue Receipts (₹ Cr)",
+          data: data.revenue,
+          backgroundColor: data.revenue.map((_, i) => i < 3 ? "#38BDF8" : "rgba(56, 189, 248, 0.6)"),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const lkCr = (val / 100000).toFixed(2);
+                return ` State Revenue: ₹${lkCr} Lakh Cr (₹${val.toLocaleString('en-IN')} Cr)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L Cr" : (v / 1000).toFixed(0) + "K Cr")
+            }
+          },
+          y: { grid: { display: false }, ticks: { color: "#E2E8F0", font: { weight: "600", size: 11 } } }
+        }
+      }
+    });
+  },
+
+  renderNationalAllocVsExp(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.ministries,
+        datasets: [
+          {
+            label: "Budget Allocation (₹ Cr)",
+            data: data.allocation,
+            backgroundColor: "rgba(56, 189, 248, 0.85)",
+            borderColor: "#38BDF8",
+            borderWidth: 1.5,
+            borderRadius: 5
+          },
+          {
+            label: "Actual Outturn / Exp (₹ Cr)",
+            data: data.expenditure,
+            backgroundColor: "rgba(16, 185, 129, 0.85)",
+            borderColor: "#10B981",
+            borderWidth: 1.5,
+            borderRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { color: "#CBD5E1", boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const lkCr = (val / 100000).toFixed(2);
+                const ut = data.utilization_pct ? data.utilization_pct[ctx.dataIndex] : 0;
+                return ` ${ctx.dataset.label}: ₹${lkCr}L Cr (${ut}% utilized)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1", font: { size: 10 } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L Cr" : (v / 1000).toFixed(0) + "K Cr")
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderStateDebtBurden(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    const values = data.debt_ratio || [];
+    const colors = values.map(v => v > 300 ? "rgba(255, 87, 56, 0.85)" : "rgba(16, 185, 129, 0.85)");
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.states,
+        datasets: [{
+          label: "Debt-to-Revenue Ratio %",
+          data: values,
+          backgroundColor: colors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Debt-to-Revenue: ${Number(ctx.raw).toFixed(1)}% (Benchmark: 300%)`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1", font: { size: 10 } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => `${v}%`
+            }
+          }
+        }
+      }
+    });
+  },
+
+  // ----------------------------------------------------------------------------
+  // EXTENDED ORGANIZATION VISUALS
+  // ----------------------------------------------------------------------------
+  renderOrgQuarterlyTrend(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      data: {
+        labels: data.quarters,
+        datasets: [
+          {
+            type: "bar",
+            label: "Sales (₹ Cr)",
+            data: data.sales.map(v => v / 10000000),
+            backgroundColor: "rgba(56, 189, 248, 0.75)",
+            borderColor: "#38BDF8",
+            borderWidth: 1.5,
+            borderRadius: 5,
+            yAxisID: "y"
+          },
+          {
+            type: "bar",
+            label: "Operating Cost (₹ Cr)",
+            data: data.cost.map(v => v / 10000000),
+            backgroundColor: "rgba(255, 87, 56, 0.65)",
+            borderColor: "#FF5738",
+            borderWidth: 1.5,
+            borderRadius: 5,
+            yAxisID: "y"
+          },
+          {
+            type: "line",
+            label: "Net Profit (₹ Cr)",
+            data: data.profit.map(v => v / 10000000),
+            borderColor: "#10B981",
+            backgroundColor: "#10B981",
+            borderWidth: 3,
+            tension: 0.3,
+            pointRadius: 4,
+            yAxisID: "y"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { position: "top", labels: { color: "#CBD5E1", boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toFixed(2)} Cr`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#94A3B8" } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => `₹${v} Cr`
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderOrgSubcatProfit(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.subcategories,
+        datasets: [{
+          label: "Net Profit (₹ Lakh)",
+          data: data.profit.map(p => p / 100000),
+          backgroundColor: "#10B981",
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Net Profit: ₹${Number(ctx.raw).toFixed(1)} Lakh`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => `₹${v}L`
+            }
+          },
+          y: { grid: { display: false }, ticks: { color: "#CBD5E1", font: { weight: "600" } } }
+        }
+      }
+    });
+  },
+
+  renderOrgDeptExpensePie(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: data.departments,
+        datasets: [{
+          data: data.cost,
+          backgroundColor: ["#38BDF8", "#FF5738", "#10B981"],
+          borderWidth: 2,
+          borderColor: "#090D15"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right", labels: { color: "#CBD5E1", boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const cr = (Number(ctx.raw) / 10000000).toFixed(2);
+                return ` ${ctx.label}: ₹${cr} Cr`;
+              }
+            }
+          }
+        },
+        cutout: "60%"
+      }
+    });
+  },
+
+  renderOrgDiscountImpact(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.tiers,
+        datasets: [{
+          label: "Realized Profit Margin %",
+          data: data.margin_pct,
+          backgroundColor: data.margin_pct.map(m => m >= 20 ? "#10B981" : (m >= 10 ? "#38BDF8" : "#FF5738")),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Profit Margin: ${Number(ctx.raw).toFixed(2)}%`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1" } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: { color: "#94A3B8", callback: (v) => `${v}%` }
+          }
+        }
+      }
+    });
+  },
+
+  // ----------------------------------------------------------------------------
+  // EXTENDED INDIVIDUAL VISUALS
+  // ----------------------------------------------------------------------------
+  renderIndModeDonut(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          data: data.data,
+          backgroundColor: ["#38BDF8", "#FF5738", "#10B981", "#818CF8"],
+          borderWidth: 2,
+          borderColor: "#090D15"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "right", labels: { color: "#CBD5E1", boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = Number(ctx.raw);
+                const lk = (val / 100000).toFixed(2);
+                return ` ${ctx.label}: ₹${lk}L (₹${val.toLocaleString('en-IN')})`;
+              }
+            }
+          }
+        },
+        cutout: "62%"
+      }
+    });
+  },
+
+  renderIndMonthlyFlow(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: "Monthly Income (₹)",
+            data: data.income,
+            backgroundColor: "rgba(16, 185, 129, 0.8)",
+            borderColor: "#10B981",
+            borderWidth: 1.5,
+            borderRadius: 5
+          },
+          {
+            label: "Monthly Expenses (₹)",
+            data: data.expense,
+            backgroundColor: "rgba(255, 87, 56, 0.8)",
+            borderColor: "#FF5738",
+            borderWidth: 1.5,
+            borderRadius: 5
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { color: "#CBD5E1", boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1", font: { size: 10 } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+            }
+          }
+        }
+      }
+    });
+  },
+
+  renderIndTopSubcats(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.subcategories,
+        datasets: [{
+          label: "Total Spend (₹)",
+          data: data.amount,
+          backgroundColor: "#38BDF8",
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Spent: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { color: "rgba(255, 255, 255, 0.05)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+            }
+          },
+          y: { grid: { display: false }, ticks: { color: "#CBD5E1", font: { weight: "600" } } }
+        }
+      }
+    });
+  },
+
+  renderIndCumulativeSavings(canvasId, data) {
+    this.destroyChart(canvasId);
+    const ctx = this.getCtx(canvasId);
+    if (!ctx || !data) return;
+
+    this.instances[canvasId] = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: "Cumulative Net Savings (₹)",
+          data: data.cumulative,
+          borderColor: "#10B981",
+          backgroundColor: "rgba(16, 185, 129, 0.15)",
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointBackgroundColor: "#10B981"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ` Cumulative Savings: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: "rgba(255, 255, 255, 0.05)" }, ticks: { color: "#CBD5E1", font: { size: 10 } } },
+          y: {
+            grid: { color: "rgba(255, 255, 255, 0.06)" },
+            ticks: {
+              color: "#94A3B8",
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+            }
+          }
+        }
+      }
+    });
   }
 };
