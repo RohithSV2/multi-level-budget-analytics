@@ -177,6 +177,35 @@
             <small style="color: var(--bx-text-muted); font-size: 0.76rem; display: block; margin-top: 0.5rem;">Simulated shift in state fiscal deficit % of GSDP</small>
           </div>
         </div>
+
+        <!-- Decision Takeaway Box -->
+        <div style="margin-top: 1.5rem; background: rgba(99, 102, 241, 0.08); border-left: 4px solid var(--bx-coral, #FF5738); border-radius: 8px; padding: 1.15rem 1.25rem;">
+          <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>💡</span> <span>Decision-Making Analytical Interpretation & Impact</span>
+          </h4>
+          <pre id="forecast-takeaway-text" style="color: #CBD5E1; font-family: inherit; font-size: 0.85rem; line-height: 1.6; white-space: pre-wrap; margin: 0;">Adjust sliders above to observe simulated economic impacts.</pre>
+        </div>
+      </div>
+
+      <!-- Projection Summary KPI Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem; border-left: 3px solid #06B6D4; background: var(--bx-bg-card);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--bx-text-muted); font-weight: 700; letter-spacing: 0.05em;">Projected Next Month Outlay</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin: 0.35rem 0;" id="proj-kpi-ind">₹0</div>
+          <div style="font-size: 0.78rem; color: #06B6D4;">Individual Level (Holt-Winters Smoothed)</div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem; border-left: 3px solid #10B981; background: var(--bx-bg-card);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--bx-text-muted); font-weight: 700; letter-spacing: 0.05em;">Projected Next Quarter Revenue</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin: 0.35rem 0;" id="proj-kpi-org">₹0</div>
+          <div style="font-size: 0.78rem; color: #10B981;">Organization Level (Q1 Baseline + Growth)</div>
+        </div>
+
+        <div class="card" style="padding: 1.25rem; border-left: 3px solid #F43F5E; background: var(--bx-bg-card);">
+          <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--bx-text-muted); font-weight: 700; letter-spacing: 0.05em;">Projected Next Year Public Outlay</div>
+          <div style="font-size: 1.6rem; font-weight: 800; color: #FFFFFF; margin: 0.35rem 0;" id="proj-kpi-state">₹0</div>
+          <div style="font-size: 0.78rem; color: #F43F5E;">State Public Finance (Deficit Adjusted)</div>
+        </div>
       </div>
 
       <!-- Generated Predictive Visuals -->
@@ -233,7 +262,6 @@
 
     window.addEventListener("DOMContentLoaded", async () => {
       Auth.renderUserBadge();
-      App.bindWhatIfSliders();
       await App.loadPredictive();
     });
   </script>

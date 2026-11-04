@@ -1576,10 +1576,17 @@ const App = {
   renderPredictiveCharts(data) {
     if (!data) return;
 
-    // Support both ID naming conventions
-    const canvasInd = document.getElementById("chart-predictive-ind") ? "chart-predictive-ind" : "chart-forecast-ind";
-    const canvasOrg = document.getElementById("chart-predictive-org") ? "chart-predictive-org" : "chart-forecast-org";
-    const canvasState = document.getElementById("chart-predictive-state") ? "chart-predictive-state" : "chart-forecast-state";
+    // Support all ID naming conventions (predictive.html, index.html, legacy)
+    const resolveCanvas = (ids) => {
+      for (const id of ids) {
+        if (document.getElementById(id)) return id;
+      }
+      return ids[0];
+    };
+
+    const canvasInd = resolveCanvas(["chart-predict-ind", "chart-predictive-ind", "chart-forecast-ind"]);
+    const canvasOrg = resolveCanvas(["chart-predict-org", "chart-predictive-org", "chart-forecast-org"]);
+    const canvasState = resolveCanvas(["chart-predict-state", "chart-predictive-state", "chart-forecast-state"]);
 
     if (data.individual_forecast) {
       ChartEngine.renderForecastChart(
