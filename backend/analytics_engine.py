@@ -962,7 +962,7 @@ def calculate_custom_individual(input_data):
     - category breakdown: { category: { actual: X, budget: Y } }
     Produces all relevant metrics, financial health score, and chart structures.
     """
-    monthly_income = float(input_data.get("monthly_income", 0))
+    monthly_income = float(input_data.get("monthly_income", input_data.get("salary", 0)))
     other_income = float(input_data.get("other_income", 0))
     total_income = monthly_income + other_income
 
