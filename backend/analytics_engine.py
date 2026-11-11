@@ -1158,7 +1158,115 @@ def calculate_custom_organization(input_data):
         "cost": dept_costs
     }
 
-    # Visual 2: Category Breakdown / Treemap
+    # Visual 2: Department Operational Cost Share Donut
+    dept_expense_pie = {
+        "departments": dept_names,
+        "cost": dept_costs
+    }
+
+    # Visual 3: Regional Operational Burn Donut
+    region_inputs = input_data.get("regions", {})
+    reg_labels = ["West", "East", "Central", "South"]
+    default_reg_weights = {"West": 0.34, "East": 0.28, "Central": 0.21, "South": 0.17}
+    
+    if region_inputs:
+        total_w = sum(float(region_inputs.get(r, default_reg_weights[r])) for r in reg_labels)
+        if total_w <= 0:
+            total_w = 1.0
+        reg_data = [round(total_cost * (float(region_inputs.get(r, default_reg_weights[r])) / total_w), 2) for r in reg_labels]
+    else:
+        reg_data = [round(total_cost * default_reg_weights[r], 2) for r in reg_labels]
+
+    regional_distribution = {
+        "labels": reg_labels,
+        "data": reg_data
+    }
+
+    # Visual 4: Operating Profit Margin by Category
+    cat_inputs = input_data.get("category_margins", {})
+    categories = ["Technology", "Furniture", "Office Supplies"]
+    default_cat_margins = {"Technology": 24.5, "Furniture": 8.2, "Office Supplies": 18.4}
+    
+    margin_ratio = (profit_margin / 20.0) if profit_margin > 0 else 0.5
+    cat_margins = []
+    for c in categories:
+        if c in cat_inputs:
+            cat_margins.append(round(float(cat_inputs[c]), 2))
+        else:
+            base_m = default_cat_margins[c]
+            cat_margins.append(round(max(0.0, base_m * margin_ratio), 2))
+
+    category_margins = {
+        "categories": categories,
+        "margins": cat_margins
+    }
+
+    # Visual 5: Quarterly Revenue, Cost & Profit Trajectory (8 quarters)
+    growth_multiplier = float(input_data.get("quarterly_growth_multiplier", 1.0))
+    prior_yr = fiscal_year - 1
+    q_names = [f"Q1 {prior_yr}", f"Q2 {prior_yr}", f"Q3 {prior_yr}", f"Q4 {prior_yr}",
+               f"Q1 {fiscal_year}", f"Q2 {fiscal_year}", f"Q3 {fiscal_year}", f"Q4 {fiscal_year}"]
+    
+    season_weights = [0.08, 0.10, 0.12, 0.16, 0.11, 0.13, 0.16, 0.22]
+    q_sales = []
+    q_costs = []
+    q_profits = []
+    for idx, w in enumerate(season_weights):
+        step_factor = (1.0 + (idx * 0.03 * growth_multiplier))
+        s = round(total_revenue * (w / 1.08) * step_factor, 2)
+        c = round(total_cost * (w / 1.08) * (step_factor * 0.98), 2)
+        p = round(s - c, 2)
+        q_sales.append(s)
+        q_costs.append(c)
+        q_profits.append(p)
+
+    quarterly_trend = {
+        "quarters": q_names,
+        "sales": q_sales,
+        "cost": q_costs,
+        "profit": q_profits
+    }
+
+    # Visual 6: Product Subcategory Profitability Leaderboard (top 8)
+    subcat_boost = float(input_data.get("subcat_multiplier", 1.0))
+    subcats = ["Copiers", "Phones", "Accessories", "Chairs", "Binders", "Storage", "Paper", "Appliances"]
+    base_profits = [2850000, 2420000, 1950000, 1680000, 1420000, 1250000, 980000, 790000]
+    base_sales = [9500000, 8900000, 7200000, 6800000, 5400000, 4900000, 3800000, 3100000]
+    profit_scale = (total_profit / 110000000.0) if total_profit > 0 else 0.5
+    
+    subcat_profits = [round(max(10000.0, bp * profit_scale * subcat_boost), 2) for bp in base_profits]
+    subcat_sales = [round(bs * (total_revenue / 273000000.0), 2) for bs in base_sales]
+
+    subcat_profit = {
+        "subcategories": subcats,
+        "profit": subcat_profits,
+        "sales": subcat_sales
+    }
+
+    # Visual 7: Discount Impact on Operating Margins
+    discount_penalty = float(input_data.get("discount_penalty", 1.0))
+    tiers = ["0% (Full Price)", "1-10% (Low)", "11-20% (Mod)", ">20% (High)"]
+    base_tier_margins = [32.5, 21.4, 11.8, -4.2]
+    disc_margins = [
+        round(max(-20.0, (base_tier_margins[0] * (profit_margin / 22.0) if profit_margin > 0 else 10.0)), 2),
+        round(max(-25.0, (base_tier_margins[1] * (profit_margin / 22.0) - (2.0 * discount_penalty))), 2),
+        round(max(-30.0, (base_tier_margins[2] * (profit_margin / 22.0) - (5.0 * discount_penalty))), 2),
+        round(max(-40.0, (base_tier_margins[3] - (8.0 * discount_penalty))), 2)
+    ]
+    tier_sales = [
+        round(total_revenue * 0.42, 2),
+        round(total_revenue * 0.31, 2),
+        round(total_revenue * 0.19, 2),
+        round(total_revenue * 0.08, 2)
+    ]
+
+    discount_impact = {
+        "tiers": tiers,
+        "margin_pct": disc_margins,
+        "sales": tier_sales
+    }
+
+    # Visual: Category Breakdown / Treemap (Legacy support)
     category_breakdown = input_data.get("category_breakdown", {})
     if not category_breakdown:
         category_breakdown = {
@@ -1179,38 +1287,38 @@ def calculate_custom_organization(input_data):
             ]
         })
 
-    # Visual 3: Quarterly Growth Line Chart
+    # Visual: Quarterly Growth Line Chart (Legacy support)
     q_labels = [f"{fiscal_year}-Q1", f"{fiscal_year}-Q2", f"{fiscal_year}-Q3", f"{fiscal_year}-Q4"]
     q_weights = [0.22, 0.24, 0.26, 0.28]
-    q_sales = [round(total_revenue * w, 2) for w in q_weights]
+    q_sales_legacy = [round(total_revenue * w, 2) for w in q_weights]
     q_growth = [0.0]
     for i in range(1, 4):
-        prev = q_sales[i - 1]
-        g = round(((q_sales[i] - prev) / prev * 100), 2) if prev > 0 else 0.0
+        prev = q_sales_legacy[i - 1]
+        g = round(((q_sales_legacy[i] - prev) / prev * 100), 2) if prev > 0 else 0.0
         q_growth.append(g)
 
     quarterly_growth = {
         "labels": q_labels,
         "growth_pct": q_growth,
-        "sales": q_sales
+        "sales": q_sales_legacy
     }
 
-    # Visual 4: Region × Category Matrix Visual
-    regions = ["North", "South", "West", "East"]
+    # Visual: Region x Category Matrix Visual (Legacy support)
+    matrix_regions = ["North", "South", "West", "East"]
     cats = list(category_breakdown.keys())
-    reg_weights = [0.30, 0.35, 0.20, 0.15]
+    matrix_reg_weights = [0.30, 0.35, 0.20, 0.15]
     matrix_values = []
 
-    for r_idx, reg in enumerate(regions):
+    for r_idx, reg in enumerate(matrix_regions):
         row_vals = []
         for c_name in cats:
             c_profit = float(category_breakdown[c_name].get("profit", 0))
-            val = round(c_profit * reg_weights[r_idx] * (0.95 + (r_idx * 0.03)), 2)
+            val = round(c_profit * matrix_reg_weights[r_idx] * (0.95 + (r_idx * 0.03)), 2)
             row_vals.append(val)
         matrix_values.append(row_vals)
 
     matrix = {
-        "regions": regions,
+        "regions": matrix_regions,
         "categories": cats,
         "values": matrix_values
     }
@@ -1229,6 +1337,12 @@ def calculate_custom_organization(input_data):
             "top_department_cost": top_dept_cost
         },
         "clustered_bar": clustered_bar,
+        "dept_expense_pie": dept_expense_pie,
+        "regional_distribution": regional_distribution,
+        "category_margins": category_margins,
+        "quarterly_trend": quarterly_trend,
+        "subcat_profit": subcat_profit,
+        "discount_impact": discount_impact,
         "treemap": treemap_data,
         "quarterly_growth": quarterly_growth,
         "matrix": matrix,

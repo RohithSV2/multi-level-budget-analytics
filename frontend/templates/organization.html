@@ -198,9 +198,9 @@
         <div class="card-header">
           <div>
             <h3 style="color: #FFFFFF; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-              <span>🏢</span> Departmental Cost Center & Margin Simulator
+              <span>🏢</span> Dynamic Organization & Graph Control Studio
             </h3>
-            <p>Model enterprise sales vs cost allocations across Corporate, Consumer, and Home Office divisions.</p>
+            <p>Live What-If data controls to alter and test all enterprise graphs across Divisions, Regions, Product Categories, Trends & Pricing.</p>
           </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline btn-sm" onclick="App.applyOrgPreset('superstore')">🛒 Superstore Retail</button>
@@ -209,50 +209,197 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 1rem;">
-          <!-- Corporate -->
-          <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
-            <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem;">🏢 Corporate Division</div>
-            <div style="margin-bottom: 0.75rem;">
-              <label for="input-dept-corp-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
-              <input type="number" id="input-dept-corp-rev" class="form-control-clean" value="145000000" step="1000000">
-            </div>
-            <div>
-              <label for="input-dept-corp-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
-              <input type="number" id="input-dept-corp-cost" class="form-control-clean" value="108000000" step="1000000">
-            </div>
-          </div>
+        <!-- Subtabs to alter specific graphs -->
+        <div class="org-studio-subtabs">
+          <button type="button" class="org-subtab-btn active" id="btn-subtab-depts" onclick="App.switchOrgSubtab('depts', this)">
+            <span>🏢</span> Divisions & Cost Centers <span class="tweaker-info-pill">Alters: Clustered Bar & Cost Share</span>
+          </button>
+          <button type="button" class="org-subtab-btn" id="btn-subtab-regions" onclick="App.switchOrgSubtab('regions', this)">
+            <span>🌍</span> Regional Operational Burn <span class="tweaker-info-pill">Alters: Regional Donut</span>
+          </button>
+          <button type="button" class="org-subtab-btn" id="btn-subtab-categories" onclick="App.switchOrgSubtab('categories', this)">
+            <span>📦</span> Categories & Product Margins <span class="tweaker-info-pill">Alters: Category Margin & Leaderboard</span>
+          </button>
+          <button type="button" class="org-subtab-btn" id="btn-subtab-trends" onclick="App.switchOrgSubtab('trends', this)">
+            <span>📈</span> Trajectory & Pricing Elasticity <span class="tweaker-info-pill">Alters: Quarterly Trend & Discount Impact</span>
+          </button>
+        </div>
 
-          <!-- Consumer -->
-          <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
-            <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem;">👥 Consumer Division</div>
-            <div style="margin-bottom: 0.75rem;">
-              <label for="input-dept-cons-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
-              <input type="number" id="input-dept-cons-rev" class="form-control-clean" value="82000000" step="1000000">
+        <!-- PANE 1: Divisions & Cost Centers -->
+        <div class="org-subtab-pane active" id="pane-org-depts">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <!-- Corporate -->
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
+              <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+                <span>🏢 Corporate Division</span>
+                <span id="badge-dept-corp-margin" style="font-size: 0.75rem; color: var(--bx-cyan); font-weight: 600;">25.5% Margin</span>
+              </div>
+              <div style="margin-bottom: 0.75rem;">
+                <label for="input-dept-corp-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
+                <input type="number" id="input-dept-corp-rev" class="form-control-clean" value="145000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
+              <div>
+                <label for="input-dept-corp-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-corp-cost" class="form-control-clean" value="108000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
             </div>
-            <div>
-              <label for="input-dept-cons-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
-              <input type="number" id="input-dept-cons-cost" class="form-control-clean" value="61000000" step="1000000">
-            </div>
-          </div>
 
-          <!-- Home Office -->
-          <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
-            <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem;">🏠 Home Office Division</div>
-            <div style="margin-bottom: 0.75rem;">
-              <label for="input-dept-home-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
-              <input type="number" id="input-dept-home-rev" class="form-control-clean" value="46000000" step="1000000">
+            <!-- Consumer -->
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
+              <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+                <span>👥 Consumer Division</span>
+                <span id="badge-dept-cons-margin" style="font-size: 0.75rem; color: var(--bx-cyan); font-weight: 600;">25.6% Margin</span>
+              </div>
+              <div style="margin-bottom: 0.75rem;">
+                <label for="input-dept-cons-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
+                <input type="number" id="input-dept-cons-rev" class="form-control-clean" value="82000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
+              <div>
+                <label for="input-dept-cons-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-cons-cost" class="form-control-clean" value="61000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
             </div>
-            <div>
-              <label for="input-dept-home-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
-              <input type="number" id="input-dept-home-cost" class="form-control-clean" value="36000000" step="1000000">
+
+            <!-- Home Office -->
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1.25rem; border-radius: 8px;">
+              <div style="font-weight: 700; font-size: 1rem; color: #FFFFFF; margin-bottom: 0.75rem; display: flex; justify-content: space-between;">
+                <span>🏠 Home Office Division</span>
+                <span id="badge-dept-home-margin" style="font-size: 0.75rem; color: var(--bx-cyan); font-weight: 600;">21.7% Margin</span>
+              </div>
+              <div style="margin-bottom: 0.75rem;">
+                <label for="input-dept-home-rev" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Gross Revenue (₹)</label>
+                <input type="number" id="input-dept-home-rev" class="form-control-clean" value="46000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
+              <div>
+                <label for="input-dept-home-cost" style="display: block; font-size: 0.78rem; color: var(--bx-text-muted); margin-bottom: 0.25rem;">Operating Cost (₹)</label>
+                <input type="number" id="input-dept-home-cost" class="form-control-clean" value="36000000" step="1000000" oninput="App.onLiveInputChange()">
+              </div>
             </div>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--bx-border-subtle); padding-top: 1rem;">
-          <button type="button" class="btn btn-outline" id="btn-reset-org">🔄 Reset Defaults</button>
-          <button type="button" class="bx-btn-coral" id="btn-compute-org">⚡ Recalculate Enterprise Visuals</button>
+        <!-- PANE 2: Regional Operational Burn -->
+        <div class="org-subtab-pane" id="pane-org-regions">
+          <p style="font-size: 0.82rem; color: var(--bx-text-muted); margin-bottom: 1rem;">
+            Adjust operating cost allocation across geographic operating regions. Drag sliders to immediately reshape the <strong>Regional Operational Burn Donut</strong>.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span style="color: #38BDF8;">West Region</span>
+                <span id="disp-reg-west" class="tweaker-val">34%</span>
+              </div>
+              <input type="range" id="input-reg-west" min="5" max="60" value="34" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;" id="calc-reg-west">~ ₹71.8M Spend</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span style="color: #FF5738;">East Region</span>
+                <span id="disp-reg-east" class="tweaker-val">28%</span>
+              </div>
+              <input type="range" id="input-reg-east" min="5" max="60" value="28" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;" id="calc-reg-east">~ ₹57.4M Spend</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span style="color: #10B981;">Central Region</span>
+                <span id="disp-reg-central" class="tweaker-val">21%</span>
+              </div>
+              <input type="range" id="input-reg-central" min="5" max="60" value="21" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;" id="calc-reg-central">~ ₹41.0M Spend</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span style="color: #818CF8;">South Region</span>
+                <span id="disp-reg-south" class="tweaker-val">17%</span>
+              </div>
+              <input type="range" id="input-reg-south" min="5" max="60" value="17" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;" id="calc-reg-south">~ ₹34.9M Spend</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 3: Category Margins & Products -->
+        <div class="org-subtab-pane" id="pane-org-categories">
+          <p style="font-size: 0.82rem; color: var(--bx-text-muted); margin-bottom: 1rem;">
+            Control sector profit contribution margins and product leaderboard performance. Alters the <strong>Category Margin Bar</strong> and <strong>Subcategory Leaderboard</strong>.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>💻 Technology Profit Margin</span>
+                <span id="disp-cat-tech" class="tweaker-val">24.5%</span>
+              </div>
+              <input type="range" id="input-cat-tech" min="5" max="50" step="0.5" value="24.5" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">High-margin enterprise hardware & cloud licenses</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>🪑 Furniture Profit Margin</span>
+                <span id="disp-cat-furn" class="tweaker-val">8.2%</span>
+              </div>
+              <input type="range" id="input-cat-furn" min="-5" max="35" step="0.5" value="8.2" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">Logistics-heavy, lower net margin sector</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>📎 Office Supplies Margin</span>
+                <span id="disp-cat-off" class="tweaker-val">18.4%</span>
+              </div>
+              <input type="range" id="input-cat-off" min="5" max="45" step="0.5" value="18.4" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">Consistent recurring high-volume replenishment</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>🏆 Top Subcategories Boost</span>
+                <span id="disp-subcat-boost" class="tweaker-val">1.0x</span>
+              </div>
+              <input type="range" id="input-subcat-boost" min="0.5" max="2.0" step="0.05" value="1.0" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">Reshuffles Copiers, Phones & Machines net return</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANE 4: Trends & Discounts -->
+        <div class="org-subtab-pane" id="pane-org-trends">
+          <p style="font-size: 0.82rem; color: var(--bx-text-muted); margin-bottom: 1rem;">
+            Simulate multi-quarter financial trajectory and test discount price sensitivity. Alters <strong>Quarterly Trend Trajectory</strong> and <strong>Discount Impact on Margins</strong>.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>📈 Quarterly Growth Momentum</span>
+                <span id="disp-q-growth" class="tweaker-val">1.0x (Normal)</span>
+              </div>
+              <input type="range" id="input-q-growth" min="0.5" max="2.0" step="0.1" value="1.0" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">Accelerates or flattens 8-quarter trajectory steepness</div>
+            </div>
+
+            <div style="background: var(--bx-bg-elevated); border: 1px solid var(--bx-border-subtle); padding: 1rem; border-radius: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                <span>🏷️ Discount Pricing Penalty</span>
+                <span id="disp-discount-penalty" class="tweaker-val">1.0x (Baseline)</span>
+              </div>
+              <input type="range" id="input-discount-penalty" min="0.5" max="2.5" step="0.1" value="1.0" oninput="App.onLiveInputChange()">
+              <div style="font-size: 0.72rem; color: var(--bx-text-muted); margin-top: 0.35rem;">Models margin erosion severity under aggressive discounting</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--bx-border-subtle); padding-top: 1rem; flex-wrap: wrap;">
+          <div style="font-size: 0.78rem; color: var(--bx-text-muted); display: flex; align-items: center; gap: 0.4rem;">
+            <span style="color: var(--bx-coral);">⚡</span> All active graphs recalculate in real-time as you tweak numbers or sliders.
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button type="button" class="btn btn-outline" id="btn-reset-org">🔄 Reset Defaults</button>
+            <button type="button" class="bx-btn-coral" id="btn-compute-org">⚡ Recalculate Enterprise Visuals</button>
+          </div>
         </div>
       </div>
 
@@ -288,7 +435,16 @@
               <h3>Cost vs. Revenue by Department</h3>
               <p>Comparison of operational cost allocations vs generated revenue</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-dept-bar')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-dept-bar')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-dept-bar')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-dept-bar" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Corp Rev:</span><input type="range" id="tweak-corp-rev" min="50" max="250" value="145" oninput="App.onCardTweak('corp-rev', this.value)"><span class="tweaker-val" id="tweak-val-corp-rev">₹145M</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Corp Cost:</span><input type="range" id="tweak-corp-cost" min="30" max="200" value="108" oninput="App.onCardTweak('corp-cost', this.value)"><span class="tweaker-val" id="tweak-val-corp-cost">₹108M</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Cons Rev:</span><input type="range" id="tweak-cons-rev" min="30" max="180" value="82" oninput="App.onCardTweak('cons-rev', this.value)"><span class="tweaker-val" id="tweak-val-cons-rev">₹82M</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Home Rev:</span><input type="range" id="tweak-home-rev" min="20" max="120" value="46" oninput="App.onCardTweak('home-rev', this.value)"><span class="tweaker-val" id="tweak-val-home-rev">₹46M</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-dept-bar"></canvas>
@@ -302,7 +458,16 @@
               <h3>Regional Operational Burn</h3>
               <p>Expense distribution across geographic operating regions</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-region-pie')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-region-pie')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-region-pie')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-region-pie" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">West:</span><input type="range" id="tweak-reg-west" min="5" max="60" value="34" oninput="App.onCardTweak('reg-west', this.value)"><span class="tweaker-val" id="tweak-val-reg-west">34%</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">East:</span><input type="range" id="tweak-reg-east" min="5" max="60" value="28" oninput="App.onCardTweak('reg-east', this.value)"><span class="tweaker-val" id="tweak-val-reg-east">28%</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Central:</span><input type="range" id="tweak-reg-central" min="5" max="60" value="21" oninput="App.onCardTweak('reg-central', this.value)"><span class="tweaker-val" id="tweak-val-reg-central">21%</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">South:</span><input type="range" id="tweak-reg-south" min="5" max="60" value="17" oninput="App.onCardTweak('reg-south', this.value)"><span class="tweaker-val" id="tweak-val-reg-south">17%</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-region-pie"></canvas>
@@ -316,7 +481,15 @@
               <h3>Operating Profit Margin by Category</h3>
               <p>Profit contribution margin (%) per superstore category</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-margin-bar')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-margin-bar')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-margin-bar')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-margin-bar" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Technology Margin:</span><input type="range" id="tweak-cat-tech" min="5" max="50" step="0.5" value="24.5" oninput="App.onCardTweak('cat-tech', this.value)"><span class="tweaker-val" id="tweak-val-cat-tech">24.5%</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Furniture Margin:</span><input type="range" id="tweak-cat-furn" min="-5" max="35" step="0.5" value="8.2" oninput="App.onCardTweak('cat-furn', this.value)"><span class="tweaker-val" id="tweak-val-cat-furn">8.2%</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Office Supplies:</span><input type="range" id="tweak-cat-off" min="5" max="45" step="0.5" value="18.4" oninput="App.onCardTweak('cat-off', this.value)"><span class="tweaker-val" id="tweak-val-cat-off">18.4%</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-margin-bar"></canvas>
@@ -330,7 +503,13 @@
               <h3>Quarterly Revenue, Cost & Profit Trajectory</h3>
               <p>Multi-quarter financial performance trajectory across 2021-2024</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-quarterly-trend')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-quarterly-trend')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-quarterly-trend')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-quarterly-trend" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Growth Momentum:</span><input type="range" id="tweak-q-growth" min="0.5" max="2.0" step="0.1" value="1.0" oninput="App.onCardTweak('q-growth', this.value)"><span class="tweaker-val" id="tweak-val-q-growth">1.0x</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-quarterly-trend"></canvas>
@@ -344,7 +523,13 @@
               <h3>Product Subcategory Profitability Leaderboard</h3>
               <p>Top 8 product lines delivering highest enterprise net returns (₹ Lakh)</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-subcat-profit')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-subcat-profit')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-subcat-profit')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-subcat-profit" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Leaderboard Profit Boost:</span><input type="range" id="tweak-subcat-boost" min="0.5" max="2.0" step="0.05" value="1.0" oninput="App.onCardTweak('subcat-boost', this.value)"><span class="tweaker-val" id="tweak-val-subcat-boost">1.0x</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-subcat-profit"></canvas>
@@ -358,7 +543,15 @@
               <h3>Department Operational Cost Share</h3>
               <p>Relative operational expenditure allocation between divisions</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-dept-expense-pie')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-dept-expense-pie')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-dept-expense-pie')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-dept-expense-pie" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Corp Cost:</span><input type="range" id="tweak-pie-corp" min="30" max="200" value="108" oninput="App.onCardTweak('corp-cost', this.value)"><span class="tweaker-val" id="tweak-val-pie-corp">₹108M</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Cons Cost:</span><input type="range" id="tweak-pie-cons" min="20" max="150" value="61" oninput="App.onCardTweak('cons-cost', this.value)"><span class="tweaker-val" id="tweak-val-pie-cons">₹61M</span></div>
+            <div class="tweaker-item"><span class="tweaker-label">Home Cost:</span><input type="range" id="tweak-pie-home" min="10" max="100" value="36" oninput="App.onCardTweak('home-cost', this.value)"><span class="tweaker-val" id="tweak-val-pie-home">₹36M</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-dept-expense-pie"></canvas>
@@ -372,7 +565,13 @@
               <h3>Discount Impact on Operating Margins</h3>
               <p>Analysis of margin erosion across tiered discount bands</p>
             </div>
-            <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-discount-impact')">✕ Hide</button>
+            <div style="display: flex; gap: 0.4rem; align-items: center;">
+              <button type="button" class="btn-card-tweak" onclick="App.toggleCardTweaker('tweak-org-discount-impact')">⚡ Adjust Data</button>
+              <button type="button" class="btn-card-action" onclick="VisualManager.hideCard('organization', 'card-org-discount-impact')">✕ Hide</button>
+            </div>
+          </div>
+          <div class="card-tweaker-bar" id="tweak-org-discount-impact" style="display: none;">
+            <div class="tweaker-item"><span class="tweaker-label">Discount Penalty / Elasticity:</span><input type="range" id="tweak-discount-penalty" min="0.5" max="2.5" step="0.1" value="1.0" oninput="App.onCardTweak('discount-penalty', this.value)"><span class="tweaker-val" id="tweak-val-discount-penalty">1.0x</span></div>
           </div>
           <div class="chart-container chart-container-md">
             <canvas id="chart-org-discount-impact"></canvas>

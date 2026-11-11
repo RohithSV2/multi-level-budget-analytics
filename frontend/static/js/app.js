@@ -1008,9 +1008,252 @@ const App = {
   // ----------------------------------------------------------------------------
   // INTERACTIVE INPUT STUDIO: ORGANIZATION MODE
   // ----------------------------------------------------------------------------
+  // ORGANIZATION DYNAMIC GRAPH CONTROL STUDIO & LIVE TWEAKERS
+  // ----------------------------------------------------------------------------
   initOrgStudio() {
-    document.getElementById("btn-compute-org")?.addEventListener("click", () => this.computeOrgStudio());
+    document.getElementById("btn-compute-org")?.addEventListener("click", () => this.computeOrgStudio(true));
     document.getElementById("btn-reset-org")?.addEventListener("click", () => this.applyOrgPreset("superstore"));
+    this.updateStudioDisplayLabels();
+    this.syncStudioToCardTweakers();
+  },
+
+  switchOrgSubtab(tabName, btn) {
+    document.querySelectorAll(".org-subtab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".org-subtab-pane").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    const pane = document.getElementById("pane-org-" + tabName);
+    if (pane) pane.classList.add("active");
+  },
+
+  toggleCardTweaker(tweakId) {
+    const el = document.getElementById(tweakId);
+    if (!el) return;
+    const isHidden = el.style.display === "none";
+    el.style.display = isHidden ? "flex" : "none";
+    const card = el.closest(".card");
+    const btn = card?.querySelector(".btn-card-tweak");
+    if (btn) btn.classList.toggle("active", isHidden);
+  },
+
+  onLiveInputChange() {
+    this.updateStudioDisplayLabels();
+    this.syncStudioToCardTweakers();
+    this.debounceComputeOrg();
+  },
+
+  onCardTweak(tweakType, value) {
+    const num = parseFloat(value);
+    if (tweakType === 'corp-rev') {
+      const el = document.getElementById("input-dept-corp-rev");
+      if (el) el.value = num * 1000000;
+      const v = document.getElementById("tweak-val-corp-rev");
+      if (v) v.textContent = `₹${num}M`;
+    } else if (tweakType === 'corp-cost') {
+      const el = document.getElementById("input-dept-corp-cost");
+      if (el) el.value = num * 1000000;
+      const v1 = document.getElementById("tweak-val-corp-cost");
+      if (v1) v1.textContent = `₹${num}M`;
+      const v2 = document.getElementById("tweak-val-pie-corp");
+      if (v2) v2.textContent = `₹${num}M`;
+      const s = document.getElementById("tweak-pie-corp");
+      if (s) s.value = num;
+    } else if (tweakType === 'cons-rev') {
+      const el = document.getElementById("input-dept-cons-rev");
+      if (el) el.value = num * 1000000;
+      const v = document.getElementById("tweak-val-cons-rev");
+      if (v) v.textContent = `₹${num}M`;
+    } else if (tweakType === 'cons-cost') {
+      const el = document.getElementById("input-dept-cons-cost");
+      if (el) el.value = num * 1000000;
+      const v1 = document.getElementById("tweak-val-cons-cost");
+      if (v1) v1.textContent = `₹${num}M`;
+      const v2 = document.getElementById("tweak-val-pie-cons");
+      if (v2) v2.textContent = `₹${num}M`;
+      const s = document.getElementById("tweak-pie-cons");
+      if (s) s.value = num;
+    } else if (tweakType === 'home-rev') {
+      const el = document.getElementById("input-dept-home-rev");
+      if (el) el.value = num * 1000000;
+      const v = document.getElementById("tweak-val-home-rev");
+      if (v) v.textContent = `₹${num}M`;
+    } else if (tweakType === 'home-cost') {
+      const el = document.getElementById("input-dept-home-cost");
+      if (el) el.value = num * 1000000;
+      const v1 = document.getElementById("tweak-val-home-cost");
+      if (v1) v1.textContent = `₹${num}M`;
+      const v2 = document.getElementById("tweak-val-pie-home");
+      if (v2) v2.textContent = `₹${num}M`;
+      const s = document.getElementById("tweak-pie-home");
+      if (s) s.value = num;
+    } else if (tweakType === 'reg-west') {
+      const s = document.getElementById("input-reg-west");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-reg-west");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'reg-east') {
+      const s = document.getElementById("input-reg-east");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-reg-east");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'reg-central') {
+      const s = document.getElementById("input-reg-central");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-reg-central");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'reg-south') {
+      const s = document.getElementById("input-reg-south");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-reg-south");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'cat-tech') {
+      const s = document.getElementById("input-cat-tech");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-cat-tech");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'cat-furn') {
+      const s = document.getElementById("input-cat-furn");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-cat-furn");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'cat-off') {
+      const s = document.getElementById("input-cat-off");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-cat-off");
+      if (v) v.textContent = `${num}%`;
+    } else if (tweakType === 'q-growth') {
+      const s = document.getElementById("input-q-growth");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-q-growth");
+      if (v) v.textContent = `${num.toFixed(1)}x`;
+    } else if (tweakType === 'subcat-boost') {
+      const s = document.getElementById("input-subcat-boost");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-subcat-boost");
+      if (v) v.textContent = `${num.toFixed(2)}x`;
+    } else if (tweakType === 'discount-penalty') {
+      const s = document.getElementById("input-discount-penalty");
+      if (s) s.value = num;
+      const v = document.getElementById("tweak-val-discount-penalty");
+      if (v) v.textContent = `${num.toFixed(1)}x`;
+    }
+
+    this.updateStudioDisplayLabels();
+    this.debounceComputeOrg();
+  },
+
+  updateStudioDisplayLabels() {
+    const corpRev = parseFloat(document.getElementById("input-dept-corp-rev")?.value || 0);
+    const corpCost = parseFloat(document.getElementById("input-dept-corp-cost")?.value || 0);
+    const corpM = corpRev > 0 ? (((corpRev - corpCost) / corpRev) * 100).toFixed(1) : 0;
+    const bCorp = document.getElementById("badge-dept-corp-margin");
+    if (bCorp) bCorp.textContent = `${corpM}% Margin`;
+
+    const consRev = parseFloat(document.getElementById("input-dept-cons-rev")?.value || 0);
+    const consCost = parseFloat(document.getElementById("input-dept-cons-cost")?.value || 0);
+    const consM = consRev > 0 ? (((consRev - consCost) / consRev) * 100).toFixed(1) : 0;
+    const bCons = document.getElementById("badge-dept-cons-margin");
+    if (bCons) bCons.textContent = `${consM}% Margin`;
+
+    const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0);
+    const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0);
+    const homeM = homeRev > 0 ? (((homeRev - homeCost) / homeRev) * 100).toFixed(1) : 0;
+    const bHome = document.getElementById("badge-dept-home-margin");
+    if (bHome) bHome.textContent = `${homeM}% Margin`;
+
+    const rWest = document.getElementById("input-reg-west")?.value || 34;
+    const rEast = document.getElementById("input-reg-east")?.value || 28;
+    const rCent = document.getElementById("input-reg-central")?.value || 21;
+    const rSouth = document.getElementById("input-reg-south")?.value || 17;
+
+    const dWest = document.getElementById("disp-reg-west"); if (dWest) dWest.textContent = `${rWest}%`;
+    const dEast = document.getElementById("disp-reg-east"); if (dEast) dEast.textContent = `${rEast}%`;
+    const dCent = document.getElementById("disp-reg-central"); if (dCent) dCent.textContent = `${rCent}%`;
+    const dSouth = document.getElementById("disp-reg-south"); if (dSouth) dSouth.textContent = `${rSouth}%`;
+
+    const totalCost = corpCost + consCost + homeCost;
+    const totW = parseFloat(rWest) + parseFloat(rEast) + parseFloat(rCent) + parseFloat(rSouth) || 1;
+    const cWest = document.getElementById("calc-reg-west");
+    if (cWest) cWest.textContent = `~ ₹${((totalCost * (rWest / totW)) / 1e6).toFixed(1)}M Spend`;
+    const cEast = document.getElementById("calc-reg-east");
+    if (cEast) cEast.textContent = `~ ₹${((totalCost * (rEast / totW)) / 1e6).toFixed(1)}M Spend`;
+    const cCent = document.getElementById("calc-reg-central");
+    if (cCent) cCent.textContent = `~ ₹${((totalCost * (rCent / totW)) / 1e6).toFixed(1)}M Spend`;
+    const cSouth = document.getElementById("calc-reg-south");
+    if (cSouth) cSouth.textContent = `~ ₹${((totalCost * (rSouth / totW)) / 1e6).toFixed(1)}M Spend`;
+
+    const cTech = document.getElementById("input-cat-tech")?.value || 24.5;
+    const cFurn = document.getElementById("input-cat-furn")?.value || 8.2;
+    const cOff = document.getElementById("input-cat-off")?.value || 18.4;
+    const cBoost = document.getElementById("input-subcat-boost")?.value || 1.0;
+
+    const dTech = document.getElementById("disp-cat-tech"); if (dTech) dTech.textContent = `${cTech}%`;
+    const dFurn = document.getElementById("disp-cat-furn"); if (dFurn) dFurn.textContent = `${cFurn}%`;
+    const dOff = document.getElementById("disp-cat-off"); if (dOff) dOff.textContent = `${cOff}%`;
+    const dBoost = document.getElementById("disp-subcat-boost"); if (dBoost) dBoost.textContent = `${parseFloat(cBoost).toFixed(2)}x`;
+
+    const qGrowth = document.getElementById("input-q-growth")?.value || 1.0;
+    const discPen = document.getElementById("input-discount-penalty")?.value || 1.0;
+    const dGrowth = document.getElementById("disp-q-growth");
+    if (dGrowth) dGrowth.textContent = `${parseFloat(qGrowth).toFixed(1)}x (${qGrowth > 1 ? '+' + ((qGrowth-1)*20).toFixed(0) + '%' : qGrowth < 1 ? ((qGrowth-1)*20).toFixed(0) + '%' : 'Normal'})`;
+    const dDisc = document.getElementById("disp-discount-penalty");
+    if (dDisc) dDisc.textContent = `${parseFloat(discPen).toFixed(1)}x (${discPen > 1.2 ? 'Steep Erosion' : discPen < 0.8 ? 'Resilient' : 'Baseline'})`;
+  },
+
+  syncStudioToCardTweakers() {
+    const corpRev = parseFloat(document.getElementById("input-dept-corp-rev")?.value || 0) / 1e6;
+    const corpCost = parseFloat(document.getElementById("input-dept-corp-cost")?.value || 0) / 1e6;
+    const consRev = parseFloat(document.getElementById("input-dept-cons-rev")?.value || 0) / 1e6;
+    const consCost = parseFloat(document.getElementById("input-dept-cons-cost")?.value || 0) / 1e6;
+    const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0) / 1e6;
+    const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0) / 1e6;
+
+    const s1 = document.getElementById("tweak-corp-rev"); if (s1) s1.value = corpRev;
+    const v1 = document.getElementById("tweak-val-corp-rev"); if (v1) v1.textContent = `₹${corpRev.toFixed(0)}M`;
+    const s2 = document.getElementById("tweak-corp-cost"); if (s2) s2.value = corpCost;
+    const v2 = document.getElementById("tweak-val-corp-cost"); if (v2) v2.textContent = `₹${corpCost.toFixed(0)}M`;
+    const s3 = document.getElementById("tweak-cons-rev"); if (s3) s3.value = consRev;
+    const v3 = document.getElementById("tweak-val-cons-rev"); if (v3) v3.textContent = `₹${consRev.toFixed(0)}M`;
+    const s4 = document.getElementById("tweak-home-rev"); if (s4) s4.value = homeRev;
+    const v4 = document.getElementById("tweak-val-home-rev"); if (v4) v4.textContent = `₹${homeRev.toFixed(0)}M`;
+
+    const sp1 = document.getElementById("tweak-pie-corp"); if (sp1) sp1.value = corpCost;
+    const vp1 = document.getElementById("tweak-val-pie-corp"); if (vp1) vp1.textContent = `₹${corpCost.toFixed(0)}M`;
+    const sp2 = document.getElementById("tweak-pie-cons"); if (sp2) sp2.value = consCost;
+    const vp2 = document.getElementById("tweak-val-pie-cons"); if (vp2) vp2.textContent = `₹${consCost.toFixed(0)}M`;
+    const sp3 = document.getElementById("tweak-pie-home"); if (sp3) sp3.value = homeCost;
+    const vp3 = document.getElementById("tweak-val-pie-home"); if (vp3) vp3.textContent = `₹${homeCost.toFixed(0)}M`;
+
+    const rWest = document.getElementById("input-reg-west")?.value;
+    const rEast = document.getElementById("input-reg-east")?.value;
+    const rCent = document.getElementById("input-reg-central")?.value;
+    const rSouth = document.getElementById("input-reg-south")?.value;
+
+    if (rWest) { const s = document.getElementById("tweak-reg-west"); if (s) s.value = rWest; const v = document.getElementById("tweak-val-reg-west"); if (v) v.textContent = `${rWest}%`; }
+    if (rEast) { const s = document.getElementById("tweak-reg-east"); if (s) s.value = rEast; const v = document.getElementById("tweak-val-reg-east"); if (v) v.textContent = `${rEast}%`; }
+    if (rCent) { const s = document.getElementById("tweak-reg-central"); if (s) s.value = rCent; const v = document.getElementById("tweak-val-reg-central"); if (v) v.textContent = `${rCent}%`; }
+    if (rSouth) { const s = document.getElementById("tweak-reg-south"); if (s) s.value = rSouth; const v = document.getElementById("tweak-val-reg-south"); if (v) v.textContent = `${rSouth}%`; }
+
+    const cTech = document.getElementById("input-cat-tech")?.value;
+    const cFurn = document.getElementById("input-cat-furn")?.value;
+    const cOff = document.getElementById("input-cat-off")?.value;
+    const cBoost = document.getElementById("input-subcat-boost")?.value;
+
+    if (cTech) { const s = document.getElementById("tweak-cat-tech"); if (s) s.value = cTech; const v = document.getElementById("tweak-val-cat-tech"); if (v) v.textContent = `${cTech}%`; }
+    if (cFurn) { const s = document.getElementById("tweak-cat-furn"); if (s) s.value = cFurn; const v = document.getElementById("tweak-val-cat-furn"); if (v) v.textContent = `${cFurn}%`; }
+    if (cOff) { const s = document.getElementById("tweak-cat-off"); if (s) s.value = cOff; const v = document.getElementById("tweak-val-cat-off"); if (v) v.textContent = `${cOff}%`; }
+    if (cBoost) { const s = document.getElementById("tweak-subcat-boost"); if (s) s.value = cBoost; const v = document.getElementById("tweak-val-subcat-boost"); if (v) v.textContent = `${parseFloat(cBoost).toFixed(2)}x`; }
+
+    const qGrowth = document.getElementById("input-q-growth")?.value;
+    const discPen = document.getElementById("input-discount-penalty")?.value;
+    if (qGrowth) { const s = document.getElementById("tweak-q-growth"); if (s) s.value = qGrowth; const v = document.getElementById("tweak-val-q-growth"); if (v) v.textContent = `${parseFloat(qGrowth).toFixed(1)}x`; }
+    if (discPen) { const s = document.getElementById("tweak-discount-penalty"); if (s) s.value = discPen; const v = document.getElementById("tweak-val-discount-penalty"); if (v) v.textContent = `${parseFloat(discPen).toFixed(1)}x`; }
+  },
+
+  debounceComputeOrg() {
+    clearTimeout(this._orgDebounceTimer);
+    this._orgDebounceTimer = setTimeout(() => {
+      this.computeOrgStudio(false);
+    }, 100);
   },
 
   applyOrgPreset(preset) {
@@ -1022,32 +1265,51 @@ const App = {
     const homeCost = document.getElementById("input-dept-home-cost");
     const nameInput = document.getElementById("input-org-name");
 
+    const rWest = document.getElementById("input-reg-west");
+    const rEast = document.getElementById("input-reg-east");
+    const rCent = document.getElementById("input-reg-central");
+    const rSouth = document.getElementById("input-reg-south");
+
+    const cTech = document.getElementById("input-cat-tech");
+    const cFurn = document.getElementById("input-cat-furn");
+    const cOff = document.getElementById("input-cat-off");
+    const cBoost = document.getElementById("input-subcat-boost");
+
+    const qGrowth = document.getElementById("input-q-growth");
+    const discPen = document.getElementById("input-discount-penalty");
+
     if (preset === "superstore") {
       if (nameInput) nameInput.value = "Superstore Retail Division";
       if (corpRev) corpRev.value = 145000000; if (corpCost) corpCost.value = 108000000;
       if (consRev) consRev.value = 82000000; if (consCost) consCost.value = 61000000;
       if (homeRev) homeRev.value = 46000000; if (homeCost) homeCost.value = 36000000;
+      if (rWest) rWest.value = 34; if (rEast) rEast.value = 28; if (rCent) rCent.value = 21; if (rSouth) rSouth.value = 17;
+      if (cTech) cTech.value = 24.5; if (cFurn) cFurn.value = 8.2; if (cOff) cOff.value = 18.4; if (cBoost) cBoost.value = 1.0;
+      if (qGrowth) qGrowth.value = 1.0; if (discPen) discPen.value = 1.0;
     } else if (preset === "saas") {
       if (nameInput) nameInput.value = "Cloud & SaaS Global Corp";
       if (corpRev) corpRev.value = 260000000; if (corpCost) corpCost.value = 135000000;
       if (consRev) consRev.value = 110000000; if (consCost) consCost.value = 68000000;
       if (homeRev) homeRev.value = 60000000; if (homeCost) homeCost.value = 42000000;
+      if (rWest) rWest.value = 42; if (rEast) rEast.value = 30; if (rCent) rCent.value = 16; if (rSouth) rSouth.value = 12;
+      if (cTech) cTech.value = 38.0; if (cFurn) cFurn.value = 4.0; if (cOff) cOff.value = 14.0; if (cBoost) cBoost.value = 1.4;
+      if (qGrowth) qGrowth.value = 1.5; if (discPen) discPen.value = 0.7;
     } else if (preset === "manufacturing") {
       if (nameInput) nameInput.value = "Precision Manufacturing Ltd";
       if (corpRev) corpRev.value = 180000000; if (corpCost) corpCost.value = 152000000;
       if (consRev) consRev.value = 95000000; if (consCost) consCost.value = 81000000;
       if (homeRev) homeRev.value = 45000000; if (homeCost) homeCost.value = 39000000;
-    } else if (preset === "custom") {
-      if (nameInput) nameInput.value = "Custom Enterprise";
-      if (corpRev) corpRev.value = 0; if (corpCost) corpCost.value = 0;
-      if (consRev) consRev.value = 0; if (consCost) consCost.value = 0;
-      if (homeRev) homeRev.value = 0; if (homeCost) homeCost.value = 0;
+      if (rWest) rWest.value = 25; if (rEast) rEast.value = 25; if (rCent) rCent.value = 30; if (rSouth) rSouth.value = 20;
+      if (cTech) cTech.value = 18.0; if (cFurn) cFurn.value = 14.5; if (cOff) cOff.value = 15.0; if (cBoost) cBoost.value = 0.85;
+      if (qGrowth) qGrowth.value = 0.8; if (discPen) discPen.value = 1.6;
     }
 
-    this.computeOrgStudio();
+    this.updateStudioDisplayLabels();
+    this.syncStudioToCardTweakers();
+    this.computeOrgStudio(true);
   },
 
-  async computeOrgStudio() {
+  async computeOrgStudio(showToast = true) {
     const name = document.getElementById("input-org-name")?.value || "Enterprise Corp";
     const year = parseInt(document.getElementById("input-org-year")?.value || 2024);
 
@@ -1058,6 +1320,19 @@ const App = {
     const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0);
     const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0);
 
+    const rWest = parseFloat(document.getElementById("input-reg-west")?.value || 34);
+    const rEast = parseFloat(document.getElementById("input-reg-east")?.value || 28);
+    const rCentral = parseFloat(document.getElementById("input-reg-central")?.value || 21);
+    const rSouth = parseFloat(document.getElementById("input-reg-south")?.value || 17);
+
+    const cTech = parseFloat(document.getElementById("input-cat-tech")?.value || 24.5);
+    const cFurn = parseFloat(document.getElementById("input-cat-furn")?.value || 8.2);
+    const cOff = parseFloat(document.getElementById("input-cat-off")?.value || 18.4);
+    const subcatBoost = parseFloat(document.getElementById("input-subcat-boost")?.value || 1.0);
+
+    const qGrowth = parseFloat(document.getElementById("input-q-growth")?.value || 1.0);
+    const discPenalty = parseFloat(document.getElementById("input-discount-penalty")?.value || 1.0);
+
     const payload = {
       company_name: name,
       fiscal_year: year,
@@ -1065,7 +1340,21 @@ const App = {
         "Corporate": { revenue: corpRev, cost: corpCost },
         "Consumer": { revenue: consRev, cost: consCost },
         "Home Office": { revenue: homeRev, cost: homeCost }
-      }
+      },
+      regions: {
+        "West": rWest,
+        "East": rEast,
+        "Central": rCentral,
+        "South": rSouth
+      },
+      category_margins: {
+        "Technology": cTech,
+        "Furniture": cFurn,
+        "Office Supplies": cOff
+      },
+      subcat_multiplier: subcatBoost,
+      quarterly_growth_multiplier: qGrowth,
+      discount_penalty: discPenalty
     };
 
     try {
@@ -1103,7 +1392,8 @@ const App = {
       if (orgCostInsight) {
         const topDept = data.kpis.top_department || "Corporate";
         const topCr = (data.kpis.top_department_cost / 1e7).toFixed(1);
-        orgCostInsight.textContent = `${topDept} division is the largest operational cost driver at ₹${topCr} Cr.`;
+        const topPct = data.kpis.total_cost > 0 ? ((data.kpis.top_department_cost / data.kpis.total_cost) * 100).toFixed(1) : 0;
+        orgCostInsight.textContent = `${topDept} division is the largest operational cost driver at ₹${topCr} Cr (${topPct}% of total spend).`;
       }
 
       if (orgMarginInsight) {
@@ -1116,12 +1406,14 @@ const App = {
         orgProfitInsight.textContent = `Enterprise revenue yields ₹${profitCr} Cr net operating margin (${data.kpis.profit_margin_pct}% return).`;
       }
 
-      // Render Visuals
+      // Re-render ALL currently displayed visuals via VisualManager!
+      if (typeof VisualManager !== "undefined") {
+        VisualManager.latestData["organization"] = data;
+        VisualManager.renderActiveCharts("organization", data);
+      }
+
       if (document.getElementById("chart-org-clustered")) {
         ChartEngine.renderOrgClusteredBar("chart-org-clustered", data.clustered_bar);
-      }
-      if (document.getElementById("chart-org-dept-bar")) {
-        ChartEngine.renderOrgClusteredBar("chart-org-dept-bar", data.clustered_bar);
       }
       if (document.getElementById("chart-org-growth")) {
         ChartEngine.renderOrgGrowthLine("chart-org-growth", data.quarterly_growth);
@@ -1129,7 +1421,7 @@ const App = {
 
       // Treemap
       const treemapContainer = document.getElementById("org-treemap-container");
-      if (treemapContainer) {
+      if (treemapContainer && data.treemap) {
         treemapContainer.innerHTML = data.treemap.map(t => `
           <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.85rem; margin-block-end: 0.75rem;">
             <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-main); margin-block-end: 0.5rem;">
@@ -1150,7 +1442,7 @@ const App = {
       // Matrix Table
       const matrixHead = document.getElementById("org-matrix-head");
       const matrixBody = document.getElementById("org-matrix-body");
-      if (matrixHead && matrixBody) {
+      if (matrixHead && matrixBody && data.matrix) {
         matrixHead.innerHTML = `<tr><th>Region \\ Category</th>${data.matrix.categories.map(c => `<th>${c}</th>`).join("")}</tr>`;
         matrixBody.innerHTML = data.matrix.regions.map((reg, rIdx) => `
           <tr>
@@ -1164,10 +1456,17 @@ const App = {
         `).join("");
       }
 
-      this.showToast(`Organization dashboard updated for "${data.company_name}"!`, "success");
+      this.updateStudioDisplayLabels();
+      this.syncStudioToCardTweakers();
+
+      if (showToast) {
+        this.showToast(`Enterprise visuals updated! All active graphs recalculated.`, "success");
+      }
     } catch (err) {
       console.error(err);
-      this.showToast("Failed to compute organization analytics.", "error");
+      if (showToast) {
+        this.showToast("Failed to compute organization analytics.", "error");
+      }
     }
   },
 
@@ -1423,6 +1722,8 @@ const App = {
 
       // Render Visuals with Customizer
       VisualManager.init("organization", data);
+      this.updateStudioDisplayLabels();
+      this.syncStudioToCardTweakers();
 
       // Orders sample table (support both order-table-body and org-table-body)
       const orderBody = document.getElementById("order-table-body") || document.getElementById("org-table-body");
