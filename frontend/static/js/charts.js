@@ -777,7 +777,7 @@ const ChartEngine = {
   // ----------------------------------------------------------------------------
   // PAGE 5: PREDICTIVE CHARTS WITH 95% CONFIDENCE BANDS
   // ----------------------------------------------------------------------------
-  renderForecastChart(canvasId, forecastObj, titleLabel, colorTheme) {
+  renderForecastChart(canvasId, forecastObj, titleLabel, colorTheme, unitType = "") {
     this.destroyChart(canvasId);
     const ctx = this.getCtx(canvasId);
     if (!ctx || !forecastObj) return;
@@ -852,7 +852,13 @@ const ChartEngine = {
           legend: { position: "top", labels: { color: "#CBD5E1" } },
           tooltip: {
             callbacks: {
-              label: (ctx) => ` ${ctx.dataset.label}: ₹${Number(ctx.raw).toLocaleString('en-IN')}`
+              label: (ctx) => {
+                const raw = Number(ctx.raw);
+                if (unitType === "lakh_cr") {
+                  return ` ${ctx.dataset.label}: ₹${(raw / 100000).toFixed(2)} Lakh Cr`;
+                }
+                return ` ${ctx.dataset.label}: ₹${raw.toLocaleString('en-IN')}`;
+              }
             }
           }
         },
@@ -862,7 +868,12 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
+              callback: (val) => {
+                if (unitType === "lakh_cr") {
+                  return "₹" + (val / 100000).toFixed(1) + " Lakh Cr";
+                }
+                return "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')));
+              }
             }
           }
         }

@@ -1932,8 +1932,9 @@ const App = {
       ChartEngine.renderForecastChart(
         canvasState,
         data.state_forecast,
-        "State Public Expenditure (₹)",
-        { main: "#38BDF8", forecast: "#F43F5E", band: "rgba(244, 63, 94, 0.18)" }
+        "State Public Expenditure (₹ Lakh Cr)",
+        { main: "#38BDF8", forecast: "#F43F5E", band: "rgba(244, 63, 94, 0.18)" },
+        "lakh_cr"
       );
     }
 
@@ -1945,7 +1946,7 @@ const App = {
     if (pOrg && data.organization_forecast) pOrg.textContent = `₹${Number(data.organization_forecast.projected_next_quarter).toLocaleString('en-IN')}`;
     
     const pState = document.getElementById("proj-kpi-state");
-    if (pState && data.state_forecast) pState.textContent = `₹${Number(data.state_forecast.projected_next_year).toLocaleString('en-IN')}`;
+    if (pState && data.state_forecast) pState.textContent = `₹${(data.state_forecast.projected_next_year / 100000).toFixed(2)} Lakh Cr`;
 
     // Decision Takeaway Box
     const takeawayEl = document.getElementById("forecast-takeaway-text") || document.getElementById("predictive-takeaway-text");
