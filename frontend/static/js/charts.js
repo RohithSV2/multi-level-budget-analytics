@@ -82,7 +82,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -127,7 +127,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -373,7 +373,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -559,7 +559,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -721,7 +721,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.06)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 100000 ? (val / 100000).toFixed(1) + "L Cr" : (val / 1000).toFixed(0) + "K Cr")
+              callback: (val) => "₹" + (val >= 100000 ? (val / 100000).toFixed(1) + " Lakh Cr" : (val / 1000).toFixed(0) + "K Cr")
             }
           }
         }
@@ -862,7 +862,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " L" : val.toLocaleString('en-IN')))
+              callback: (val) => "₹" + (val >= 1e7 ? (val / 1e7).toFixed(1) + " Cr" : (val >= 1e5 ? (val / 1e5).toFixed(1) + " Lakh" : val.toLocaleString('en-IN')))
             }
           }
         }
@@ -938,7 +938,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.06)" },
             ticks: {
               color: "#94A3B8",
-              callback: (val) => "₹" + (val / 100000).toFixed(1) + "L Cr"
+              callback: (val) => "₹" + (val / 100000).toFixed(1) + " Lakh Cr"
             }
           }
         }
@@ -983,7 +983,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L Cr" : (v / 1000).toFixed(0) + "K Cr")
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + " Lakh Cr" : (v / 1000).toFixed(0) + "K Cr")
             }
           },
           y: { grid: { display: false }, ticks: { color: "#E2E8F0", font: { weight: "600", size: 11 } } }
@@ -1031,7 +1031,7 @@ const ChartEngine = {
                 const val = Number(ctx.raw);
                 const lkCr = (val / 100000).toFixed(2);
                 const ut = data.utilization_pct ? data.utilization_pct[ctx.dataIndex] : 0;
-                return ` ${ctx.dataset.label}: ₹${lkCr}L Cr (${ut}% utilized)`;
+                return ` ${ctx.dataset.label}: ₹${lkCr} Lakh Cr (${ut}% utilized)`;
               }
             }
           }
@@ -1042,7 +1042,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.06)" },
             ticks: {
               color: "#94A3B8",
-              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L Cr" : (v / 1000).toFixed(0) + "K Cr")
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + " Lakh Cr" : (v / 1000).toFixed(0) + "K Cr")
             }
           }
         }
@@ -1364,7 +1364,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.06)" },
             ticks: {
               color: "#94A3B8",
-              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + " Lakh" : (v / 1000).toFixed(0) + "K")
             }
           }
         }
@@ -1405,7 +1405,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.05)" },
             ticks: {
               color: "#94A3B8",
-              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + " Lakh" : (v / 1000).toFixed(0) + "K")
             }
           },
           y: { grid: { display: false }, ticks: { color: "#CBD5E1", font: { weight: "600" } } }
@@ -1452,7 +1452,7 @@ const ChartEngine = {
             grid: { color: "rgba(255, 255, 255, 0.06)" },
             ticks: {
               color: "#94A3B8",
-              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + "L" : (v / 1000).toFixed(0) + "K")
+              callback: (v) => "₹" + (v >= 100000 ? (v / 100000).toFixed(1) + " Lakh" : (v / 1000).toFixed(0) + "K")
             }
           }
         }

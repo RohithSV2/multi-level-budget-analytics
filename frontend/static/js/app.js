@@ -491,6 +491,26 @@ const App = {
   stateNationState: { year: "All" },
   predictiveState: { indCut: 0, orgGrowth: 0, stateDeficitTarget: 0 },
 
+  formatCompactIndian(val, prefix = "₹") {
+    if (val === null || val === undefined || isNaN(val)) return `${prefix}0`;
+    const num = Number(val);
+    const abs = Math.abs(num);
+    const sign = num < 0 ? "-" : "";
+    if (abs >= 1e7) {
+      const cr = (abs / 1e7).toFixed(2).replace(/\.?0+$/, "");
+      return `${sign}${prefix}${cr} Cr`;
+    }
+    if (abs >= 1e5) {
+      const lk = (abs / 1e5).toFixed(2).replace(/\.?0+$/, "");
+      return `${sign}${prefix}${lk} Lakh`;
+    }
+    if (abs >= 1e3) {
+      const k = (abs / 1e3).toFixed(1).replace(/\.0$/, "");
+      return `${sign}${prefix}${k}K`;
+    }
+    return `${sign}${prefix}${abs.toLocaleString("en-IN")}`;
+  },
+
   async init() {
     this.bindTabNavigation();
     this.bindModals();
@@ -970,27 +990,27 @@ const App = {
         Object.entries(categoriesPayload).forEach(([k, v]) => {
           if (v.actual > maxVal) { maxVal = v.actual; maxCat = k; }
         });
-        const maxK = (maxVal / 1000).toFixed(0);
+        const maxFmt = this.formatCompactIndian(maxVal);
         spendInsightEl.textContent = maxCat
-          ? `Your biggest spend this year is ${maxCat} at ₹${maxK}K. Trim that first if you want savings to rise.`
+          ? `Your biggest spend this year is ${maxCat} at ${maxFmt}. Trim that first if you want savings to rise.`
           : `Add category allocations above to analyze your highest spending drivers.`;
       }
 
       if (varianceInsightEl) {
         const diff = Math.abs(data.kpis.total_planned_budget - data.kpis.total_expense);
-        const diffK = (diff / 1000).toFixed(0);
+        const diffFmt = this.formatCompactIndian(diff);
         const util = data.kpis.budget_utilization_pct;
         if (data.kpis.total_expense <= data.kpis.total_planned_budget) {
-          varianceInsightEl.textContent = `You stayed inside the plan by ₹${diffK}K — spending is ${util}% of what you set aside.`;
+          varianceInsightEl.textContent = `You stayed inside the plan by ${diffFmt} — spending is ${util}% of what you set aside.`;
         } else {
-          varianceInsightEl.textContent = `Spending exceeded your planned budget by ₹${diffK}K — utilization is ${util}% of budget limit.`;
+          varianceInsightEl.textContent = `Spending exceeded your planned budget by ${diffFmt} — utilization is ${util}% of budget limit.`;
         }
       }
 
       if (savingsInsightEl) {
-        const incL = (data.kpis.total_income / 100000).toFixed(1);
-        const savK = (data.kpis.net_savings / 1000).toFixed(0);
-        savingsInsightEl.textContent = `Out of ₹${incL}L earned, ₹${savK}K stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
+        const incFmt = this.formatCompactIndian(data.kpis.total_income);
+        const savFmt = this.formatCompactIndian(data.kpis.net_savings);
+        savingsInsightEl.textContent = `Out of ${incFmt} earned, ${savFmt} stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
       }
 
       // Render Visuals from User Input
@@ -1045,44 +1065,44 @@ const App = {
     const num = parseFloat(value);
     if (tweakType === 'corp-rev') {
       const el = document.getElementById("input-dept-corp-rev");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v = document.getElementById("tweak-val-corp-rev");
-      if (v) v.textContent = `₹${num}M`;
+      if (v) v.textContent = `₹${num.toFixed(1)} Cr`;
     } else if (tweakType === 'corp-cost') {
       const el = document.getElementById("input-dept-corp-cost");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v1 = document.getElementById("tweak-val-corp-cost");
-      if (v1) v1.textContent = `₹${num}M`;
+      if (v1) v1.textContent = `₹${num.toFixed(1)} Cr`;
       const v2 = document.getElementById("tweak-val-pie-corp");
-      if (v2) v2.textContent = `₹${num}M`;
+      if (v2) v2.textContent = `₹${num.toFixed(1)} Cr`;
       const s = document.getElementById("tweak-pie-corp");
       if (s) s.value = num;
     } else if (tweakType === 'cons-rev') {
       const el = document.getElementById("input-dept-cons-rev");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v = document.getElementById("tweak-val-cons-rev");
-      if (v) v.textContent = `₹${num}M`;
+      if (v) v.textContent = `₹${num.toFixed(1)} Cr`;
     } else if (tweakType === 'cons-cost') {
       const el = document.getElementById("input-dept-cons-cost");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v1 = document.getElementById("tweak-val-cons-cost");
-      if (v1) v1.textContent = `₹${num}M`;
+      if (v1) v1.textContent = `₹${num.toFixed(1)} Cr`;
       const v2 = document.getElementById("tweak-val-pie-cons");
-      if (v2) v2.textContent = `₹${num}M`;
+      if (v2) v2.textContent = `₹${num.toFixed(1)} Cr`;
       const s = document.getElementById("tweak-pie-cons");
       if (s) s.value = num;
     } else if (tweakType === 'home-rev') {
       const el = document.getElementById("input-dept-home-rev");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v = document.getElementById("tweak-val-home-rev");
-      if (v) v.textContent = `₹${num}M`;
+      if (v) v.textContent = `₹${num.toFixed(1)} Cr`;
     } else if (tweakType === 'home-cost') {
       const el = document.getElementById("input-dept-home-cost");
-      if (el) el.value = num * 1000000;
+      if (el) el.value = Math.round(num * 10000000);
       const v1 = document.getElementById("tweak-val-home-cost");
-      if (v1) v1.textContent = `₹${num}M`;
+      if (v1) v1.textContent = `₹${num.toFixed(1)} Cr`;
       const v2 = document.getElementById("tweak-val-pie-home");
-      if (v2) v2.textContent = `₹${num}M`;
+      if (v2) v2.textContent = `₹${num.toFixed(1)} Cr`;
       const s = document.getElementById("tweak-pie-home");
       if (s) s.value = num;
     } else if (tweakType === 'reg-west') {
@@ -1172,14 +1192,15 @@ const App = {
 
     const totalCost = corpCost + consCost + homeCost;
     const totW = parseFloat(rWest) + parseFloat(rEast) + parseFloat(rCent) + parseFloat(rSouth) || 1;
+    const formatSpend = (s) => (s >= 1e7 ? `~ ₹${(s / 1e7).toFixed(2)} Cr Spend` : (s >= 1e5 ? `~ ₹${(s / 1e5).toFixed(1)} Lakh Spend` : `~ ₹${(s / 1e3).toFixed(0)}K Spend`));
     const cWest = document.getElementById("calc-reg-west");
-    if (cWest) cWest.textContent = `~ ₹${((totalCost * (rWest / totW)) / 1e6).toFixed(1)}M Spend`;
+    if (cWest) cWest.textContent = formatSpend(totalCost * (rWest / totW));
     const cEast = document.getElementById("calc-reg-east");
-    if (cEast) cEast.textContent = `~ ₹${((totalCost * (rEast / totW)) / 1e6).toFixed(1)}M Spend`;
+    if (cEast) cEast.textContent = formatSpend(totalCost * (rEast / totW));
     const cCent = document.getElementById("calc-reg-central");
-    if (cCent) cCent.textContent = `~ ₹${((totalCost * (rCent / totW)) / 1e6).toFixed(1)}M Spend`;
+    if (cCent) cCent.textContent = formatSpend(totalCost * (rCent / totW));
     const cSouth = document.getElementById("calc-reg-south");
-    if (cSouth) cSouth.textContent = `~ ₹${((totalCost * (rSouth / totW)) / 1e6).toFixed(1)}M Spend`;
+    if (cSouth) cSouth.textContent = formatSpend(totalCost * (rSouth / totW));
 
     const cTech = document.getElementById("input-cat-tech")?.value || 24.5;
     const cFurn = document.getElementById("input-cat-furn")?.value || 8.2;
@@ -1200,28 +1221,28 @@ const App = {
   },
 
   syncStudioToCardTweakers() {
-    const corpRev = parseFloat(document.getElementById("input-dept-corp-rev")?.value || 0) / 1e6;
-    const corpCost = parseFloat(document.getElementById("input-dept-corp-cost")?.value || 0) / 1e6;
-    const consRev = parseFloat(document.getElementById("input-dept-cons-rev")?.value || 0) / 1e6;
-    const consCost = parseFloat(document.getElementById("input-dept-cons-cost")?.value || 0) / 1e6;
-    const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0) / 1e6;
-    const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0) / 1e6;
+    const corpRev = parseFloat(document.getElementById("input-dept-corp-rev")?.value || 0) / 1e7;
+    const corpCost = parseFloat(document.getElementById("input-dept-corp-cost")?.value || 0) / 1e7;
+    const consRev = parseFloat(document.getElementById("input-dept-cons-rev")?.value || 0) / 1e7;
+    const consCost = parseFloat(document.getElementById("input-dept-cons-cost")?.value || 0) / 1e7;
+    const homeRev = parseFloat(document.getElementById("input-dept-home-rev")?.value || 0) / 1e7;
+    const homeCost = parseFloat(document.getElementById("input-dept-home-cost")?.value || 0) / 1e7;
 
     const s1 = document.getElementById("tweak-corp-rev"); if (s1) s1.value = corpRev;
-    const v1 = document.getElementById("tweak-val-corp-rev"); if (v1) v1.textContent = `₹${corpRev.toFixed(0)}M`;
+    const v1 = document.getElementById("tweak-val-corp-rev"); if (v1) v1.textContent = `₹${corpRev.toFixed(1)} Cr`;
     const s2 = document.getElementById("tweak-corp-cost"); if (s2) s2.value = corpCost;
-    const v2 = document.getElementById("tweak-val-corp-cost"); if (v2) v2.textContent = `₹${corpCost.toFixed(0)}M`;
+    const v2 = document.getElementById("tweak-val-corp-cost"); if (v2) v2.textContent = `₹${corpCost.toFixed(1)} Cr`;
     const s3 = document.getElementById("tweak-cons-rev"); if (s3) s3.value = consRev;
-    const v3 = document.getElementById("tweak-val-cons-rev"); if (v3) v3.textContent = `₹${consRev.toFixed(0)}M`;
+    const v3 = document.getElementById("tweak-val-cons-rev"); if (v3) v3.textContent = `₹${consRev.toFixed(1)} Cr`;
     const s4 = document.getElementById("tweak-home-rev"); if (s4) s4.value = homeRev;
-    const v4 = document.getElementById("tweak-val-home-rev"); if (v4) v4.textContent = `₹${homeRev.toFixed(0)}M`;
+    const v4 = document.getElementById("tweak-val-home-rev"); if (v4) v4.textContent = `₹${homeRev.toFixed(1)} Cr`;
 
     const sp1 = document.getElementById("tweak-pie-corp"); if (sp1) sp1.value = corpCost;
-    const vp1 = document.getElementById("tweak-val-pie-corp"); if (vp1) vp1.textContent = `₹${corpCost.toFixed(0)}M`;
+    const vp1 = document.getElementById("tweak-val-pie-corp"); if (vp1) vp1.textContent = `₹${corpCost.toFixed(1)} Cr`;
     const sp2 = document.getElementById("tweak-pie-cons"); if (sp2) sp2.value = consCost;
-    const vp2 = document.getElementById("tweak-val-pie-cons"); if (vp2) vp2.textContent = `₹${consCost.toFixed(0)}M`;
+    const vp2 = document.getElementById("tweak-val-pie-cons"); if (vp2) vp2.textContent = `₹${consCost.toFixed(1)} Cr`;
     const sp3 = document.getElementById("tweak-pie-home"); if (sp3) sp3.value = homeCost;
-    const vp3 = document.getElementById("tweak-val-pie-home"); if (vp3) vp3.textContent = `₹${homeCost.toFixed(0)}M`;
+    const vp3 = document.getElementById("tweak-val-pie-home"); if (vp3) vp3.textContent = `₹${homeCost.toFixed(1)} Cr`;
 
     const rWest = document.getElementById("input-reg-west")?.value;
     const rEast = document.getElementById("input-reg-east")?.value;
@@ -1494,7 +1515,7 @@ const App = {
       // Populate dedicated overview KPI elements
       const indSpendEl = document.getElementById("kpi-overview-ind-spend");
       if (indSpendEl && data.summary) {
-        indSpendEl.textContent = `₹${(data.summary.ind_expense / 1000).toFixed(0)}K`;
+        indSpendEl.textContent = this.formatCompactIndian(data.summary.ind_expense);
       }
       const orgRevEl = document.getElementById("kpi-overview-org-rev");
       if (orgRevEl && data.summary) {
@@ -1571,25 +1592,25 @@ const App = {
             maxCat = data.donut_chart.labels[i];
           }
         }
-        const maxK = (maxVal / 1000).toFixed(0);
-        spendInsightEl.textContent = `Your biggest spend this year is ${maxCat} at ₹${maxK}K. Trim that first if you want savings to rise.`;
+        const maxFmt = this.formatCompactIndian(maxVal);
+        spendInsightEl.textContent = `Your biggest spend this year is ${maxCat} at ${maxFmt}. Trim that first if you want savings to rise.`;
       }
 
       if (varianceInsightEl && data.kpis) {
         const diff = Math.abs(data.kpis.total_planned_budget - data.kpis.total_expense);
-        const diffK = (diff / 1000).toFixed(0);
+        const diffFmt = this.formatCompactIndian(diff);
         const util = data.kpis.budget_utilization_pct;
         if (data.kpis.total_expense <= data.kpis.total_planned_budget) {
-          varianceInsightEl.textContent = `You stayed inside the plan by ₹${diffK}K — spending is ${util}% of what you set aside.`;
+          varianceInsightEl.textContent = `You stayed inside the plan by ${diffFmt} — spending is ${util}% of what you set aside.`;
         } else {
-          varianceInsightEl.textContent = `Spending exceeded your planned budget by ₹${diffK}K — utilization is ${util}% of budget limit.`;
+          varianceInsightEl.textContent = `Spending exceeded your planned budget by ${diffFmt} — utilization is ${util}% of budget limit.`;
         }
       }
 
       if (savingsInsightEl && data.kpis) {
-        const incL = (data.kpis.total_income / 100000).toFixed(1);
-        const savK = (data.kpis.net_savings / 1000).toFixed(0);
-        savingsInsightEl.textContent = `Out of ₹${incL}L earned, ₹${savK}K stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
+        const incFmt = this.formatCompactIndian(data.kpis.total_income);
+        const savFmt = this.formatCompactIndian(data.kpis.net_savings);
+        savingsInsightEl.textContent = `Out of ${incFmt} earned, ${savFmt} stayed with you — a savings rate of ${data.kpis.savings_rate_pct}%.`;
       }
 
       // Render Visuals with Customizer
@@ -1695,7 +1716,7 @@ const App = {
       if (growthEl && data.kpis) growthEl.textContent = `${data.kpis.revenue_growth_pct}% YoY`;
 
       const topDeptEl = document.getElementById("org-kpi-top-dept");
-      if (topDeptEl && data.kpis) topDeptEl.textContent = `${data.kpis.top_department} (₹${(data.kpis.top_department_cost/1e5).toFixed(1)}L)`;
+      if (topDeptEl && data.kpis) topDeptEl.textContent = `${data.kpis.top_department} (${this.formatCompactIndian(data.kpis.top_department_cost)})`;
 
       // Update BUDGETRIX 3 Summary Insights for Org
       const orgCostInsight = document.getElementById("org-insight-cost");
@@ -1806,7 +1827,7 @@ const App = {
       if (stateSpendInsight && data.national_bar_chart && data.national_bar_chart.sectors && data.national_bar_chart.sectors.length > 0) {
         const topSec = data.national_bar_chart.sectors[0];
         const topAlloc = (data.national_bar_chart.allocation[0] / 100000).toFixed(2);
-        stateSpendInsight.textContent = `National Union Budget allocates highest capital outlays to ${topSec} (₹${topAlloc}L Cr) and Infrastructure.`;
+        stateSpendInsight.textContent = `National Union Budget allocates highest capital outlays to ${topSec} (₹${topAlloc} Lakh Cr) and Infrastructure.`;
       }
 
       if (stateDeficitInsight && data.kpis) {
@@ -1815,7 +1836,7 @@ const App = {
 
       if (stateReceiptsInsight && data.kpis) {
         const revL = (data.kpis.total_state_revenue / 100000).toFixed(2);
-        stateReceiptsInsight.textContent = `Aggregated State Revenue Receipts (₹${revL}L Cr) cover 93.9% of all state expenditure obligations across 15 states.`;
+        stateReceiptsInsight.textContent = `Aggregated State Revenue Receipts (₹${revL} Lakh Cr) cover 93.9% of all state expenditure obligations across 15 states.`;
       }
 
       // Render Visuals with Customizer
