@@ -450,6 +450,21 @@ def export_all_csvs():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+@app.route("/api/powerbi/download/<level>")
+def download_powerbi_csv(level):
+    file_map = {
+        "individual": ("individual_clean.csv", "individual_clean.csv"),
+        "organization": ("org_clean.csv", "organization_clean.csv"),
+        "state-nation": ("state_clean.csv", "state_finance_clean.csv"),
+        "state": ("state_clean.csv", "state_clean.csv"),
+        "national": ("national_clean.csv", "national_clean.csv"),
+        "date": ("DateTable.csv", "DateTable.csv"),
+    }
+    if level in file_map:
+        source_name, download_name = file_map[level]
+        return send_from_directory(CLEAN_DATA_DIR, source_name, as_attachment=True, download_name=download_name)
+    return jsonify({"success": False, "error": f"Dataset for {level} not found"}), 404
+
 @app.route("/api/data/reload", methods=["POST"])
 def reload_datasets_route():
     try:
