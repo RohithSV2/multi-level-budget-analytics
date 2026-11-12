@@ -20,7 +20,11 @@ from backend.analytics_engine import (
     get_state_nation_analytics,
     get_predictive_analytics,
     calculate_custom_individual,
-    calculate_custom_organization
+    calculate_custom_organization,
+    detect_anomalies_isolation_forest,
+    cluster_spending_personas_kmeans,
+    get_multi_model_forecast,
+    calculate_burn_rate_deficit_risk
 )
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -389,6 +393,47 @@ def simulate_predictive_api():
             whatif_state_deficit_target_pct=state_deficit_target
         )
         return jsonify(data)
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ==========================================
+# 6B. ADVANCED MACHINE LEARNING APIS
+# ==========================================
+@app.route("/api/ml/anomalies", methods=["GET"])
+def api_ml_anomalies():
+    try:
+        conn = get_db_connection()
+        df = pd.read_sql_query("SELECT * FROM individual_transactions", conn)
+        conn.close()
+        res = detect_anomalies_isolation_forest(df)
+        return jsonify({"success": True, "data": res})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/ml/clustering", methods=["GET"])
+def api_ml_clustering():
+    try:
+        conn = get_db_connection()
+        df = pd.read_sql_query("SELECT * FROM individual_transactions", conn)
+        conn.close()
+        res = cluster_spending_personas_kmeans(df)
+        return jsonify({"success": True, "data": res})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/ml/benchmarks", methods=["GET"])
+def api_ml_benchmarks():
+    try:
+        pred_data = get_predictive_analytics()
+        return jsonify({"success": True, "data": pred_data.get("model_benchmarking", {})})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/ml/burn-rate", methods=["GET"])
+def api_ml_burn_rate():
+    try:
+        pred_data = get_predictive_analytics()
+        return jsonify({"success": True, "data": pred_data.get("burn_rate_risk", {})})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 

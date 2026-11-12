@@ -375,6 +375,78 @@
       </div>
 
       <!-- ===================================================================== -->
+      <!-- ADVANCED ML INTELLIGENCE: ISOLATION FOREST & K-MEANS PERSONA -->
+      <!-- ===================================================================== -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+        
+        <!-- Isolation Forest Anomaly Radar -->
+        <div class="card" style="background: var(--bx-bg-card); border-left: 3px solid #F43F5E;">
+          <div class="card-header">
+            <div>
+              <h3 style="color: #FFFFFF; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🛡️</span> AI Anomaly Radar (Isolation Forest)
+              </h3>
+              <p>Unsupervised anomaly detection flags statistical spending outliers</p>
+            </div>
+            <span class="bx-badge-amber" id="ml-anomaly-badge">Scanning Ledger...</span>
+          </div>
+
+          <div style="padding: 1.25rem;">
+            <div style="font-size: 0.84rem; color: #CBD5E1; margin-bottom: 1rem;" id="ml-anomaly-summary">
+              Isolation Forest (contamination=0.03) scans transaction distribution to isolate suspicious spikes.
+            </div>
+
+            <!-- Flagged Outliers Mini Table -->
+            <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+              <table class="data-table" style="font-size: 0.8rem;">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Amount (₹)</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody id="ml-anomaly-table-body">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: var(--bx-text-muted); padding: 1rem;">
+                      Analyzing transaction distribution...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- K-Means Spending Persona Archetype -->
+        <div class="card" style="background: var(--bx-bg-card); border-left: 3px solid #38BDF8;">
+          <div class="card-header">
+            <div>
+              <h3 style="color: #FFFFFF; font-size: 1.15rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>👥</span> Financial Persona Clustering (K-Means)
+              </h3>
+              <p>Unsupervised k=3 segmentation of household expenditure profiles</p>
+            </div>
+            <span class="bx-badge-green" id="ml-persona-badge">Cluster Ready</span>
+          </div>
+
+          <div style="padding: 1.25rem;">
+            <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--bx-text-muted); margin-bottom: 0.4rem; font-weight: 700;">DOMINANT FINANCIAL ARCHETYPE</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #38BDF8; margin-bottom: 1rem;" id="ml-persona-dominant">
+              Essential Fixed Commitments (Housing & Groceries)
+            </div>
+
+            <div id="ml-persona-clusters-list" style="display: flex; flex-direction: column; gap: 0.65rem;">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
       <!-- INDIVIDUAL TRANSACTION LEDGER -->
       <!-- ===================================================================== -->
       <div class="card" style="margin-bottom: 3rem;">
@@ -520,10 +592,10 @@
     </div>
   </div>
 
-  <script src="/static/js/api.js"></script>
-  <script src="/static/js/auth.js"></script>
-  <script src="/static/js/charts.js"></script>
-  <script src="/static/js/app.js"></script>
+  <script src="/static/js/api.js?v=2.2"></script>
+  <script src="/static/js/auth.js?v=2.2"></script>
+  <script src="/static/js/charts.js?v=2.2"></script>
+  <script src="/static/js/app.js?v=2.2"></script>
   <script>
     function toggleSidebar() {
       const sb = document.getElementById("bx-sidebar");

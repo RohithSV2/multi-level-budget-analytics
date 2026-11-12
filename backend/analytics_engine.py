@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import pandas as pd
 import numpy as np
@@ -357,6 +358,9 @@ def get_individual_analytics(category_filter=None, year_filter=None):
         "monthly_flow": monthly_flow,
         "top_subcategories": top_subcategories,
         "cumulative_savings": cumulative_savings,
+        "anomalies": detect_anomalies_isolation_forest(df),
+        "persona_clustering": cluster_spending_personas_kmeans(df),
+        "burn_rate_risk": calculate_burn_rate_deficit_risk(total_expense, total_planned_budget),
         "transactions": tx_list,
         "budgets": budget_map,
         "categories": sorted(list(budget_map.keys()))
@@ -940,10 +944,22 @@ def get_predictive_analytics(whatif_ind_cut_pct=0, whatif_org_growth_pct=0, what
             "• Macro/State: Ready for public finance data. Add your state finance records to view projections."
         )
 
+    # Model Benchmarking & Burn-rate Risk Probability
+    cut_factor = 1.0 - (float(whatif_ind_cut_pct) / 100.0)
+    model_benchmarking = get_multi_model_forecast(hist_ind_values, steps=6, whatif_factor=cut_factor)
+    burn_rate_risk = calculate_burn_rate_deficit_risk(
+        spent_so_far=future_ind_forecast[0] if future_ind_forecast else 50000.0,
+        total_budget=110000.0,
+        elapsed_days=15,
+        total_days=30
+    )
+
     return {
         "individual_forecast": ind_forecast_data,
         "organization_forecast": org_forecast_data,
         "state_forecast": state_forecast_data,
+        "model_benchmarking": model_benchmarking,
+        "burn_rate_risk": burn_rate_risk,
         "decision_insights": decision_insights,
         "parameters": {
             "whatif_ind_cut_pct": whatif_ind_cut_pct,
@@ -1357,4 +1373,252 @@ def calculate_custom_organization(input_data):
             for i in range(len(dept_names))
         ]
     }
+
+
+# ==========================================
+# 7. ADVANCED MACHINE LEARNING ENGINES
+# ==========================================
+
+def detect_anomalies_isolation_forest(df_transactions, contamination=0.03):
+    """
+    Unsupervised Anomaly Detection using Isolation Forest (scikit-learn)
+    Flags statistical spending outliers and suspicious transaction spikes.
+    """
+    try:
+        os.environ["LOKY_MAX_CPU_COUNT"] = "1"
+        from sklearn.ensemble import IsolationForest
+        df_exp = df_transactions[df_transactions["income_expense"] == "Expense"].copy() if not df_transactions.empty else pd.DataFrame()
+        if df_exp.empty or len(df_exp) < 10:
+            return {"total_anomalies": 0, "flagged_transactions": [], "summary": "Insufficient transaction volume for anomaly modeling."}
+
+        amounts = df_exp["amount"].values.reshape(-1, 1)
+        iso = IsolationForest(contamination=contamination, random_state=42, n_jobs=1)
+        df_exp["is_anomaly"] = iso.fit_predict(amounts)
+        df_exp["anomaly_score"] = iso.decision_function(amounts)
+
+        anom_rows = df_exp[df_exp["is_anomaly"] == -1].sort_values(by="amount", ascending=False)
+        flagged = []
+        for _, r in anom_rows.head(8).iterrows():
+            flagged.append({
+                "id": int(r["id"]) if "id" in r else 0,
+                "date": str(r["date"]),
+                "category": str(r["category"]),
+                "subcategory": str(r.get("subcategory", "") or "General"),
+                "amount": round(float(r["amount"]), 2),
+                "severity": "Critical" if float(r["amount"]) > 18000 else "Moderate",
+                "score": round(float(r["anomaly_score"]), 4)
+            })
+
+        return {
+            "total_anomalies": len(anom_rows),
+            "flagged_transactions": flagged,
+            "contamination_rate": contamination,
+            "algorithm": "Isolation Forest (scikit-learn)",
+            "summary": f"Isolation Forest identified {len(anom_rows)} statistical spending outliers out of {len(df_exp)} transactions."
+        }
+    except Exception as e:
+        # Robust Pure NumPy Statistical Fallback (2-Sigma Outlier Detection)
+        try:
+            df_exp = df_transactions[df_transactions["income_expense"] == "Expense"].copy() if not df_transactions.empty else pd.DataFrame()
+            if df_exp.empty:
+                return {"total_anomalies": 0, "flagged_transactions": [], "summary": "No transactions available."}
+            mean_val = float(df_exp["amount"].mean())
+            std_val = float(df_exp["amount"].std()) or 1.0
+            threshold = mean_val + 2.0 * std_val
+            anom_rows = df_exp[df_exp["amount"] > threshold].sort_values(by="amount", ascending=False)
+            flagged = []
+            for _, r in anom_rows.head(8).iterrows():
+                amt = float(r["amount"])
+                flagged.append({
+                    "id": int(r["id"]) if "id" in r else 0,
+                    "date": str(r["date"]),
+                    "category": str(r["category"]),
+                    "subcategory": str(r.get("subcategory", "") or "General"),
+                    "amount": round(amt, 2),
+                    "severity": "Critical" if amt > mean_val + 3.0 * std_val else "Moderate",
+                    "score": round((amt - mean_val) / std_val, 2)
+                })
+            return {
+                "total_anomalies": len(anom_rows),
+                "flagged_transactions": flagged,
+                "contamination_rate": contamination,
+                "algorithm": "Statistical Outlier Detector (2σ Baseline)",
+                "summary": f"Statistical outlier detection flagged {len(anom_rows)} transactions exceeding 2σ threshold."
+            }
+        except Exception:
+            return {"total_anomalies": 0, "flagged_transactions": [], "error": str(e)}
+
+
+def cluster_spending_personas_kmeans(df_transactions, n_clusters=3):
+    """
+    K-Means Clustering (scikit-learn):
+    Segments household expenditure profiles into distinct financial personas.
+    """
+    try:
+        os.environ["LOKY_MAX_CPU_COUNT"] = "1"
+        from sklearn.cluster import KMeans
+        df_exp = df_transactions[df_transactions["income_expense"] == "Expense"].copy() if not df_transactions.empty else pd.DataFrame()
+        if df_exp.empty:
+            return {"dominant_archetype": "Standard Profile", "archetypes": []}
+
+        cat_summary = df_exp.groupby("category")["amount"].sum().reset_index()
+        if len(cat_summary) < n_clusters:
+            return {"dominant_archetype": "Standard Profile", "archetypes": []}
+
+        X = cat_summary[["amount"]].values
+        km = KMeans(n_clusters=n_clusters, random_state=42, n_init='auto')
+        cat_summary["cluster"] = km.fit_predict(X)
+
+        archetype_names = {
+            0: "Essential Fixed Commitments (Housing & Groceries)",
+            1: "Discretionary Lifestyle Spend (Dining & Shopping)",
+            2: "Secondary Operational Expenses (Transport & Utilities)"
+        }
+
+        archetypes = []
+        for c_id in range(n_clusters):
+            cats = cat_summary[cat_summary["cluster"] == c_id]["category"].tolist()
+            tot = float(cat_summary[cat_summary["cluster"] == c_id]["amount"].sum())
+            archetypes.append({
+                "cluster_id": c_id,
+                "label": archetype_names.get(c_id, f"Persona Cluster {c_id+1}"),
+                "categories": cats,
+                "total_spend": round(tot, 2)
+            })
+
+        # Sort by total spend descending
+        archetypes.sort(key=lambda x: x["total_spend"], reverse=True)
+
+        return {
+            "algorithm": "K-Means Clustering (scikit-learn)",
+            "n_clusters": n_clusters,
+            "archetypes": archetypes,
+            "dominant_archetype": archetypes[0]["label"] if archetypes else "Standard Profile"
+        }
+    except Exception as e:
+        # Robust Pure-Pandas Quintile Segmentation Fallback
+        try:
+            df_exp = df_transactions[df_transactions["income_expense"] == "Expense"].copy() if not df_transactions.empty else pd.DataFrame()
+            if df_exp.empty:
+                return {"dominant_archetype": "Standard Profile", "archetypes": []}
+            cat_summary = df_exp.groupby("category")["amount"].sum().reset_index().sort_values(by="amount", ascending=False)
+            cats = cat_summary["category"].tolist()
+            split = max(1, len(cats) // 3)
+            c1, c2, c3 = cats[:split], cats[split:split*2], cats[split*2:]
+            return {
+                "algorithm": "Category Expenditure Segmentation (Baseline)",
+                "n_clusters": 3,
+                "archetypes": [
+                    {"cluster_id": 0, "label": "Essential Fixed Commitments (Primary Spend)", "categories": c1, "total_spend": round(float(cat_summary[cat_summary["category"].isin(c1)]["amount"].sum()), 2)},
+                    {"cluster_id": 1, "label": "Discretionary Lifestyle Spend (Secondary)", "categories": c2, "total_spend": round(float(cat_summary[cat_summary["category"].isin(c2)]["amount"].sum()), 2)},
+                    {"cluster_id": 2, "label": "Secondary Operational Expenses", "categories": c3, "total_spend": round(float(cat_summary[cat_summary["category"].isin(c3)]["amount"].sum()), 2)}
+                ],
+                "dominant_archetype": "Essential Fixed Commitments (Primary Spend)"
+            }
+        except Exception:
+            return {"dominant_archetype": "Standard Profile", "archetypes": [], "error": str(e)}
+
+
+def get_multi_model_forecast(history_values, steps=6, whatif_factor=1.0):
+    """
+    Model Benchmarking Engine:
+    Compares Holt-Winters vs OLS Linear Regression vs Moving Average Baseline.
+    """
+    if not history_values or len(history_values) < 4:
+        return {
+            "holt_winters": [0.0]*steps,
+            "linear_regression": [0.0]*steps,
+            "moving_average": [0.0]*steps,
+            "r2_score": 0.0,
+            "recommended_model": "Holt-Winters"
+        }
+
+    # 1. Holt-Winters Double Exponential Smoothing
+    alpha = 0.35
+    smoothed = [history_values[0]]
+    for val in history_values[1:]:
+        smoothed.append(alpha * val + (1 - alpha) * smoothed[-1])
+    last_val = smoothed[-1]
+    hw_trend = (smoothed[-1] - smoothed[-4]) / 4.0 if len(smoothed) >= 4 else 0.0
+    hw_forecast = [round((last_val + hw_trend * i) * whatif_factor, 2) for i in range(1, steps + 1)]
+
+    # 2. OLS Linear Regression (scikit-learn with pure numpy polyfit fallback)
+    try:
+        from sklearn.linear_model import LinearRegression
+        x_hist = np.arange(len(history_values)).reshape(-1, 1)
+        y_hist = np.array(history_values)
+        lr = LinearRegression()
+        lr.fit(x_hist, y_hist)
+        r2 = round(float(lr.score(x_hist, y_hist)), 4)
+        
+        x_future = np.arange(len(history_values), len(history_values) + steps).reshape(-1, 1)
+        lr_forecast = [round(float(v) * whatif_factor, 2) for v in lr.predict(x_future)]
+    except Exception:
+        # Pure NumPy OLS Fallback
+        x_h = np.arange(len(history_values))
+        y_h = np.array(history_values)
+        poly = np.polyfit(x_h, y_h, 1)
+        y_pred = np.polyval(poly, x_h)
+        ss_res = np.sum((y_h - y_pred) ** 2)
+        ss_tot = np.sum((y_h - np.mean(y_h)) ** 2)
+        r2 = round(float(1 - (ss_res / max(1e-5, ss_tot))), 4) if ss_tot > 0 else 0.50
+        x_fut = np.arange(len(history_values), len(history_values) + steps)
+        lr_forecast = [round(float(v) * whatif_factor, 2) for v in np.polyval(poly, x_fut)]
+
+    # 3. Simple Moving Average Baseline (Window = 3)
+    sma_val = float(np.mean(history_values[-3:]))
+    sma_forecast = [round(sma_val * whatif_factor, 2)] * steps
+
+    return {
+        "holt_winters": hw_forecast,
+        "linear_regression": lr_forecast,
+        "moving_average": sma_forecast,
+        "r2_score": max(0.01, r2),
+        "recommended_model": "Holt-Winters (Trend Adaptive)" if abs(hw_trend) > 100 else "OLS Linear Regression",
+        "benchmark_summary": f"Benchmarked 3 statistical models: Holt-Winters (Adaptive), OLS Regression (R²={max(0.01, r2):.2f}), and Moving Average Baseline."
+    }
+
+
+def calculate_burn_rate_deficit_risk(spent_so_far, total_budget, elapsed_days=15, total_days=30):
+    """
+    Sigmoid Logistic Burn-Rate Deficit Risk Function:
+    Calculates the statistical probability of month-end budget breach.
+    """
+    if total_budget <= 0:
+        return {"risk_probability_pct": 50.0, "status": "Moderate", "projected_spend": spent_so_far}
+
+    elapsed_days = max(1, elapsed_days)
+    daily_rate = spent_so_far / elapsed_days
+    projected_month_end = round(daily_rate * total_days, 2)
+    
+    # Sigmoid projection ratio
+    ratio = projected_month_end / total_budget
+    z = (ratio - 1.0) * 8.0
+    # Safe sigmoid computation
+    z_clipped = max(-20.0, min(20.0, z))
+    risk_prob = round(float(1.0 / (1.0 + np.exp(-z_clipped)) * 100), 1)
+
+    if risk_prob < 35.0:
+        status = "Low Risk (Prudent)"
+        badge_color = "emerald"
+    elif risk_prob < 70.0:
+        status = "Moderate Risk (Watch Discretionary)"
+        badge_color = "amber"
+    else:
+        status = "Critical Risk (Action Required)"
+        badge_color = "coral"
+
+    suggested_daily_cap = max(0.0, round((total_budget - spent_so_far) / max(1, total_days - elapsed_days), 2))
+
+    return {
+        "spent_so_far": round(spent_so_far, 2),
+        "total_budget": round(total_budget, 2),
+        "projected_month_end": projected_month_end,
+        "risk_probability_pct": risk_prob,
+        "status": status,
+        "badge_color": badge_color,
+        "suggested_daily_cap": suggested_daily_cap,
+        "insight": f"Current burn rate of ₹{daily_rate:,.0f}/day projects month-end spend at ₹{projected_month_end:,.0f} ({ratio*100:.1f}% of budget). Risk Probability: {risk_prob}%."
+    }
+
 

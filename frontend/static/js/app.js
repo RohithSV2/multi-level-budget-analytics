@@ -1664,6 +1664,55 @@ const App = {
           catFilter.appendChild(opt);
         });
       }
+
+      // Populate AI Anomaly Radar (Isolation Forest)
+      if (data.anomalies) {
+        const anomBadge = document.getElementById("ml-anomaly-badge");
+        if (anomBadge) anomBadge.textContent = `${data.anomalies.total_anomalies || 0} Outliers Detected`;
+
+        const anomSummary = document.getElementById("ml-anomaly-summary");
+        if (anomSummary && data.anomalies.summary) anomSummary.textContent = data.anomalies.summary;
+
+        const anomTable = document.getElementById("ml-anomaly-table-body");
+        if (anomTable && data.anomalies.flagged_transactions) {
+          if (data.anomalies.flagged_transactions.length > 0) {
+            anomTable.innerHTML = data.anomalies.flagged_transactions.map(item => `
+              <tr>
+                <td>${item.date}</td>
+                <td><strong style="color: #FFFFFF;">${item.category}</strong></td>
+                <td>${item.subcategory || '-'}</td>
+                <td><strong style="color: #F43F5E;">₹${item.amount.toLocaleString('en-IN')}</strong></td>
+                <td><span class="tag-badge ${item.severity === 'Critical' ? 'tag-expense' : 'tag-mode'}">${item.severity}</span></td>
+              </tr>
+            `).join("");
+          } else {
+            anomTable.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--bx-text-muted); padding:1rem;">No statistical anomalies detected in transaction ledger.</td></tr>`;
+          }
+        }
+      }
+
+      // Populate K-Means Financial Persona Clusters
+      if (data.persona_clustering) {
+        const domEl = document.getElementById("ml-persona-dominant");
+        if (domEl && data.persona_clustering.dominant_archetype) {
+          domEl.textContent = data.persona_clustering.dominant_archetype;
+        }
+
+        const clusterList = document.getElementById("ml-persona-clusters-list");
+        if (clusterList && data.persona_clustering.archetypes) {
+          clusterList.innerHTML = data.persona_clustering.archetypes.map(arc => `
+            <div style="background: var(--bx-bg-elevated); padding: 0.75rem 1rem; border-radius: 6px; border-left: 3px solid #38BDF8; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #FFFFFF;">${arc.label}</div>
+                <div style="font-size: 0.74rem; color: var(--bx-text-muted); margin-top: 0.2rem;">${(arc.categories || []).slice(0, 3).join(", ")}</div>
+              </div>
+              <div style="font-size: 0.95rem; font-weight: 800; color: #38BDF8;">
+                ₹${Number(arc.total_spend).toLocaleString('en-IN')}
+              </div>
+            </div>
+          `).join("");
+        }
+      }
     } catch (err) {
       console.error(err);
       this.showToast("Failed to load individual analytics.", "error");
@@ -1951,6 +2000,38 @@ const App = {
     // Decision Takeaway Box
     const takeawayEl = document.getElementById("forecast-takeaway-text") || document.getElementById("predictive-takeaway-text");
     if (takeawayEl) takeawayEl.textContent = data.decision_insights;
+
+    // Multi-Model Forecasting Benchmark Comparison
+    if (data.model_benchmarking) {
+      const summaryEl = document.getElementById("ml-benchmark-summary");
+      if (summaryEl && data.model_benchmarking.benchmark_summary) {
+        summaryEl.textContent = data.model_benchmarking.benchmark_summary;
+      }
+      const r2El = document.getElementById("ml-lr-r2");
+      if (r2El && typeof data.model_benchmarking.r2_score === "number") {
+        r2El.textContent = `R² = ${data.model_benchmarking.r2_score.toFixed(3)}`;
+      }
+    }
+
+    // Sigmoid Logistic Burn-Rate Deficit Risk
+    if (data.burn_rate_risk) {
+      const probEl = document.getElementById("ml-risk-prob");
+      if (probEl) probEl.textContent = `${data.burn_rate_risk.risk_probability_pct}%`;
+
+      const capEl = document.getElementById("ml-risk-daily-cap");
+      if (capEl) capEl.textContent = `₹${Number(data.burn_rate_risk.suggested_daily_cap).toLocaleString('en-IN')}`;
+
+      const badgeEl = document.getElementById("ml-risk-badge");
+      if (badgeEl && data.burn_rate_risk.status) {
+        badgeEl.textContent = data.burn_rate_risk.status;
+        badgeEl.className = data.burn_rate_risk.badge_color === 'emerald' ? 'bx-badge-green' : (data.burn_rate_risk.badge_color === 'amber' ? 'bx-badge-amber' : 'bx-badge-coral');
+      }
+
+      const insightEl = document.getElementById("ml-risk-insight");
+      if (insightEl && data.burn_rate_risk.insight) {
+        insightEl.textContent = data.burn_rate_risk.insight;
+      }
+    }
   },
 
   // ----------------------------------------------------------------------------
